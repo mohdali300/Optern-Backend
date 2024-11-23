@@ -1,0 +1,6 @@
+@Optern.Presentation_HostAddress = http://localhost:5216
+
+GET {{Optern.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
