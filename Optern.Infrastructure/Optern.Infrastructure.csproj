@@ -5,22 +5,20 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Data\"/>
-    <Folder Include="ExternalServices\"/>
-    <Folder Include="DependencyInjection\"/>
-    <Folder Include="Configurations\"/>
-    <Folder Include="UnitOfWork\"/>
-    <Folder Include="Validations\"/>
-    <Folder Include="Seeders\"/>
-    <Folder Include="Repositories\"/>
+    <Folder Include="Data\" />
+    <Folder Include="ExternalServices\" />
+    <Folder Include="DependencyInjection\" />
+    <Folder Include="Configurations\" />
+    <Folder Include="UnitOfWork\" />
+    <Folder Include="Validations\" />
+    <Folder Include="Seeders\" />
+    <Folder Include="Repositories\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Optern.Application\Optern.Application.csproj"/>
-    <ProjectReference Include="..\Optern.Domain\Optern.Domain.csproj"/>
+    <ProjectReference Include="..\Optern.Application\Optern.Application.csproj" />
+    <ProjectReference Include="..\Optern.Domain\Optern.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="8.2.1"/>
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="5.2.2"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
   </ItemGroup>
 </Project>

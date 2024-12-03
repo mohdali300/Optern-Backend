@@ -5,11 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Entities\"/>
-    <Folder Include="Enums\"/>
-    <Folder Include="Const\"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="GraphQL" Version="8.2.1"/>
+    <Folder Include="Entities\" />
+    <Folder Include="Enums\" />
+    <Folder Include="Const\" />
   </ItemGroup>
 </Project>

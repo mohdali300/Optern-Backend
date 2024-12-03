@@ -1,8 +1,5 @@
-using GraphiQl;
-using GraphQL.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Optern.Presentation.GraphQlApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +14,8 @@ builder.Services.AddControllers();
 // ); 
 
 // Register Graphql
-builder.Services.AddGraphQL();
+builder.Services
+	.AddGraphQLServer();
 
 
 
@@ -37,11 +35,10 @@ if (app.Environment.IsDevelopment())
 
 //GraphQL
 // app.UseGraphQL<AppSchema>();
-app.UseGraphQLGraphiQL("/ui/graphql");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapGraphQL("/ui/graphql");
 app.Run();

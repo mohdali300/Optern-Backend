@@ -5,17 +5,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
-    <PackageReference Include="GraphQL" Version="8.2.1"/>
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="5.2.2"/>
-    <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="8.1.0"/>
-    <PackageReference Include="graphiql" Version="2.0.0"/>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1"/>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="14.2.0" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="14.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Optern.Application\Optern.Application.csproj"/>
+    <ProjectReference Include="..\Optern.Application\Optern.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controllers\"/>
+    <Folder Include="Controllers\" />
+    <Folder Include="GraphQlApi\" />
   </ItemGroup>
 </Project>

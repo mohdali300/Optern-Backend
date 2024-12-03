@@ -5,17 +5,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="DTOs\"/>
-    <Folder Include="Exceptions\"/>
-    <Folder Include="Interfaces\"/>
-    <Folder Include="Mappings\"/>
-    <Folder Include="Services\"/>
+    <Folder Include="DTOs\" />
+    <Folder Include="Exceptions\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Mappings\" />
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Optern.Domain\Optern.Domain.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="GraphQL" Version="8.2.1"/>
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="5.2.2"/>
+    <ProjectReference Include="..\Optern.Domain\Optern.Domain.csproj" />
   </ItemGroup>
 </Project>
