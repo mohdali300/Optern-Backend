@@ -40,5 +40,11 @@ namespace Optern.Infrastructure.Data
         public DbSet<VInterview> VInterview { get; set; }
         public DbSet<VQuestions> VQuestion { get; set; }
         public DbSet<WorkSpace> WorkSpace  { get; set; }
-    }
+        public DbSet<Experience> Experiences  { get; set; }
+        public DbSet<Education> Educations { get; set; }
+        public DbSet<Track> Tracks { get; set; }
+        public DbSet<SubTrack> subTracks { get; set; }
+        public DbSet<RoomTrack> RoomTracks { get; set; }
+
+	}
 }
