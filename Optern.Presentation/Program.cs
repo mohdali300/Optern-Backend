@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Optern.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +10,9 @@ builder.Services.AddControllers();
 
 
 // Add Postgresql Setting
-// builder.Services.AddDbContext<Context>(options =>
-//  	options.UseNpgsql(builder.Configuration.GetConnectionString("connstr"))
-// ); 
+builder.Services.AddDbContext<OpternDbContext>(options =>
+	 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 // Register Graphql
 builder.Services
