@@ -10,15 +10,15 @@ namespace Optern.Domain.Entities
     public class PTPInterview
     {
         public int Id { get; set; }
-        public DateTime ScheduledTime { get; set; }
+		public InterviewCategory Category { get; set; }
+		public DateTime ScheduledTime { get; set; }
         public InterviewStatus Status { get; set; }
         public TimeSpan Duration { get; set; }
 
         // Navigation Properties
         public virtual ICollection<PTPUsers> PeerToPeerInterviewUsers { get; set; }
         public virtual ICollection<PTPQuestions> PeerToPeerQuestions { get; set; }
+        public virtual ICollection<PTPFeedBack> PTPFeedBacks { get; set; }
 
-
-
-    }
+	}
 }

@@ -12,7 +12,7 @@ namespace Optern.Domain.Entities
         public int PerformanceScore { get; set; }
         public string Strengths { get; set; }
         public string Weaknesses { get; set; }
-        public string Recommenditions { get; set; }
+        public string Recommendations { get; set; }
 
         // Foreign Keys
         public int VInterviewID { get; set; }

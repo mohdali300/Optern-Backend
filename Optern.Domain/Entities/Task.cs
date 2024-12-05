@@ -21,7 +21,7 @@ namespace Optern.Domain.Entities
 
         //Navigation Properties
 
-        public virtual ICollection<UserTasks> AssigendTasks { get; set; }
+        public virtual ICollection<UserTasks> AssignedTasks { get; set; }
         public virtual Sprint Sprint { get; set; }
 
     }
