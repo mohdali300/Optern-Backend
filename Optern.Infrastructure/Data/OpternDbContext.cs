@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Optern.Domain.Entities;
+using System.Reflection.Emit;
+using System;
 using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.Data
@@ -11,6 +13,13 @@ namespace Optern.Infrastructure.Data
 		 {
 		 	
 		 }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+
+            builder.ApplyConfigurationsFromAssembly(typeof(OpternDbContext).Assembly);
+            base.OnModelCreating(builder);
+        }
 
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Chat> Chat { get; set; }
@@ -43,7 +52,7 @@ namespace Optern.Infrastructure.Data
         public DbSet<Experience> Experiences  { get; set; }
         public DbSet<Education> Educations { get; set; }
         public DbSet<Track> Tracks { get; set; }
-        public DbSet<SubTrack> subTracks { get; set; }
+        public DbSet<SubTrack> SubTracks { get; set; }
         public DbSet<RoomTrack> RoomTracks { get; set; }
 
 	}
