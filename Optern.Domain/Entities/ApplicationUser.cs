@@ -10,12 +10,16 @@ namespace Optern.Domain.Entities
 {
     public class ApplicationUser:IdentityUser
     {
-        public string FullName { get; set; }
-        public string ProfilePicture { get; set; }
-        public DateTime CreatedAt { get; set; } 
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string JobTitle { get; set; }
+		public string ProfilePicture { get; set; }
+        public string Gender { get; set; }
+        public string Country { get; set; }
+		public DateTime CreatedAt { get; set; }
         public DateTime LastLogIn { get; set; }
 
-        public UserRole Role { get; set; }
+		public UserRole Role { get; set; }
 
         // Foreign Key
 
@@ -33,17 +37,18 @@ namespace Optern.Domain.Entities
         public virtual ICollection<Reacts> Reacts { get; set; } 
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<FavoritePosts> FavoritePosts { get; set; }
-        public virtual ICollection<UserTasks> AssigendTasks { get; set; }
+        public virtual ICollection<UserTasks> AssignedTasks { get; set; }
         public virtual ICollection<PTPUsers> PeerToPeerInterviewUsers { get; set; }
         public virtual ICollection<UserSkills> UserSkills { get; set; }
         public virtual ICollection<CV> CVs { get; set; }
         public virtual ICollection<UserNotification> UserNotification { get; set; }
         public virtual ICollection<CommentReacts> CommentReacts { get; set; }
+        public virtual ICollection<Experience> Experiences { get; set; }
+        public virtual ICollection<Education> Educations { get; set; }
 
 
+		#endregion
 
-        #endregion
 
-
-    }
+	}
 }

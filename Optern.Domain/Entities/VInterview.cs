@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Optern.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,9 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
         //public List<string> GeneratedQuestions { get; set; }
+		public InterviewCategory Category { get; set; }
         public string SpeechAnalysisResult { get; set; }
-        public DateTime ScheduledTime { get; set; }
+		public DateTime ScheduledTime { get; set; }
 
 
         //Foreign Keys
@@ -19,6 +21,7 @@ namespace Optern.Domain.Entities
 
         // Navigation Properties
         public virtual ApplicationUser User { get; set; }
-        public virtual ICollection<VQuestions> VirtualQuestions { get; set; }
+        public virtual VFeedBack VirtualFeedBack { get; set; }
+		public virtual ICollection<VQuestions> VirtualQuestions { get; set; }
     }
 }

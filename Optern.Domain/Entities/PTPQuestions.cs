@@ -10,7 +10,7 @@ namespace Optern.Domain.Entities
     {
         public int Id {  get; set; }
         public string Content {  get; set; }
-        public int Answer {  get; set; }
+        public string Answer {  get; set; }
 
         // Foreign Keys
         public int PTPInterviewId { get; set; }
