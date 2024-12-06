@@ -14,7 +14,7 @@ namespace Optern.Infrastructure.MiddleWares
 
 		public ValidationMiddleware(RequestDelegate next, IEnumerable<IValidator> validators)
 		{
-			_next = next;
+			_next = next ?? throw new ArgumentNullException(nameof(next));
 			_validators = validators;
 		}
 

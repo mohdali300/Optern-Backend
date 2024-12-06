@@ -25,7 +25,7 @@ builder.Services
 	.AddGraphQLServer();
 
 // Register ValidationMiddleWare
-builder.Services.AddTransient<ValidationMiddleware>();
+//builder.Services.AddTransient<ValidationMiddleware>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -41,7 +41,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // use ValidationMiddleware globally for all requests
-app.UseMiddleware<ValidationMiddleware>();
+//app.UseMiddleware<ValidationMiddleware>();
 
 //GraphQL
 // app.UseGraphQL<AppSchema>();
