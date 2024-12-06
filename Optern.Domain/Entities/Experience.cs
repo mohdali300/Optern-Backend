@@ -11,8 +11,8 @@ namespace Optern.Domain.Entities
         public int Id { get; set; }
         public string JobTitle { get; set; }
         public string Company { get; set; }
-        public string StartDate { get; set; }
-        public string EndDate { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public bool IsCurrentlyWork { get; set; }
         public string JobDescription { get; set; }
         public string Location { get; set; }
