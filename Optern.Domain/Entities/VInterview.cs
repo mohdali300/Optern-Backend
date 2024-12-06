@@ -10,7 +10,6 @@ namespace Optern.Domain.Entities
     public class VInterview
     {
         public int Id { get; set; }
-        //public List<string> GeneratedQuestions { get; set; }
 		public InterviewCategory Category { get; set; }
         public string SpeechAnalysisResult { get; set; }
 		public DateTime ScheduledTime { get; set; }
@@ -22,6 +21,7 @@ namespace Optern.Domain.Entities
         // Navigation Properties
         public virtual ApplicationUser User { get; set; }
         public virtual VFeedBack VirtualFeedBack { get; set; }
-		public virtual ICollection<VQuestions> VirtualQuestions { get; set; }
+        public ICollection<VInterviewQuestions> VInterviewQuestions { get; set; }   
+       
     }
 }

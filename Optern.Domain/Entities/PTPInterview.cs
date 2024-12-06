@@ -17,7 +17,7 @@ namespace Optern.Domain.Entities
 
         // Navigation Properties
         public virtual ICollection<PTPUsers> PeerToPeerInterviewUsers { get; set; }
-        public virtual ICollection<PTPQuestions> PeerToPeerQuestions { get; set; }
+        public ICollection<PTPQuestionInterview> PTPQuestionInterviews { get; set; }
         public virtual ICollection<PTPFeedBack> PTPFeedBacks { get; set; }
 
 	}

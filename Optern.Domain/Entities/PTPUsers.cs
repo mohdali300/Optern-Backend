@@ -9,7 +9,7 @@ namespace Optern.Domain.Entities
     public class PTPUsers
     {
         public int Id { get; set; } 
-        public string PTPId { get; set; }
+        public string PTPIId { get; set; }
         public string UserID { get; set; }
 
         // Navigation Properties

@@ -17,7 +17,7 @@ namespace Optern.Domain.Entities
         public TaskStatus Status { get; set; }
 
         // Foreign Keys
-        public int SprintID { get; set; }
+        public int SprintId { get; set; }
 
         //Navigation Properties
 

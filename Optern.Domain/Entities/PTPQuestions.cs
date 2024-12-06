@@ -12,10 +12,7 @@ namespace Optern.Domain.Entities
         public string Content {  get; set; }
         public string Answer {  get; set; }
 
-        // Foreign Keys
-        public int PTPInterviewId { get; set; }
         // Navigation Properties
-        public virtual PTPInterview PTPInterview { get; set; }
-
+        public ICollection<PTPQuestionInterview> PTPQuestionInterviews { get; set; } 
     }
 }

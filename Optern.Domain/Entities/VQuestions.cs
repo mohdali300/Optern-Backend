@@ -11,12 +11,9 @@ namespace Optern.Domain.Entities
         public int Id { get; set; }
         public string Content { get; set; }
         public int Answer { get; set; }
-        
-        // Foreign Keys
-        public int VInterviewID { get; set; }
-
 
         // Navigation Properties
-    public virtual VInterview VInterview { get; set; }
+        public ICollection<VInterviewQuestions> VInterviewQuestions { get; set; }
+
     }
 }

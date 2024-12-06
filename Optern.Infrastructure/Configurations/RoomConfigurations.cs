@@ -1,40 +1,63 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Optern.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Optern.Infrastructure.Configurations
+namespace Optern.Infrastructure.Persistence.Configurations
 {
-    public class RoomConfigurations : IEntityTypeConfiguration<Room>
+    public class RoomConfiguration : IEntityTypeConfiguration<Room>
     {
         public void Configure(EntityTypeBuilder<Room> builder)
         {
-            // Attributes
+            // Table Name
+            builder.ToTable("Rooms");
 
+            // Primary Key
             builder.HasKey(r => r.Id);
 
+            // Properties
+            builder.Property(r => r.Id)
+                .IsRequired()
+                .HasMaxLength(36);
+
             builder.Property(r => r.Name)
-                   .IsRequired()
-                   .HasMaxLength(100);
+                .IsRequired()
+                .HasMaxLength(100);
 
             builder.Property(r => r.Description)
-                   .HasMaxLength(500);
+                .HasMaxLength(500);
 
             builder.Property(r => r.Capacity)
-                   .IsRequired();
+                .IsRequired();
 
+            builder.Property(r => r.CreatedAt)
+                .IsRequired();
 
-            // Relations
+            // Relationships
             builder.HasOne(r => r.Creator)
                 .WithMany(u => u.Rooms)
                 .HasForeignKey(r => r.CreatorId)
-                .IsRequired(true)
-                .OnDelete(DeleteBehavior.NoAction);
-           
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(r => r.SubTracks)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.UserRooms)
+                .WithOne(ur => ur.Room)
+                .HasForeignKey(ur => ur.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.Notes)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.Notifications)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.WorkSpaces)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
