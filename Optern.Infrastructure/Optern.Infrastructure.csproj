@@ -9,6 +9,7 @@
     <Folder Include="Data\" />
     <Folder Include="ExternalServices\" />
     <Folder Include="DependencyInjection\" />
+    <Folder Include="MiddleWares\" />
     <Folder Include="UnitOfWork\" />
     <Folder Include="Seeders\" />
     <Folder Include="Repositories\" />
