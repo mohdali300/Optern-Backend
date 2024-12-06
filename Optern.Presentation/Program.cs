@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Optern.Infrastructure.Data;
 using FluentValidation;
 using Optern.Infrastructure.Validations;
-using Optern.Infrastructure.MiddleWares;
+using AppAny.HotChocolate.FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +22,8 @@ builder.Services.AddDbContext<OpternDbContext>(options =>
 
 // Register Graphql
 builder.Services
-	.AddGraphQLServer();
-
-// Register ValidationMiddleWare
-//builder.Services.AddTransient<ValidationMiddleware>();
+	.AddGraphQLServer()
+	.AddFluentValidation();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -39,9 +37,6 @@ if (app.Environment.IsDevelopment())
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
-
-// use ValidationMiddleware globally for all requests
-//app.UseMiddleware<ValidationMiddleware>();
 
 //GraphQL
 // app.UseGraphQL<AppSchema>();
