@@ -31,6 +31,9 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.Property(r => r.Capacity)
             .IsRequired().HasMaxLength(150);
 
+            builder.Property(r=>r.RoomType).IsRequired()
+                .HasConversion<string>();
+
             builder.Property(r => r.CreatedAt)
                 .IsRequired()
                 .HasDefaultValueSql("NOW()");

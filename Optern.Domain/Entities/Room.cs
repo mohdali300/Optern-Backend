@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Optern.Domain.Enums;
 
 namespace Optern.Domain.Entities
 {
@@ -12,7 +13,11 @@ namespace Optern.Domain.Entities
         public string Name { get; set; }
         public string Description { get; set; }
         public int Capacity { get; set; }
-		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public RoomType RoomType { get; set; }
+
+        public string CoverPicture { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Foreign Keys
 
@@ -26,6 +31,8 @@ namespace Optern.Domain.Entities
         public virtual ICollection<Notes> Notes { get; set; }
         public virtual ICollection<Notifications> Notifications { get; set; }
         public virtual ICollection<WorkSpace> WorkSpaces { get; set; }
+
+        public virtual ICollection<RoomSkills> RoomSkills { get; set;}
 
     }
 }
