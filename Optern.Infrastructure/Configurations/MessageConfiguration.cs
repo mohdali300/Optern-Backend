@@ -13,7 +13,34 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Message> builder)
         {
-           
+            #region Attributes
+            // Table Name
+
+            builder.ToTable("Message");
+
+            // Primary Key
+            builder.HasKey(m => m.Id);
+            builder.Property(m => m.Id)
+             .ValueGeneratedOnAdd();
+
+            //Properties
+
+            builder.Property(m => m.Content)
+            .HasMaxLength(1000)
+            .IsRequired();
+
+            builder.Property(m => m.SentDate)
+          .HasDefaultValueSql("NOW()")  
+          .IsRequired();
+            
+            // Indexes
+            builder.HasIndex(m => new { m.ChatId, m.SentDate, m.SenderId })
+       .HasDatabaseName("IX_Messages_ChatId_SentDate_SenderId");
+
+
+            #endregion
+
+            #region Relations
             builder.HasOne(m => m.Sender)
                    .WithMany(u => u.Messages)
                    .HasForeignKey(m => m.SenderId) 
@@ -23,6 +50,7 @@ namespace Optern.Infrastructure.Configurations
               .WithMany(c => c.Messages)
               .HasForeignKey(m => m.ChatId)
               .OnDelete(DeleteBehavior.Cascade);
+            #endregion
 
         }
     }

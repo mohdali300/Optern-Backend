@@ -8,21 +8,32 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<SubTrack> builder)
         {
+            #region Attributes
+
+            // Table Name
+
             builder.ToTable("SubTracks");
 
-            builder.HasKey(st => st.Id);
+            // Primary Key
 
-            builder.Property(st => st.Id)
-                .IsRequired();
+            builder.HasKey(st => st.Id);
+            builder.Property(s => s.Id)
+              .ValueGeneratedOnAdd();
+
+            // Properties
 
             builder.Property(st => st.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+                   .IsRequired()
+                   .HasMaxLength(100);
+            #endregion
+
+            #region Relations
 
             builder.HasOne(st => st.Track)
                 .WithMany(t => t.SubTracks)
                 .HasForeignKey(st => st.TrackId)
                 .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

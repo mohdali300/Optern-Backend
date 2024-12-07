@@ -7,35 +7,43 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
 {
     public void Configure(EntityTypeBuilder<Task> builder)
     {
+        #region Attributes
+        // Table Name
 
         builder.ToTable("Tasks");
 
         // Primary Key
         builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id)
+                .ValueGeneratedOnAdd();
 
         // Properties
-        builder.Property(t => t.Id)
-            .IsRequired();
-
         builder.Property(t => t.Title)
-            .IsRequired()
-            .HasMaxLength(150);
+               .IsRequired()
+               .HasMaxLength(150);
 
         builder.Property(t => t.Description)
-            .HasMaxLength(500);
+               .HasMaxLength(1000);
 
         builder.Property(t => t.StartDate)
-            .IsRequired();
+               .IsRequired();
 
         builder.Property(t => t.DueDate)
-            .IsRequired();
+               .IsRequired();
 
         builder.Property(t => t.EndDate);
 
         builder.Property(t => t.Status)
-            .IsRequired();
+               .IsRequired().HasConversion<string>();
 
-        // Relations
+        // Indexes
+        builder.HasIndex(t => t.StartDate).HasDatabaseName("IX_Task_StartDate");
+        builder.HasIndex(t => t.DueDate).HasDatabaseName("IX_Task_DueDate");
+        builder.HasIndex(t => t.EndDate).HasDatabaseName("IX_Task_EndDate");
+        #endregion
+
+        #region Relations
+
         builder.HasMany(t => t.AssignedTasks)
                .WithOne(ut => ut.Task) 
                .HasForeignKey(ut => ut.TaskId) 
@@ -45,5 +53,6 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
               .WithMany(sprint => sprint.Tasks)
               .HasForeignKey(task => task.SprintId)
               .OnDelete(DeleteBehavior.Cascade);
+        #endregion
     }
 }

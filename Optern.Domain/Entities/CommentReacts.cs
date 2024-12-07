@@ -10,10 +10,11 @@ namespace Optern.Domain.Entities
     public class CommentReacts
     {
         public int Id { get; set; }
+        public ReactType ReactType { get; set; }
+
         // Foreign Keys
         public int CommentId { get; set; }
         public string UserId { get; set; }
-        public ReactType ReactType { get; set; }
         // Navigation Properties
         public virtual Comment Comment { get; set; }
         public virtual ApplicationUser User { get; set; }

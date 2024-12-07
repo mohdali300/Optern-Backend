@@ -8,20 +8,34 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<PTPQuestionInterview> builder)
         {
+            #region Attributes
+
+            // Table Name
+
             builder.ToTable("PTPQuestionInterviews");
-
             // Primary Key
-            builder.HasKey(q => q.Id);
 
+            builder.HasKey(q => q.Id);
+            builder.Property(q => q.Id)
+                   .ValueGeneratedOnAdd();
             // Properties
+
             builder.Property(q => q.PTPQuestionId)
-                .IsRequired();
+                   .IsRequired();
 
             builder.Property(q => q.PTPInterviewId)
-                .IsRequired();
+                   .IsRequired();
 
-            // Relationships
+            // Indexes
 
+            builder.HasIndex(q => q.PTPQuestionId)
+                   .HasDatabaseName("IX_PTPQuestionInterview_PTPQuestionId");
+
+            builder.HasIndex(q => q.PTPInterviewId)
+                   .HasDatabaseName("IX_PTPQuestionInterview_PTPInterviewId");
+            #endregion
+
+            #region Relations
             builder.HasOne(q => q.PTPQuestion)
                 .WithMany(p => p.PTPQuestionInterviews)
                 .HasForeignKey(q => q.PTPQuestionId)
@@ -30,7 +44,8 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.HasOne(q => q.PTPInterview)
                 .WithMany(i => i.PTPQuestionInterviews)
                 .HasForeignKey(q => q.PTPInterviewId)
-                .OnDelete(DeleteBehavior.Cascade); 
+                .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

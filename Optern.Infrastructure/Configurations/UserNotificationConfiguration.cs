@@ -8,20 +8,18 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<UserNotification> builder)
         {
+            #region Attributes
+
+            // Table Name
             builder.ToTable("UserNotifications");
 
+            // Primary Key
             builder.HasKey(un => un.Id);
-
             builder.Property(un => un.Id)
-                .IsRequired();
+              .ValueGeneratedOnAdd();
+            #endregion
 
- 
-
-            builder.Property(un => un.NotificationId)
-                .IsRequired();
-
-            // Relationships
-
+            #region Relations
             builder.HasOne(un => un.User)
                 .WithMany(u => u.UserNotification) 
                 .HasForeignKey(un => un.UserId)
@@ -31,6 +29,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .WithMany(n => n.UserNotification) 
                 .HasForeignKey(un => un.NotificationId)
                 .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

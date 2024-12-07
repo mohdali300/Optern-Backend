@@ -8,28 +8,37 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<PTPInterview> builder)
         {
+
+            #region Attributes
+
             // Table Name
+
             builder.ToTable("PTPInterviews");
 
+            // Primary Key
+
             builder.HasKey(i => i.Id);
+            builder.Property(i => i.Id)
+                   .ValueGeneratedOnAdd();
 
             // Properties
-            builder.Property(i => i.Id)
-                .IsRequired();
 
             builder.Property(i => i.Category)
-                .IsRequired();
+                   .IsRequired()
+                   .HasConversion<string>()
+                   .HasMaxLength(50);
 
             builder.Property(i => i.ScheduledTime)
-                .IsRequired();
+                   .IsRequired();
 
             builder.Property(i => i.Status)
-                .IsRequired();
+                   .IsRequired()
+                   .HasConversion<string>()
+                   .HasMaxLength(50);
 
-            builder.Property(i => i.Duration)
-                .IsRequired();
+            #endregion
 
-            // Relationships
+            #region Relationships
 
             builder.HasMany(i => i.PeerToPeerInterviewUsers)
                 .WithOne()
@@ -45,6 +54,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .WithOne()
                 .HasForeignKey(f => f.PTPInterviewId)
                 .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

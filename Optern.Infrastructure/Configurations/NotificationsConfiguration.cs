@@ -13,6 +13,39 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Notifications> builder)
         {
+
+            #region Attributes
+
+            //Table Name
+            builder.ToTable("Notifications");
+
+            // Primary Key
+
+            builder.HasKey(n => n.Id);
+            builder.Property(n => n.Id)
+             .ValueGeneratedOnAdd();
+
+            // Properties
+
+            builder.Property(n => n.Title)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
+            builder.Property(n => n.Message)
+                   .IsRequired()
+                   .HasMaxLength(500);
+
+            builder.Property(n => n.CreatedTime)
+                   .HasDefaultValueSql("NOW()");
+
+            // Indexes
+
+            builder.HasIndex(n => n.Title)
+                   .HasDatabaseName("IX_Notes_Title");
+
+            #endregion
+
+            #region Relations
             builder.HasMany(n => n.UserNotification)
                    .WithOne(un => un.Notifications) 
                    .HasForeignKey(un => un.NotificationId) 
@@ -22,6 +55,7 @@ namespace Optern.Infrastructure.Configurations
              .WithMany(r => r.Notifications)
              .HasForeignKey(n => n.RoomId)
              .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

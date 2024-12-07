@@ -13,6 +13,32 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<UserSkills> builder)
         {
+
+            #region Attributes
+            // Table Name
+
+            builder.ToTable("UserSkills");
+
+            // Primary Key
+            builder.HasKey(us => us.Id);
+            builder.Property(us => us.Id)
+             .ValueGeneratedOnAdd();
+
+            //properties
+            builder.Property(us => us.UserId)
+                   .IsRequired();
+
+            builder.Property(us => us.SkillId)
+                   .IsRequired();
+
+            // Indexes
+
+            builder.HasIndex(us => new { us.UserId, us.SkillId })
+            .IsUnique()
+            .HasDatabaseName("IX_UserSkills_User_Skill");
+            #endregion
+
+            #region Relations
             builder.HasOne(us => us.User)
                    .WithMany(u => u.UserSkills) 
                    .HasForeignKey(us => us.UserId) 
@@ -22,7 +48,8 @@ namespace Optern.Infrastructure.Configurations
             builder.HasOne(us => us.Skill)
                    .WithMany(s => s.UserSkills) 
                    .HasForeignKey(us => us.SkillId) 
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Optern.Infrastructure.Validations
         public NotesValidator()
         {
             RuleFor(n => n.Content)
-                .NotEmpty().WithMessage("COntent Cannot be empty!");
+                .NotEmpty().WithMessage("Content Cannot be empty!");
 
             RuleFor(n => n.UpdatedAt).GreaterThanOrEqualTo(n => n.CreatedAt)
                 .WithMessage("Updated time cannot be earlier than Created time.");

@@ -13,8 +13,38 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<PTPUsers> builder)
         {
-            builder.HasKey(x => x.Id);
+            #region Attributes
 
+            // Table Name
+
+            builder.ToTable("PTPUsers");
+
+            // Primary Key
+
+            builder.HasKey(ptp => ptp.Id);
+            builder.Property(ptp => ptp.Id)
+                   .ValueGeneratedOnAdd();
+
+            // Properties
+
+            builder.Property(ptp => ptp.UserID)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
+            builder.Property(ptp => ptp.PTPIId)
+                   .IsRequired();
+
+            // Indexes
+
+
+            builder.HasIndex(x => x.PTPIId)
+                   .HasDatabaseName("IX_PTPUsers_PTPIId");
+
+            builder.HasIndex(x => x.UserID)
+                   .HasDatabaseName("IX_PTPUsers_UserID");
+            #endregion
+
+            #region Relations
             builder.HasOne(ptp => ptp.User)
                    .WithMany(u => u.PeerToPeerInterviewUsers) 
                    .HasForeignKey(ptp => ptp.UserID) 
@@ -24,6 +54,7 @@ namespace Optern.Infrastructure.Configurations
                    .WithMany(ptpInt => ptpInt.PeerToPeerInterviewUsers) 
                    .HasForeignKey(ptp => ptp.PTPIId) 
                    .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

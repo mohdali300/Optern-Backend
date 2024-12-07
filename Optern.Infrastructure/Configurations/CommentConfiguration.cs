@@ -6,16 +6,31 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
 {
     public void Configure(EntityTypeBuilder<Comment> builder)
     {
-        // Attributes
+        #region Attributes
+
+        // Table Name
+
+        builder.ToTable("Comments");
+
+
+        // Primary Key 
 
         builder.HasKey(c => c.Id);
+        builder.Property(c => c.Id)
+       .ValueGeneratedOnAdd();
+
+        //Properties
 
         builder.Property(c => c.Content)
                .IsRequired()
                .HasMaxLength(500);
 
         builder.Property(c => c.CommentDate)
-               .IsRequired();
+               .IsRequired().HasDefaultValueSql("NOW()");
+
+        builder.Property(c => c.Type)
+                  .IsRequired()
+                  .HasConversion<string>().HasMaxLength(20);
 
         builder.Property(c => c.PostId)
            .IsRequired();
@@ -23,7 +38,14 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
         builder.Property(c => c.ParentId)
                .IsRequired(false);
 
-        // Relations
+        // Indexes
+        builder.HasIndex(c => c.CommentDate)
+       .HasDatabaseName("IX_Comments_CommentDate") 
+       .IsUnique(false); 
+
+        #endregion
+
+        #region Relations
 
 
         builder.HasOne(c => c.User)
@@ -47,5 +69,6 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
               .WithOne(cr => cr.Comment) 
               .HasForeignKey(cr => cr.CommentId) 
               .OnDelete(DeleteBehavior.Cascade);
+        #endregion
     }
 }
