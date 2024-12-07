@@ -18,6 +18,10 @@ namespace Optern.Infrastructure.Validations
 
             RuleFor(r => r.Capacity)
                 .GreaterThan(0).WithMessage("Capacity must be greater than 0");
+
+            RuleFor(r => r.RoomType)
+            .NotEmpty().WithMessage("Room Type Cannot be empty!")
+            .IsInEnum().WithMessage("Room Type must be valid content type!");
         }
     }
 }

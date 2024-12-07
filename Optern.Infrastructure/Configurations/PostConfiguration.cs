@@ -33,7 +33,7 @@ namespace Optern.Infrastructure.Configurations
                 .HasMaxLength(150);
 
             builder.Property(p => p.Content)
-                .IsRequired()
+                .IsRequired().HasConversion<string>()
                 .HasMaxLength(5000);
 
             builder.Property(p => p.CreatedDate)

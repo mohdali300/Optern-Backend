@@ -16,6 +16,7 @@ namespace Optern.Domain.Entities
         // Navigation Properties
 
         public virtual ICollection<UserSkills> UserSkills { get; set; }
+        public virtual ICollection<RoomSkills> RoomSkills { get; set;}
 
     }
 }
