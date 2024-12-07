@@ -8,16 +8,18 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Room> builder)
         {
+
+            #region Attributes
             // Table Name
-            builder.ToTable("Rooms");
+            builder.ToTable("Rooms", r => r.HasCheckConstraint("CK_Room_Capacity", "\"Capacity\" >= 1"));
 
             // Primary Key
+
             builder.HasKey(r => r.Id);
+            builder.Property(r => r.Id)
+                   .ValueGeneratedOnAdd();
 
             // Properties
-            builder.Property(r => r.Id)
-                .IsRequired()
-                .HasMaxLength(36);
 
             builder.Property(r => r.Name)
                 .IsRequired()
@@ -27,12 +29,27 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .HasMaxLength(500);
 
             builder.Property(r => r.Capacity)
-                .IsRequired();
+            .IsRequired().HasMaxLength(150);
 
             builder.Property(r => r.CreatedAt)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValueSql("NOW()");
 
-            // Relationships
+            // Indexes
+
+            builder.HasIndex(r => r.Name)
+                .HasDatabaseName("IX_Rooms_Name");
+
+            builder.HasIndex(r => r.Capacity)
+                .HasDatabaseName("IX_Rooms_Capacity");
+
+            builder.HasIndex(r => r.CreatedAt)
+                .HasDatabaseName("IX_Rooms_CreatedAt");
+
+            #endregion
+
+
+            #region Relations
             builder.HasOne(r => r.Creator)
                 .WithMany(u => u.Rooms)
                 .HasForeignKey(r => r.CreatorId)
@@ -58,6 +75,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.HasMany(r => r.WorkSpaces)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

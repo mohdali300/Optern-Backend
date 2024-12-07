@@ -8,18 +8,36 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<VInterview> builder)
         {
-            builder.ToTable("VInterviews");
+            #region Attributes
+
+            //Table Name
+            builder.ToTable("VInterviews", t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_VInterviews_ScheduledTime_Future",
+                    "\"ScheduledTime\" > NOW()");  
+            });
+            // Primary Key
 
             builder.HasKey(v => v.Id);
+            builder.Property(v => v.Id)
+              .ValueGeneratedOnAdd();
+
+            // Properties
 
             builder.Property(v => v.Category)
-                .IsRequired();
+                .IsRequired().HasConversion<string>();
 
             builder.Property(v => v.ScheduledTime)
-                .IsRequired();
+               .IsRequired()                       
+               .HasColumnType("timestamp")         
+               .HasComment("ScheduledTime must be in the future and is required.");
 
-            // Relationships
+            //Indexes 
+            builder.HasIndex(v => v.ScheduledTime).HasDatabaseName("IX_VInterview_ScheduledTime");
+            #endregion
 
+            #region Relations
             builder.HasOne(v => v.User)
                 .WithMany(u => u.JoinedVirtualInterviews)
                 .HasForeignKey(v => v.UserId)
@@ -34,6 +52,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .WithOne(vq => vq.VInterview)
                 .HasForeignKey(vq => vq.VInterviewID)
                 .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

@@ -14,6 +14,40 @@ namespace Optern.Infrastructure.Configurations
         public void Configure(EntityTypeBuilder<Chat> builder)
         {
 
+            #region Attributes
+            // Table Name
+            builder.ToTable("Chats");
+
+            // Primary Key 
+            builder.HasKey(c => c.Id);
+            builder.Property(c => c.Id)
+            .ValueGeneratedOnAdd();
+
+            //Properties
+
+            builder.Property(c => c.CreatedDate)
+                   .IsRequired()
+                   .HasDefaultValueSql("NOW()");
+
+            builder.Property(c => c.Type)
+                   .IsRequired()
+                   .HasConversion<string>().HasMaxLength(20);
+
+            builder.ToTable(tb =>
+            {
+                tb.HasCheckConstraint("CK_ChatType_Enum", "Type IN ('Individual', 'Group')");
+            });
+            // Indexes
+
+            builder.HasIndex(c => c.CreatedDate)
+          .HasDatabaseName("IX_Comments_CreatedDate");
+
+            builder.HasIndex(c => c.Type)
+                   .HasDatabaseName("IX_Comments_Type");
+            #endregion
+
+            #region Relations
+
             // one user create many Chats 
             builder.HasOne(c => c.Creator)
                .WithMany(u => u.CreatedChats)
@@ -36,6 +70,7 @@ namespace Optern.Infrastructure.Configurations
                  .HasForeignKey(m => m.ChatId)
                  .OnDelete(DeleteBehavior.Cascade);
 
+            #endregion
 
         }
     }

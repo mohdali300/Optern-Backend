@@ -13,19 +13,38 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Notes> builder)
         {
+            #region Attributes
+            // Table Name
+            builder.ToTable("Notes");
 
-            // attributes
+            //Primary Key
+            builder.HasKey(n => n.Id);
+            builder.Property(n => n.Id)
+             .ValueGeneratedOnAdd();
+
+            // Properties
 
             builder.Property(n => n.Content)
                    .IsRequired()
                    .HasMaxLength(500);
 
+            builder.Property(n => n.CreatedAt)
+                   .HasDefaultValueSql("NOW()");
+
+            builder.Property(n => n.UpdatedAt)
+                   .HasDefaultValueSql("NOW()");
+            #endregion
+
+            #region Relations
+
+
             builder.HasOne(n => n.Room)
                    .WithMany(r => r.Notes)
                    .HasForeignKey(n => n.RoomId)
                    .OnDelete(DeleteBehavior.Cascade);
+            #endregion
 
-           
+
 
         }
     }

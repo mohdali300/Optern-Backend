@@ -9,10 +9,54 @@ using System.Threading.Tasks;
 
 namespace Optern.Infrastructure.Configurations
 {
-    internal class PostConfiguration : IEntityTypeConfiguration<Post>
+    public class PostConfiguration : IEntityTypeConfiguration<Post>
     {
         public void Configure(EntityTypeBuilder<Post> builder)
         {
+
+            #region Attributes 
+
+            // Table Name
+
+            builder.ToTable("Post"); 
+            
+
+            // Primary Key
+            builder.HasKey(p => p.Id);
+            builder.Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+
+            // Properties
+
+            builder.Property(p => p.Title)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            builder.Property(p => p.Content)
+                .IsRequired()
+                .HasMaxLength(5000);
+
+            builder.Property(p => p.CreatedDate)
+                .IsRequired()
+                .HasDefaultValueSql("NOW()");
+
+            builder.Property(p => p.CreatorId)
+                .IsRequired();
+
+            // Indexes
+
+            builder.HasIndex(p => new { p.CreatorId, p.CreatedDate })
+                   .HasDatabaseName("IX_Posts_Creator_CreatedDate");
+
+            builder.HasIndex(p => p.Title)
+                   .HasDatabaseName("IX_Posts_Title");
+
+            builder.HasIndex(p => p.CreatedDate)
+                   .HasDatabaseName("IX_Posts_CreatedDate");
+
+            #endregion
+
+            #region Relations
 
             builder.HasOne(p => p.Creator)
                    .WithMany(u => u.CreatedPosts) 
@@ -39,6 +83,7 @@ namespace Optern.Infrastructure.Configurations
                .WithOne(pt => pt.Post) 
                .HasForeignKey(pt => pt.PostId) 
                .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

@@ -13,7 +13,14 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
-            // Attributes
+            #region Attributes
+
+            // Table Name
+
+            builder.ToTable("ApplicationUser");
+
+            // Properties
+
 
             builder.Property(u => u.FirstName)
              .IsRequired()
@@ -24,33 +31,46 @@ namespace Optern.Infrastructure.Configurations
                    .HasMaxLength(50);
 
             builder.Property(u => u.Role)
-                   .IsRequired();
+                .IsRequired()
+                .HasConversion<string>() 
+                .HasMaxLength(50);      
+
 
             builder.Property(u => u.JobTitle)
                 .IsRequired(false)
                 .HasMaxLength(50);
 
             builder.Property(u => u.ProfilePicture)
-                .IsRequired(false);
+                .IsRequired(false).HasMaxLength(250);
 
             builder.Property(u => u.Email)
                 .IsRequired();
             
             builder.Property(u => u.Gender)
-                .IsRequired(false);  
+                .IsRequired(false).HasMaxLength(20); ;  
             
             builder.Property(u => u.Country)
-                .IsRequired(false);
-            
+                .IsRequired(false).HasMaxLength(100);
+
             builder.Property(u => u.CreatedAt)
-                .IsRequired(false); 
+                .IsRequired() 
+                .HasDefaultValueSql("NOW()");
 
             builder.Property(u => u.LastLogIn)
                 .IsRequired(false);
 
+            // Indexes
 
+            builder.HasIndex(u => u.Email)
+             .HasDatabaseName("IX_ApplicationUsers_Email");
 
-            // Relations
+            builder.HasIndex(u => u.CreatedAt)
+              .HasDatabaseName("IX_ApplicationUsers_CreatedAt");
+
+            #endregion
+
+            #region Relations
+
 
             builder.HasMany(r => r.Rooms)
                 .WithOne(r => r.Creator)
@@ -154,6 +174,8 @@ namespace Optern.Infrastructure.Configurations
               .WithOne(e => e.User) 
               .HasForeignKey(e => e.UserId)
               .OnDelete(DeleteBehavior.Cascade);
+            #endregion
+
         }
     }
 }

@@ -8,11 +8,17 @@ namespace Optern.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<VInterviewQuestions> builder)
         {
+
+            #region Attributes
             // Table Name
             builder.ToTable("VInterviewQuestions");
 
-
-               builder.HasKey(x => x.Id);   
+            // Primary Key
+               builder.HasKey(vq => vq.Id);
+            builder.Property(vq => vq.Id)
+             .ValueGeneratedOnAdd();
+            
+            // Properties
 
             builder.Property(vq => vq.VInterviewID)
                 .IsRequired();
@@ -20,7 +26,10 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.Property(vq => vq.VQuestionID)
                 .IsRequired();
 
-            // Relationships
+            #endregion
+
+            #region Relations
+
             builder.HasOne(vq => vq.VInterview)
                 .WithMany(v => v.VInterviewQuestions)
                 .HasForeignKey(vq => vq.VInterviewID)
@@ -30,6 +39,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .WithMany(q => q.VInterviewQuestions)
                 .HasForeignKey(vq => vq.VQuestionID)
                 .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

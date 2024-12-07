@@ -13,10 +13,41 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Skills> builder)
         {
+            #region Attributes
+
+            // Table Name
+
+            builder.ToTable("Skills");
+
+            // Primary Key
+
+            builder.HasKey(s => s.Id);
+            builder.Property(s => s.Id)
+                  .ValueGeneratedOnAdd();
+
+            // Properties
+
+            builder.Property(s => s.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(s => s.Description)
+                .HasMaxLength(500);
+
+            // Indexes
+
+            builder.HasIndex(s => s.Name)
+                .IsUnique()
+                .HasDatabaseName("IX_Skills_Name");
+            #endregion
+
+            #region Relations
+
             builder.HasMany(s => s.UserSkills)
                    .WithOne(us => us.Skill) 
                    .HasForeignKey(us => us.SkillId) 
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 }

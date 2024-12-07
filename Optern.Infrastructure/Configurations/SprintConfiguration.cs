@@ -13,6 +13,36 @@ namespace Optern.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Sprint> builder)
         {
+            #region Attributes
+
+            // Table Name
+            builder.ToTable("Sprints", s => s.HasCheckConstraint("CK_Sprint_StartEndDate", "[StartDate] < [EndDate]"));
+
+            // Primary Key
+            builder.HasKey(s => s.Id);
+            builder.Property(s => s.Id)
+                 .ValueGeneratedOnAdd();
+
+            // Properties
+
+            builder.Property(s=> s.Title)
+                   .IsRequired()
+                   .HasMaxLength(150);
+
+            builder.Property(s => s.StartDate)
+                   .IsRequired();
+
+            builder.Property(s => s.EndDate)
+                   .IsRequired();
+
+            // Indexes
+
+            builder.HasIndex(s => s.WorkSpaceId).HasDatabaseName("IX_Sprint_WorkSpaceId");
+
+            builder.HasIndex(s => s.StartDate).HasDatabaseName("IX_Sprint_StartDate");
+            #endregion
+
+            #region Relations
             builder.HasOne(sprint => sprint.WorkSpace)
                    .WithMany(ws => ws.Sprints)
                    .HasForeignKey(sprint => sprint.WorkSpaceId)
@@ -22,6 +52,7 @@ namespace Optern.Infrastructure.Configurations
                .WithOne(task => task.Sprint)
                .HasForeignKey(task => task.SprintId)
                .OnDelete(DeleteBehavior.Cascade);
+            #endregion
         }
     }
 
