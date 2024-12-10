@@ -38,10 +38,6 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(n => n.CreatedTime)
                    .HasDefaultValueSql("NOW()");
 
-            // Indexes
-
-            builder.HasIndex(n => n.Title)
-                   .HasDatabaseName("IX_Notes_Title");
 
             #endregion
 

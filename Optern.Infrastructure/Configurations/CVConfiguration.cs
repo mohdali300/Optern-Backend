@@ -36,10 +36,6 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(cv => cv.FilePath)
                    .HasMaxLength(255);
 
-            // Indexes
-
-            builder.HasIndex(cv => cv.Title)
-                   .HasDatabaseName("IX_CV_Title");
 
             #endregion
 

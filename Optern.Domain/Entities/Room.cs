@@ -33,6 +33,8 @@ namespace Optern.Domain.Entities
         public virtual ICollection<WorkSpace> WorkSpaces { get; set; }
 
         public virtual ICollection<RoomSkills> RoomSkills { get; set;}
+        public virtual ICollection<RoomTrack> RoomTracks { get; set; }
+
 
     }
 }

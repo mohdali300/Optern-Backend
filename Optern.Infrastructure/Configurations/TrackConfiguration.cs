@@ -24,9 +24,6 @@ namespace Optern.Infrastructure.Persistence.Configurations
                    .IsRequired()
                    .HasMaxLength(150);
 
-            // Indexes 
-            builder.HasIndex(t => t.Name).HasDatabaseName("IX_Track_Name");
-
             #endregion
 
             #region Relations

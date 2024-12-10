@@ -13,7 +13,7 @@ namespace Optern.Domain.Entities
         public DateTime CreatedDate { get; set; }
 
         // Foreign Keys
-        public int RoomId { get; set; }
+        public string RoomId { get; set; }
 
         // Navigation Properties
         public virtual Room Room { get; set; }

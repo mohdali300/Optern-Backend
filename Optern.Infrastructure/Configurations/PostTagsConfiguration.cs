@@ -39,12 +39,6 @@ namespace Optern.Infrastructure.Configurations
                    .IsUnique()
                    .HasDatabaseName("IX_PostTags_PostId_TagId");
 
-            builder.HasIndex(pt => pt.TagId)
-                   .HasDatabaseName("IX_PostTags_TagId");
-
-            builder.HasIndex(pt => pt.PostId)
-                   .HasDatabaseName("IX_PostTags_PostId");
-
             #endregion
 
             #region Relations

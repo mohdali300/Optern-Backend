@@ -36,10 +36,6 @@ namespace Optern.Infrastructure.Configurations
 
             // Indexes
 
-
-            builder.HasIndex(x => x.PTPIId)
-                   .HasDatabaseName("IX_PTPUsers_PTPIId");
-
             builder.HasIndex(x => x.UserID)
                    .HasDatabaseName("IX_PTPUsers_UserID");
             #endregion

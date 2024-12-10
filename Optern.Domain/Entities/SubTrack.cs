@@ -16,5 +16,7 @@ namespace Optern.Domain.Entities
 
 		// Navigation Properties
 		public virtual Track Track { get; set; }
-	}
+        public virtual ICollection<RoomTrack> RoomTracks { get; set; }
+
+    }
 }

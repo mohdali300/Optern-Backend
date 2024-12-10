@@ -49,13 +49,6 @@ namespace Optern.Infrastructure.Configurations
          .HasColumnType("integer")
          .HasComment("Performance score must be between 0 and 100 inclusive.");
 
-
-
-            // Indexes 
-            builder.HasIndex(f => f.VInterviewID)
-                   .IsUnique()
-                   .HasDatabaseName("UX_VFeedBack_VInterviewID");
-
             #endregion
 
             #region Relations

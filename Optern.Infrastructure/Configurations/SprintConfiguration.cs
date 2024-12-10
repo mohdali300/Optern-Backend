@@ -37,7 +37,6 @@ namespace Optern.Infrastructure.Configurations
 
             // Indexes
 
-            builder.HasIndex(s => s.WorkSpaceId).HasDatabaseName("IX_Sprint_WorkSpaceId");
 
             builder.HasIndex(s => s.StartDate).HasDatabaseName("IX_Sprint_StartDate");
             #endregion

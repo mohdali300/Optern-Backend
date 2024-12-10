@@ -31,8 +31,6 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.HasIndex(q => q.PTPQuestionId)
                    .HasDatabaseName("IX_PTPQuestionInterview_PTPQuestionId");
 
-            builder.HasIndex(q => q.PTPInterviewId)
-                   .HasDatabaseName("IX_PTPQuestionInterview_PTPInterviewId");
             #endregion
 
             #region Relations

@@ -53,10 +53,6 @@ namespace Optern.Infrastructure.Configurations
 
             builder.HasIndex(e => e.UserId)
                    .HasDatabaseName("IX_Education_UserId");
-
-            builder.HasIndex(e => new { e.UserId, e.Degree })
-                   .HasDatabaseName("IX_Education_UserId_Degree");
-
             builder.HasIndex(e => e.University)
                    .HasDatabaseName("IX_Education_University");
 
