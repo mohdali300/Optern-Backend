@@ -11,7 +11,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
             #region Attributes
 
             //Table Name
-            builder.ToTable("VInterviews", t =>
+            builder.ToTable("VInterview", t =>
             {
                 t.HasCheckConstraint(
                     "CK_VInterviews_ScheduledTime_Future",

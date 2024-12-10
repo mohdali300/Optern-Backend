@@ -12,7 +12,7 @@ namespace Optern.Domain.Entities
 
         //Foreign Keys
         public string UserId { get; set; }
-        public string PostId { get; set; }
+        public int PostId { get; set; }
 
         //Navigation Property
 

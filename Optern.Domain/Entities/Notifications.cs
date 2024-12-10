@@ -14,7 +14,7 @@ namespace Optern.Domain.Entities
         public DateTime CreatedTime  { get; set; }
 
         // Foreign Keys
-        public int RoomId { get; set; }
+        public string RoomId { get; set; }
 
         // Navigation Properties
         public virtual ICollection<UserNotification> UserNotification { get; set; }

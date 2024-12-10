@@ -14,7 +14,7 @@ namespace Optern.Domain.Entities
         public DateTime UpdatedAt { get; set; }
 
         // Foreign Keys
-        public int RoomId { get; set; }
+        public string RoomId { get; set; }
 
         // Navigation Properties
 

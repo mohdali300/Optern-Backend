@@ -31,19 +31,8 @@ namespace Optern.Infrastructure.Configurations
 
             builder.Property(c => c.Type)
                    .IsRequired()
-                   .HasConversion<string>().HasMaxLength(20);
-
-            builder.ToTable(tb =>
-            {
-                tb.HasCheckConstraint("CK_ChatType_Enum", "Type IN ('Individual', 'Group')");
-            });
-            // Indexes
-
-            builder.HasIndex(c => c.CreatedDate)
-          .HasDatabaseName("IX_Comments_CreatedDate");
-
-            builder.HasIndex(c => c.Type)
-                   .HasDatabaseName("IX_Comments_Type");
+                   .HasConversion<string>();
+          
             #endregion
 
             #region Relations

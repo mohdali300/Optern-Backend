@@ -10,7 +10,7 @@ namespace Optern.Domain.Entities
     public class UserRoom
     {
         public int Id { get; set; }
-        public int RoomId { get; set; }
+        public string RoomId { get; set; }
         public string UserId { get; set; }
 
         // Navigation Property

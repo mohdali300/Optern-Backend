@@ -18,7 +18,7 @@ namespace Optern.Infrastructure.Configurations
 
             // Table Name
 
-            builder.ToTable("PTPFeedBack");
+            builder.ToTable("PTPFeedBacks");
 
             // Primary Key
 

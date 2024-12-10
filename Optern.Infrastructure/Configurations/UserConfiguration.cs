@@ -64,8 +64,6 @@ namespace Optern.Infrastructure.Configurations
             builder.HasIndex(u => u.Email)
              .HasDatabaseName("IX_ApplicationUsers_Email");
 
-            builder.HasIndex(u => u.CreatedAt)
-              .HasDatabaseName("IX_ApplicationUsers_CreatedAt");
 
             #endregion
 

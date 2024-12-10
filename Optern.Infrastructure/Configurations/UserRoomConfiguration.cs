@@ -18,7 +18,7 @@ namespace Optern.Infrastructure.Configurations
             #region Attributes
             // Table Name
 
-            builder.ToTable("UserRoom");
+            builder.ToTable("UserRooms");
 
             // Primary Key
 

@@ -41,9 +41,10 @@ namespace Optern.Infrastructure.Persistence.Configurations
             #region Relationships
 
             builder.HasMany(i => i.PeerToPeerInterviewUsers)
-                .WithOne()
-                .HasForeignKey(u => u.PeerToPeerInterview)
-                .OnDelete(DeleteBehavior.Cascade);  
+                .WithOne(ptp => ptp.PeerToPeerInterview) 
+                .HasForeignKey(ptp => ptp.PTPIId)       
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             builder.HasMany(i => i.PTPQuestionInterviews)
                 .WithOne(q => q.PTPInterview)

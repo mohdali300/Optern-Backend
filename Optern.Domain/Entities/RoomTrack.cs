@@ -12,7 +12,7 @@ namespace Optern.Domain.Entities
 
 		// Foreign Keys
 		public int SubTrackId { get; set; }
-		public int RoomId { get; set; }
+		public string RoomId { get; set; }
 
 		// Navigation Properties
 		public virtual SubTrack SubTrack { get; set; }

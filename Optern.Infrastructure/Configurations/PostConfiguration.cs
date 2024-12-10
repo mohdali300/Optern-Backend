@@ -18,7 +18,7 @@ namespace Optern.Infrastructure.Configurations
 
             // Table Name
 
-            builder.ToTable("Post"); 
+            builder.ToTable("Posts"); 
             
 
             // Primary Key

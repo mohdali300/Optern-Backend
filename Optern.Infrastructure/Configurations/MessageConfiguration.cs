@@ -16,7 +16,7 @@ namespace Optern.Infrastructure.Configurations
             #region Attributes
             // Table Name
 
-            builder.ToTable("Message");
+            builder.ToTable("Messages");
 
             // Primary Key
             builder.HasKey(m => m.Id);
