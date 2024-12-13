@@ -52,7 +52,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(i => i.PTPFeedBacks)
-                .WithOne()
+                .WithOne(i=>i.PTPInterview)
                 .HasForeignKey(f => f.PTPInterviewId)
                 .OnDelete(DeleteBehavior.Cascade);
             #endregion

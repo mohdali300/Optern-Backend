@@ -28,5 +28,8 @@ namespace Optern.Application.Response
 
         public static Response<T> Failure(string message, int statusCode = 400, List<string> errors = null)
             => new Response<T>(false, default, message, statusCode, errors);
+
+        public static Response<T> Failure(T data,string message, int statusCode = 400, List<string> errors = null)
+           => new Response<T>(false, data, message, statusCode, errors);
     }
 }

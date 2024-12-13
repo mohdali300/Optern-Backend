@@ -12,7 +12,7 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    [Migration("20241212151304_init")]
+    [Migration("20241213135941_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace Optern.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -623,10 +623,6 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("RoomId1")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -635,8 +631,6 @@ namespace Optern.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
-
-                    b.HasIndex("RoomId1");
 
                     b.ToTable("Notes", (string)null);
                 });
@@ -663,10 +657,6 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("RoomId1")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -675,8 +665,6 @@ namespace Optern.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
-
-                    b.HasIndex("RoomId1");
 
                     b.ToTable("Notifications", (string)null);
                 });
@@ -700,15 +688,10 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<int>("PTPInterviewId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PTPInterviewId1")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PTPInterviewId")
                         .HasDatabaseName("IX_PTPFeedBack_PTPInterviewId");
-
-                    b.HasIndex("PTPInterviewId1");
 
                     b.ToTable("PTPFeedBacks", (string)null);
                 });
@@ -1450,10 +1433,6 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("RoomId1")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -1466,8 +1445,6 @@ namespace Optern.Infrastructure.Migrations
 
                     b.HasIndex("RoomId")
                         .HasDatabaseName("IX_WorkSpace_RoomId");
-
-                    b.HasIndex("RoomId1");
 
                     b.ToTable("WorkSpaces", null, t =>
                         {
@@ -1524,6 +1501,43 @@ namespace Optern.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.OwnsMany("Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
+                        {
+                            b1.Property<string>("ApplicationUserId")
+                                .HasColumnType("text");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedOn")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<DateTime>("ExpiresOn")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<DateTime?>("RevokedOn")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("Token")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("ApplicationUserId", "Id");
+
+                            b1.ToTable("RefreshToken");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ApplicationUserId");
+                        });
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.CV", b =>
@@ -1682,15 +1696,9 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.Notes", b =>
                 {
-                    b.HasOne("Optern.Domain.Entities.Room", null)
+                    b.HasOne("Optern.Domain.Entities.Room", "Room")
                         .WithMany("Notes")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Optern.Domain.Entities.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1699,15 +1707,9 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.Notifications", b =>
                 {
-                    b.HasOne("Optern.Domain.Entities.Room", null)
+                    b.HasOne("Optern.Domain.Entities.Room", "Room")
                         .WithMany("Notifications")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Optern.Domain.Entities.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1716,15 +1718,9 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPFeedBack", b =>
                 {
-                    b.HasOne("Optern.Domain.Entities.PTPInterview", null)
+                    b.HasOne("Optern.Domain.Entities.PTPInterview", "PTPInterview")
                         .WithMany("PTPFeedBacks")
                         .HasForeignKey("PTPInterviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Optern.Domain.Entities.PTPInterview", "PTPInterview")
-                        .WithMany()
-                        .HasForeignKey("PTPInterviewId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2032,15 +2028,9 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
                 {
-                    b.HasOne("Optern.Domain.Entities.Room", null)
+                    b.HasOne("Optern.Domain.Entities.Room", "Room")
                         .WithMany("WorkSpaces")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Optern.Domain.Entities.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
