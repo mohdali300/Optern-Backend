@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Identity;
 using Optern.Application.DTOs.Login;
 using Optern.Application.DTOs.Mail;
+using Optern.Application.DTOs.ResetPassword;
 using Optern.Application.DTOS.Register;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
 using Optern.Application.Interfaces.IJWTService;
 using Optern.Application.Response;
 using Optern.Domain.Entities;
+using Optern.Domain.Enums;
 using Optern.Infrastructure.ExternalServices.MailService;
 using System;
 using System.Collections.Generic;
@@ -133,6 +135,111 @@ namespace Optern.Application.Services.AuthService
 
             }
         }
+        public async Task<Response<bool>> SendResetPasswordEmail(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return Response<bool>.Failure("The Email Address doesn't Exist", 404);
+                }
+
+                var otpResult = await _OTP.SendResetPasswordOTPAsync(email);
+
+                if (otpResult.IsSuccess)
+                {
+                    return Response<bool>.Success(true, "OTP has been successfully sent.", 200);
+                }
+  
+                    return Response<bool>.Failure(otpResult.Message, 400);
+                
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure($"An unexpected error occurred: {ex.Message}", 500);
+            }
+        }
+
+
+        public async Task<Response<bool>> VerifyOtpAndResetPassword(ResetPasswordDto dto)
+        {
+            try
+            {
+                var otpKey = "OtpResetPassword";
+                var storedOtp = _httpContextAccessor.HttpContext.Request.Cookies[otpKey];
+              
+                var parts = storedOtp.Split('|');
+                if (parts.Length != 3)
+                {
+                    return Response<bool>.Failure("Invalid OTP data.", 400);
+                }
+
+                var otp = parts[0];
+                var expirationTime = parts[1];
+                var email = parts[2];
+
+                if (storedOtp == null || otp != dto.Otp)
+                {
+                    return Response<bool>.Failure("Invalid OTP ", 400);
+                }
+                if (!DateTime.TryParse(expirationTime, out var expiryDateTime) || DateTime.UtcNow > expiryDateTime)
+                {
+                    return Response<bool>.Failure("Expired OTP", 400);
+                }
+
+
+                if (dto.NewPassword != dto.ConfirmPassword)
+                {
+                    return Response<bool>.Failure("Password and Confirm Password do not match.", 400);
+                }
+
+                var user = await _userManager.FindByEmailAsync(email);
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user!);
+                var result = await _userManager.ResetPasswordAsync(user!, resetToken, dto.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    _httpContextAccessor.HttpContext.Response.Cookies.Delete("OtpResetPassword");
+
+                    return Response<bool>.Success(true, "Password has been successfully reset.", 200);
+                }
+               
+
+                    return Response<bool>.Failure(string.Join(", ", result.Errors.Select(e => e.Description)), 500);
+                
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure($"An unexpected error occurred: {ex.Message}", 500);
+            }
+        }
+        public async Task<Response<bool>> ResendOtpAsync(string email, OtpType otpType)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return Response<bool>.Failure("The Email Address doesn't Exist", 404);
+                }
+                var otpResult = await _OTP.ResendOtpAsync(email,otpType);
+
+                if (otpResult.IsSuccess)
+                {
+                    return Response<bool>.Success(true, "OTP has been successfully sent.", 200);
+                }
+
+                return Response<bool>.Failure(otpResult.Message, 400);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure($"Failed to resend OTP. Error: {ex.Message}");
+            }
+        }
+
+
+
 
         public async Task<Response<LogInResponseDTO>> LogInAsync(LogInDTO model)
         {
