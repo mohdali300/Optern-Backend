@@ -1,4 +1,5 @@
-﻿using Optern.Application.DTOS.Register;
+﻿using Optern.Application.DTOs.Login;
+using Optern.Application.DTOS.Register;
 using Optern.Application.Response;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,7 @@ namespace Optern.Application.Interfaces.IAuthService
     {
         public Task<Response<string>> RegisterAsync(RegisterDTO model);
         public Task<Response<bool>> ConfirmAccount(string email, string otpCode);
+        public Task<Response<LogInResponseDTO>> LogInAsync(LogInDTO model);
+
     }
 }

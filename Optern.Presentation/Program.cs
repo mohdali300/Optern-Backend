@@ -13,6 +13,8 @@ using Optern.Domain.Entities;
 using Optern.Application.DTOs.Mail;
 using Optern.Infrastructure.ExternalServices.MailService;
 using Optern.Application.Helpers;
+using Optern.Application.Interfaces.IJWTService;
+using Optern.Infrastructure.ExternalServices.JWTService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +49,7 @@ builder.Services.AddSingleton(emailconvig);
 builder.Services.AddTransient<IMailService, MailService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped <OTP>();
 
 

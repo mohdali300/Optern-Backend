@@ -20,6 +20,8 @@ namespace Optern.Domain.Entities
         public DateTime? LastLogIn { get; set; }
 
 		public UserRole Role { get; set; }
+        public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
+
 
         // Foreign Key
 

@@ -345,6 +345,29 @@ namespace Optern.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshToken",
+                columns: table => new
+                {
+                    ApplicationUserId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    ExpiresOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RevokedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshToken", x => new { x.ApplicationUserId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_RefreshToken_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rooms",
                 columns: table => new
                 {
@@ -377,8 +400,7 @@ namespace Optern.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     InterviewerPerformance = table.Column<string>(type: "text", nullable: false),
                     IntervieweePerformance = table.Column<string>(type: "text", nullable: false),
-                    PTPInterviewId = table.Column<int>(type: "integer", nullable: false),
-                    PTPInterviewId1 = table.Column<int>(type: "integer", nullable: false)
+                    PTPInterviewId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -386,12 +408,6 @@ namespace Optern.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_PTPFeedBacks_PTPInterviews_PTPInterviewId",
                         column: x => x.PTPInterviewId,
-                        principalTable: "PTPInterviews",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PTPFeedBacks_PTPInterviews_PTPInterviewId1",
-                        column: x => x.PTPInterviewId1,
                         principalTable: "PTPInterviews",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -626,7 +642,7 @@ namespace Optern.Infrastructure.Migrations
                     Content = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    RoomId = table.Column<string>(type: "text", nullable: false),
+                    RoomId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -637,7 +653,6 @@ namespace Optern.Infrastructure.Migrations
                         principalTable: "Rooms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                   
                 });
 
             migrationBuilder.CreateTable(
@@ -649,7 +664,7 @@ namespace Optern.Infrastructure.Migrations
                     Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Message = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    RoomId = table.Column<string>(type: "text", nullable: false),
+                    RoomId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -660,7 +675,6 @@ namespace Optern.Infrastructure.Migrations
                         principalTable: "Rooms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                   
                 });
 
             migrationBuilder.CreateTable(
@@ -743,26 +757,26 @@ namespace Optern.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-              name: "WorkSpaces",
-              columns: table => new
-              {
-                  Id = table.Column<int>(type: "integer", nullable: false)
-                      .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                  Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                  CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                  RoomId = table.Column<string>(type: "text", nullable: false),
-              },
-              constraints: table =>
-              {
-                  table.PrimaryKey("PK_WorkSpaces", x => x.Id);
-                  table.CheckConstraint("CK_WorkSpaces_CreatedDate_Future", "\"CreatedDate\" > NOW()");
-                  table.ForeignKey(
-                      name: "FK_WorkSpaces_Rooms_RoomId",
-                      column: x => x.RoomId,
-                      principalTable: "Rooms",
-                      principalColumn: "Id",
-                      onDelete: ReferentialAction.Cascade);
-              });
+         name: "WorkSpaces",
+         columns: table => new
+         {
+             Id = table.Column<int>(type: "integer", nullable: false)
+                 .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+             Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+             CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+             RoomId = table.Column<string>(type: "text", nullable: false)
+         },
+         constraints: table =>
+         {
+             table.PrimaryKey("PK_WorkSpaces", x => x.Id);
+             table.CheckConstraint("CK_WorkSpaces_CreatedDate_Future", "\"CreatedDate\" > NOW()");
+             table.ForeignKey(
+                 name: "FK_WorkSpaces_Rooms_RoomId",
+                 column: x => x.RoomId,
+                 principalTable: "Rooms",
+                 principalColumn: "Id",
+                 onDelete: ReferentialAction.Cascade);
+         });
 
 
             migrationBuilder.CreateTable(
@@ -899,27 +913,27 @@ namespace Optern.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-      name: "Sprints",
-      columns: table => new
-      {
-          Id = table.Column<int>(type: "integer", nullable: false)
-              .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-          Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-          StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-          EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-          WorkSpaceId = table.Column<int>(type: "integer", nullable: false)
-      },
-      constraints: table =>
-      {
-          table.PrimaryKey("PK_Sprints", x => x.Id);
-          table.CheckConstraint("CK_Sprint_StartEndDate", "\"StartDate\" < \"EndDate\"");
-          table.ForeignKey(
-              name: "FK_Sprints_WorkSpaces_WorkSpaceId",
-              column: x => x.WorkSpaceId,
-              principalTable: "WorkSpaces",
-              principalColumn: "Id",
-              onDelete: ReferentialAction.Cascade);
-      });
+              name: "Sprints",
+              columns: table => new
+              {
+                  Id = table.Column<int>(type: "integer", nullable: false)
+                      .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                  Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                  StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                  EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                  WorkSpaceId = table.Column<int>(type: "integer", nullable: false)
+              },
+              constraints: table =>
+              {
+                  table.PrimaryKey("PK_Sprints", x => x.Id);
+                  table.CheckConstraint("CK_Sprint_StartEndDate", "\"StartDate\" < \"EndDate\"");
+                  table.ForeignKey(
+                      name: "FK_Sprints_WorkSpaces_WorkSpaceId",
+                      column: x => x.WorkSpaceId,
+                      principalTable: "WorkSpaces",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Cascade);
+              });
 
 
             migrationBuilder.CreateTable(
@@ -1230,11 +1244,6 @@ namespace Optern.Infrastructure.Migrations
                 column: "PTPInterviewId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PTPFeedBacks_PTPInterviewId1",
-                table: "PTPFeedBacks",
-                column: "PTPInterviewId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PTPQuestionInterview_PTPQuestionId",
                 table: "PTPQuestionInterviews",
                 column: "PTPQuestionId");
@@ -1512,6 +1521,9 @@ namespace Optern.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Reacts");
+
+            migrationBuilder.DropTable(
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "RoomSkills");

@@ -68,15 +68,18 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(r => r.Notes)
-                .WithOne()
+                .WithOne(r=>r.Room)
+                .HasForeignKey(r=>r.RoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(r => r.Notifications)
-                .WithOne()
+                .WithOne(r=>r.Room)
+                .HasForeignKey(r => r.RoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(r => r.WorkSpaces)
-                .WithOne()
+                .WithOne(r => r.Room)
+                .HasForeignKey(r => r.RoomId)
                 .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }

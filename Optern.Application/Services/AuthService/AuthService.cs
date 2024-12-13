@@ -1,44 +1,49 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Optern.Application.DTOs.Login;
 using Optern.Application.DTOs.Mail;
 using Optern.Application.DTOS.Register;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
+using Optern.Application.Interfaces.IJWTService;
 using Optern.Application.Response;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.ExternalServices.MailService;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Optern.Application.Services.AuthService
 {
-    public class AuthService: IAuthService
+    public class AuthService : IAuthService
     {
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMailService _mailService;
+        private readonly IJWTService _jWTService;
         private readonly OTP _OTP;
 
 
         public AuthService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager,
-            IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP OTP)
+            IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP _OTP, IJWTService _jWTService)
         {
             this._userManager = _userManager;
             this._roleManager = _roleManager;
             this._httpContextAccessor = _httpContextAccessor;
             this._mailService = _mailService;
-            this._OTP = OTP;
+            this._OTP = _OTP;
+            this._jWTService = _jWTService; 
         }
         public async Task<Response<string>> RegisterAsync(RegisterDTO model)
         {
             try
             {
-                if (model == null|| string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.UserName) )
+                if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.UserName))
                 {
                     return Response<string>.Failure("Invalid Data Model", 400);
                 }
@@ -120,15 +125,78 @@ namespace Optern.Application.Services.AuthService
                 }
                 user.EmailConfirmed = true;
                 await _userManager.UpdateAsync(user);
-                return Response<bool>.Success(true,"Account Confirmed Successfully", 200);
+                return Response<bool>.Success(true, "Account Confirmed Successfully", 200);
 
             }
             catch (Exception ex) {
                 return Response<bool>.Failure("There is a server error. Please try again later.", 500);
 
             }
-
         }
 
-    }
+        public async Task<Response<LogInResponseDTO>> LogInAsync(LogInDTO model)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
+                {
+                    return Response<LogInResponseDTO>.Failure(new LogInResponseDTO (),"Invalid Data in Model", 400);
+                }
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "User Not Found", 404);
+                }
+                if (!user.EmailConfirmed)
+                {
+                    return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "User Not Found", 404);
+                }
+                var result = await _userManager.CheckPasswordAsync(user, model.Password);
+                if (!result)
+                {
+                    return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Invalid Email or Password", 400);
+                }
+                var token = await _jWTService.GenerateJwtToken(user);
+
+                var refreshToken = string.Empty;
+                DateTime refreshTokenExpiration;
+
+                if (user.RefreshTokens!.Any(t => t.IsActive))
+                {
+                    var activeToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                    refreshToken = activeToken.Token;
+                    refreshTokenExpiration = activeToken.ExpiresOn;
+                }
+                else
+                {
+                    var RefreshToken = _jWTService.CreateRefreshToken();
+                    refreshToken = RefreshToken.Token;
+                    refreshTokenExpiration = RefreshToken.ExpiresOn;
+                    user.RefreshTokens.Add(RefreshToken);
+                    await _userManager.UpdateAsync(user);
+                }
+                var userRoles = await _userManager.GetRolesAsync(user);
+
+                return Response<LogInResponseDTO>.Success(
+            new LogInResponseDTO
+            {
+                UserId = user.Id,
+                Name = $"{user.FirstName ?? string.Empty} {user.LastName ?? string.Empty}",
+                IsAuthenticated = true,
+                Token = new JwtSecurityTokenHandler().WriteToken(token), 
+                RefreshToken = refreshToken ?? string.Empty,  
+                RefreshTokenExpiration = refreshTokenExpiration, 
+                Roles = userRoles?.ToList() ?? new List<string>(), 
+            }
+,
+            "User login Successfully", 200);
+
+            }
+            catch (Exception ex)
+            {
+                return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "There is a server error. Please try again later.", 500);
+            }
+
+       }
+   }
 }
