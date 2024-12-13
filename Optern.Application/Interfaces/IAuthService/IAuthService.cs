@@ -1,4 +1,5 @@
 ﻿using Optern.Application.DTOs.ResetPassword;
+using Optern.Application.DTOs.Login;
 using Optern.Application.DTOS.Register;
 using Optern.Application.Response;
 using Optern.Domain.Enums;
@@ -18,6 +19,8 @@ namespace Optern.Application.Interfaces.IAuthService
         public Task<Response<bool>> SendResetPasswordEmail(string email);
         public Task<Response<bool>> VerifyOtpAndResetPassword(ResetPasswordDto dto);
         public  Task<Response<bool>> ResendOtpAsync(string email, OtpType otpType);
+
+        public Task<Response<LogInResponseDTO>> LogInAsync(LogInDTO model);
 
     }
 }
