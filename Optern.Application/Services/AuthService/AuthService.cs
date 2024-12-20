@@ -252,11 +252,11 @@ namespace Optern.Application.Services.AuthService
 				var user = await _userManager.FindByEmailAsync(model.Email);
 				if (user == null)
 				{
-					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "User Not Found", 404);
+					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Invalid Email or Password", 404);
 				}
 				if (!user.EmailConfirmed)
 				{
-					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "User Not Found", 404);
+					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Invalid Email or Password", 404);
 				}
 				var result = await _userManager.CheckPasswordAsync(user, model.Password);
 				if (!result)
