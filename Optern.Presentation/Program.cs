@@ -40,8 +40,8 @@ builder.Services
 
 // DI
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<OpternDbContext>()
-    .AddDefaultTokenProviders();
+	.AddEntityFrameworkStores<OpternDbContext>()
+	.AddDefaultTokenProviders();
 
 // mail settings
 var emailconvig = builder.Services.Configure<MailSettingsDTO>(builder.Configuration.GetSection("MailSettings"));
@@ -59,11 +59,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowSpecificOrigin", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); 
     });
 });
 
@@ -76,7 +77,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
