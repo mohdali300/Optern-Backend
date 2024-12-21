@@ -33,6 +33,9 @@ namespace Optern.Infrastructure.Configurations
 
             builder.Property(n => n.UpdatedAt)
                    .HasDefaultValueSql("NOW()");
+
+            builder.Property(r=> r.RoomId)
+               .IsRequired();
             #endregion
 
             #region Relations

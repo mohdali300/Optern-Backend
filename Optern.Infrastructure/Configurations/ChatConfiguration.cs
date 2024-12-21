@@ -29,6 +29,13 @@ namespace Optern.Infrastructure.Configurations
                    .IsRequired()
                    .HasDefaultValueSql("NOW()");
 
+            builder.Property(c => c.CreatorId)
+                .IsRequired();
+
+            builder.Property(c => c.RoomId)
+                .IsRequired(false);
+
+
             builder.Property(c => c.Type)
                    .IsRequired()
                    .HasConversion<string>();
@@ -42,7 +49,6 @@ namespace Optern.Infrastructure.Configurations
                .WithMany(u => u.CreatedChats)
                .HasForeignKey(c => c.CreatorId)
                .OnDelete(DeleteBehavior.NoAction);
-
             // m users can joined to m chats
             builder.HasMany(c => c.ChatParticipants)
                  .WithOne(cp => cp.Chat)

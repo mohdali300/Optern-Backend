@@ -16,6 +16,6 @@ namespace Optern.Domain.Entities
 
 		// Navigation Properties
 		public virtual SubTrack SubTrack { get; set; }
-		public virtual Room Room { get; set; }
+		public virtual Room Room { get; set; } 
 	}
 }

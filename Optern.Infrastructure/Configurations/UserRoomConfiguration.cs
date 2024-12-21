@@ -26,6 +26,11 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(ur => ur.Id)
             .ValueGeneratedOnAdd();
 
+            builder.Property(u=>u.UserId)
+           .IsRequired();
+            
+            builder.Property(r=>r.RoomId)
+           .IsRequired();
             // indexes
 
             builder.HasIndex(ur => new { ur.RoomId, ur.UserId })

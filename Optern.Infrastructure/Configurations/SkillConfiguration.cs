@@ -47,6 +47,11 @@ namespace Optern.Infrastructure.Configurations
                    .WithOne(us => us.Skill) 
                    .HasForeignKey(us => us.SkillId) 
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(rs=>rs.RoomSkills)
+                .WithOne(s=>s.Skill)
+                .HasForeignKey(s=>s.SkillId)
+                .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
     }

@@ -40,11 +40,14 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(e => e.Location)
                 .HasMaxLength(100);
 
+            builder.Property(e => e.UserId)
+               .IsRequired();
+
             // Indexes
 
-
-            builder.HasIndex(e => new { e.UserId, e.Company, e.JobTitle, e.StartDate })
-           .IsUnique();
+            builder.HasIndex(e =>e.UserId)
+                .HasDatabaseName("IX_Experience_UserId")
+                .IsUnique();
 
             #endregion
 

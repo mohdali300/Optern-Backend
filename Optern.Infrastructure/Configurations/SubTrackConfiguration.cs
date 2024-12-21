@@ -25,6 +25,9 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.Property(st => st.Name)
                    .IsRequired()
                    .HasMaxLength(100);
+
+            builder.Property(t => t.TrackId)
+                .IsRequired();
             #endregion
 
             #region Relations
@@ -32,6 +35,12 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.HasOne(st => st.Track)
                 .WithMany(t => t.SubTracks)
                 .HasForeignKey(st => st.TrackId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            builder.HasMany(rt=>rt.RoomTracks)
+                .WithOne(r=>r.SubTrack)
+                .HasForeignKey(r => r.SubTrackId)
                 .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }

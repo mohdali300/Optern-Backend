@@ -49,14 +49,15 @@ namespace Optern.Infrastructure.Configurations
                 .IsRequired()
                 .HasConversion<string>().HasMaxLength(150);
 
+            builder.Property(e => e.UserId)
+               .IsRequired();
+
             // Indexes
 
             builder.HasIndex(e => e.UserId)
                    .HasDatabaseName("IX_Education_UserId");
-            builder.HasIndex(e => e.University)
-                   .HasDatabaseName("IX_Education_University");
 
-
+    
             #endregion
 
             #region Relations

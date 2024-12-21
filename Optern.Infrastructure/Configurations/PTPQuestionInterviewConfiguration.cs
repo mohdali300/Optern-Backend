@@ -37,7 +37,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.HasOne(q => q.PTPQuestion)
                 .WithMany(p => p.PTPQuestionInterviews)
                 .HasForeignKey(q => q.PTPQuestionId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(q => q.PTPInterview)
                 .WithMany(i => i.PTPQuestionInterviews)

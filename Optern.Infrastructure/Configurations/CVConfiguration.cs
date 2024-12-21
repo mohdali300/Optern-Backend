@@ -36,6 +36,8 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(cv => cv.FilePath)
                    .HasMaxLength(255);
 
+            builder.Property(cv => cv.UserId)
+                .IsRequired();
 
             #endregion
 

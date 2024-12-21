@@ -39,14 +39,12 @@ namespace Optern.Infrastructure.Configurations
 
             builder.Property(cr => cr.CommentId)
                    .IsRequired();
+
             // Indexes
 
             builder.HasIndex(cr => new { cr.CommentId, cr.UserId })
                    .IsUnique()
                    .HasDatabaseName("IX_CommentReact_CommentId_UserId"); 
-
-            builder.HasIndex(cr => cr.ReactType)
-                   .HasDatabaseName("IX_CommentReact_ReactType"); 
 
 
             #endregion

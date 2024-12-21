@@ -9,6 +9,7 @@ namespace Optern.Domain.Entities
     public class FavoritePosts
     {
         public int Id { get; set; }
+        public DateTime SavedAt { get; set; }
 
         //Foreign Keys
         public string UserId { get; set; }

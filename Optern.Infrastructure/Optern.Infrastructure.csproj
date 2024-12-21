@@ -6,6 +6,9 @@
     <ReferencePath>C:\Program Files (x86)\SAP BusinessObjects\Crystal Reports for .NET Framework 4.0\Common\SAP BusinessObjects Enterprise XI 4.0\win64_x64\dotnet\</ReferencePath>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Configurations\NotesConfiguration.cs~RFb0bbd5.TMP" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="DependencyInjection\" />
     <Folder Include="MiddleWares\" />

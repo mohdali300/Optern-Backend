@@ -30,6 +30,12 @@ namespace Optern.Infrastructure.Configurations
                .IsRequired()
                .HasDefaultValueSql("NOW()");
 
+            builder.Property(cp=>cp.UserId)
+                .IsRequired();
+
+            builder.Property(cp => cp.ChatId)
+               .IsRequired();
+
             // Indexes
             builder.HasIndex(cp => new { cp.ChatId, cp.UserId })
                .IsUnique()
