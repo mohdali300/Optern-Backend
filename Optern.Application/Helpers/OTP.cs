@@ -23,42 +23,46 @@ namespace Optern.Application.Helpers
 		
 		}
 
-		public bool IsOtpValid(string key)
-		{
-			var combinedValue = _httpContextAccessor.HttpContext.Request.Cookies[key];
+        public bool IsOtpValid(string key)
+        {
+            var combinedValue = _httpContextAccessor.HttpContext.Request.Cookies[key];
 
-			if (string.IsNullOrEmpty(combinedValue))
-			{
-				return false;
-			}
+            if (string.IsNullOrEmpty(combinedValue))
+            {
+                return false;
+            }
 
-			var parts = combinedValue.Split('|');
-			if (parts.Length != 2)
-			{
-				return false;
-			}
+            var parts = combinedValue.Split('|');
 
-			var otp = parts[0];
-			var expirationTime = parts[1];
+            if (parts.Length < 2 || parts.Length > 3) 
+            {
+                return false;
+            }
 
-			if (!DateTime.TryParse(expirationTime, out var expiryDateTime))
-			{
-				return false;
-			}
+            var otp = parts[0];
+            var expirationTime = parts[1];
 
-			if (DateTime.UtcNow > expiryDateTime)
-			{
-				return false;
-			}
+            string email = parts.Length == 3 ? parts[2] : string.Empty;
 
-			return true;
-		}
+            if (!DateTime.TryParse(expirationTime, out var expiryDateTime))
+            {
+                return false;
+            }
 
-		public async Task<Response<bool>> SendRegisterationOTPAsync(string email)
+            if (DateTime.UtcNow > expiryDateTime)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+
+        public async Task<Response<bool>> SendRegisterationOTPAsync(string email)
 		{
 			var otp = GenerateOTP.Generateotp();
 			var expirationTime = DateTime.UtcNow.AddMinutes(10).ToString("o");
-			var combinedValue = $"{otp}|{expirationTime}";
+			var combinedValue = $"{otp}|{expirationTime}|{email}";
 
 			var cookieOptions = new CookieOptions
 			{
