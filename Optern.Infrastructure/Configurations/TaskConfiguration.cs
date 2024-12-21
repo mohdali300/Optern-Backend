@@ -36,10 +36,13 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
         builder.Property(t => t.Status)
                .IsRequired().HasConversion<string>();
 
+        builder.Property(s => s.SprintId)
+               .IsRequired();
+
         // Indexes
-        builder.HasIndex(t => t.StartDate).HasDatabaseName("IX_Task_StartDate");
-        builder.HasIndex(t => t.DueDate).HasDatabaseName("IX_Task_DueDate");
-        builder.HasIndex(t => t.EndDate).HasDatabaseName("IX_Task_EndDate");
+        builder.HasIndex(t => t.SprintId)
+            .HasDatabaseName("IX_Task_SprintId");
+
         #endregion
 
         #region Relations

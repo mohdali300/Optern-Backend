@@ -44,9 +44,6 @@ namespace Optern.Infrastructure.Persistence.Configurations
 
             builder.HasIndex(r => r.PostId)
                 .HasDatabaseName("IX_Reacts_PostId");
-
-            builder.HasIndex(r => r.ReactType)
-                .HasDatabaseName("IX_Reacts_ReactType");
             #endregion
 
 

@@ -17,6 +17,12 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.HasKey(un => un.Id);
             builder.Property(un => un.Id)
               .ValueGeneratedOnAdd();
+
+            builder.Property(u => u.UserId)
+                .IsRequired();
+
+            builder.Property(n=>n.NotificationId)
+                .IsRequired();
             #endregion
 
             #region Relations
