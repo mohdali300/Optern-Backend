@@ -24,6 +24,11 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(r => r.Id)
                  .ValueGeneratedOnAdd();
 
+            builder.Property(s => s.SubTrackId)
+                .IsRequired();
+
+            builder.Property(s=>s.RoomId)
+                .IsRequired();
 
             #endregion
             #region Relations

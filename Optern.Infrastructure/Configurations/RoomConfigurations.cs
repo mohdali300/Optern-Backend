@@ -38,16 +38,17 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasDefaultValueSql("NOW()");
 
+            builder.Property(c=>c.CreatorId)
+             .IsRequired();
+
+
             // Indexes
 
             builder.HasIndex(r => r.Name)
                 .HasDatabaseName("IX_Rooms_Name");
 
-            builder.HasIndex(r => r.Capacity)
-                .HasDatabaseName("IX_Rooms_Capacity");
-
-            builder.HasIndex(r => r.CreatedAt)
-                .HasDatabaseName("IX_Rooms_CreatedAt");
+            builder.HasIndex(r => r.CreatorId)
+                .HasDatabaseName("IX_Rooms_CreatorId");
 
             #endregion
 

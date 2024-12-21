@@ -35,10 +35,8 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(s => s.EndDate)
                    .IsRequired();
 
-            // Indexes
-
-
-            builder.HasIndex(s => s.StartDate).HasDatabaseName("IX_Sprint_StartDate");
+            builder.Property(s => s.WorkSpaceId)
+                  .IsRequired();
             #endregion
 
             #region Relations

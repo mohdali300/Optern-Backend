@@ -35,7 +35,7 @@ namespace Optern.Infrastructure.Configurations
             
             // Indexes
             builder.HasIndex(m => new { m.ChatId, m.SentDate, m.SenderId })
-       .HasDatabaseName("IX_Messages_ChatId_SentDate_SenderId");
+           .HasDatabaseName("IX_Messages_ChatId_SentDate_SenderId");
 
 
             #endregion

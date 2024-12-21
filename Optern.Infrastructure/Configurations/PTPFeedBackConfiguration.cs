@@ -33,6 +33,9 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(fb => fb.IntervieweePerformance)
                    .IsRequired();
 
+              builder.Property(fb => fb.PTPInterviewId)
+                   .IsRequired();
+
             // Indexes
 
             builder.HasIndex(fb => fb.PTPInterviewId)

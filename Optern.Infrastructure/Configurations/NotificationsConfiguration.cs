@@ -38,6 +38,9 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(n => n.CreatedTime)
                    .HasDefaultValueSql("NOW()");
 
+            builder.Property(r => r.RoomId)
+               .IsRequired(false);
+
 
             #endregion
 

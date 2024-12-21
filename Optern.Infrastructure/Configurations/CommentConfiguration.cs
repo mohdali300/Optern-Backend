@@ -32,16 +32,14 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
                   .IsRequired()
                   .HasConversion<string>().HasMaxLength(20);
 
+        builder.Property(c => c.UserId)
+       .IsRequired(); 
+
         builder.Property(c => c.PostId)
            .IsRequired();
 
         builder.Property(c => c.ParentId)
                .IsRequired(false);
-
-        // Indexes
-        builder.HasIndex(c => c.CommentDate)
-       .HasDatabaseName("IX_Comments_CommentDate") 
-       .IsUnique(false); 
 
         #endregion
 

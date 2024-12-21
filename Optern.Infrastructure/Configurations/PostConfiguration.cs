@@ -50,10 +50,6 @@ namespace Optern.Infrastructure.Configurations
 
             builder.HasIndex(p => p.Title)
                    .HasDatabaseName("IX_Posts_Title");
-
-            builder.HasIndex(p => p.CreatedDate)
-                   .HasDatabaseName("IX_Posts_CreatedDate");
-
             #endregion
 
             #region Relations

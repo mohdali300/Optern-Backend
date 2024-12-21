@@ -34,7 +34,6 @@ namespace Optern.Infrastructure.Configurations
                 .IsRequired().HasDefaultValueSql("NOW()");
 
             // Indexes
-            builder.HasIndex(ws => ws.CreatedDate).HasDatabaseName("IX_WorkSpace_CreatedDate");
             builder.HasIndex(ws => ws.RoomId).HasDatabaseName("IX_WorkSpace_RoomId");
 
             #endregion

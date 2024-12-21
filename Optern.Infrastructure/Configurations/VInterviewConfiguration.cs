@@ -34,7 +34,8 @@ namespace Optern.Infrastructure.Persistence.Configurations
                .HasComment("ScheduledTime must be in the future and is required.");
 
             //Indexes 
-            builder.HasIndex(v => v.ScheduledTime).HasDatabaseName("IX_VInterview_ScheduledTime");
+            builder.HasIndex(v => v.UserId)
+                .HasDatabaseName("IX_VInterview_UserId");
             #endregion
 
             #region Relations
