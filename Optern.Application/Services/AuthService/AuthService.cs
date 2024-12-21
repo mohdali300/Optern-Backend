@@ -316,22 +316,6 @@ namespace Optern.Application.Services.AuthService
 			}
 			return user;
 		}
-
-		private bool ValidateOtp(string otpKey, string otpCode)
-		{
-			var storedOtp = _httpContextAccessor.HttpContext.Request.Cookies[otpKey];
-			if (storedOtp == null || storedOtp.Split("|")[0] != otpCode)
-			{
-				return false;
-			}
-
-			if (!_OTP.IsOtpValid(otpKey))
-			{
-				return false;
-			}
-
-			return true;
-		}
 		private bool ValidateEmailAndPassword(LogInDTO model)
 		{
 			return !string.IsNullOrEmpty(model.Email) && !string.IsNullOrEmpty(model.Password);

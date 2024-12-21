@@ -1,0 +1,53 @@
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Optern.Application.DTOs.Mail;
+using Optern.Application.Helpers;
+using Optern.Application.Interfaces.IAuthService;
+using Optern.Application.Interfaces.IJWTService;
+using Optern.Application.Services.AuthService;
+using Optern.Domain.Entities;
+using Optern.Infrastructure.Data;
+using Optern.Infrastructure.ExternalServices.JWTService;
+using Optern.Infrastructure.ExternalServices.MailService;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Optern.Infrastructure.DependencyInjection
+{
+    public static class ServiceRegistration
+    {
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+        {
+
+            // Add Postgresql Setting
+            services.AddDbContext<OpternDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+            );
+
+            // DI for Identity
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<OpternDbContext>()
+                .AddDefaultTokenProviders();
+
+            // Mail settings
+            var emailConfig = services.Configure<MailSettingsDTO>(configuration.GetSection("MailSettings"));
+            services.AddSingleton(emailConfig);
+            services.AddTransient<IMailService, MailService>();
+
+            // Custom injection for External services
+            services.AddScoped<IJWTService, JWTService>();
+            services.AddScoped<OTP>();
+
+            // Dependency Injection for Application Services
+            services.AddScoped<IAuthService, AuthService>();
+
+            return services;
+        }
+    }
+}
