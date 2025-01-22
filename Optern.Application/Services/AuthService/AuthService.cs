@@ -277,7 +277,14 @@ namespace Optern.Application.Services.AuthService
 				var refreshToken = await GetOrCreateRefreshToken(user);
 
 				var userRoles = await _userManager.GetRolesAsync(user);
+                var cookieOptions = new CookieOptions
+				{
+					HttpOnly = true,
+					Secure = false,
+					SameSite = SameSiteMode.Lax,
+				};
 
+				_httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
 				return Response<LogInResponseDTO>.Success(
 					new LogInResponseDTO
 					{
@@ -285,7 +292,6 @@ namespace Optern.Application.Services.AuthService
 						Name = $"{user.FirstName ?? string.Empty} {user.LastName ?? string.Empty}",
 						IsAuthenticated = true,
 						Token = new JwtSecurityTokenHandler().WriteToken(token),
-						RefreshToken = refreshToken.Token,
 						RefreshTokenExpiration = refreshToken.ExpiresOn,
 						Roles = userRoles?.ToList() ?? new List<string>(),
 					},
