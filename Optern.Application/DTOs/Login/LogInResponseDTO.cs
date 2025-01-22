@@ -21,7 +21,6 @@ namespace Optern.Application.DTOs.Login
             IsAuthenticated = false;
             Name = string.Empty;
             UserId = string.Empty;
-            RefreshToken = string.Empty;
             RefreshTokenExpiration = DateTime.UtcNow;
             Roles = new List<string>();
             Token = string.Empty;
