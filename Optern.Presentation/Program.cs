@@ -1,5 +1,6 @@
 using AppAny.HotChocolate.FluentValidation;
 using FluentValidation;
+using Optern.Application.Mappings;
 using Optern.Infrastructure;
 using Optern.Infrastructure.DependencyInjection;
 using Optern.Infrastructure.Validations;
@@ -20,6 +21,7 @@ builder.Services.AddSwaggerGen();
 
 // Register FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
+
 
 // Register Graphql
 builder.Services
