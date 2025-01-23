@@ -11,9 +11,7 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="MiddleWares\" />
-    <Folder Include="UnitOfWork\" />
     <Folder Include="Seeders\" />
-    <Folder Include="Repositories\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AppAny.HotChocolate.FluentValidation" Version="0.12.0" />
