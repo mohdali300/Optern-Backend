@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,17 +7,16 @@ using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
 using Optern.Application.Interfaces.ICacheService;
 using Optern.Application.Interfaces.IJWTService;
+using Optern.Application.Interfaces.ITagService;
+using Optern.Application.Mappings;
 using Optern.Application.Services.AuthService;
+using Optern.Application.Services.TagService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalServices.CacheService;
 using Optern.Infrastructure.ExternalServices.JWTService;
 using Optern.Infrastructure.ExternalServices.MailService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Optern.Infrastructure.UnitOfWork;
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -32,8 +30,9 @@ namespace Optern.Infrastructure.DependencyInjection
 				options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
 			);
 
-			// Add Redis Cache
-			services.AddStackExchangeRedisCache(option =>
+
+            // Add Redis Cache
+            services.AddStackExchangeRedisCache(option =>
 			{
 				option.Configuration = configuration.GetConnectionString("Redis");
 				option.InstanceName = "Optern";
@@ -49,13 +48,20 @@ namespace Optern.Infrastructure.DependencyInjection
 			services.AddSingleton(emailConfig);
 			services.AddTransient<IMailService, MailService>();
 
-			// Custom injection for External services
-			services.AddScoped<IJWTService, JWTService>();
-			services.AddScoped<OTP>();
-			services.AddScoped<ICacheService, CacheService>(); 
+            // Auto Mapper
+            services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
-			// Dependency Injection for Application Services
-			services.AddScoped<IAuthService, AuthService>();
+            // Custom injection for External services
+            services.AddScoped<IJWTService, JWTService>();
+			services.AddScoped<OTP>();
+			services.AddScoped<ICacheService, CacheService>();
+
+
+            // Dependency Injection for Application Services
+            services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+            services.AddScoped<IAuthService, AuthService>();
+			services.AddScoped<ITagsService, TagsService>();
+
 
 			return services;
 		}
