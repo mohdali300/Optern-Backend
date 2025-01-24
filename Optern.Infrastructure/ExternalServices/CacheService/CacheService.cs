@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
-using Optern.Application.Interfaces.ICacheService;
+using Optern.Infrastructure.ExternalInterfaces.ICacheService;
 
 namespace Optern.Infrastructure.ExternalServices.CacheService
 {
