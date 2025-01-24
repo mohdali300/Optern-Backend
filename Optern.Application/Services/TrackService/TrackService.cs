@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Optern.Application.DTOs.SubTrack;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.ITrackService;
 using Optern.Domain.Entities;
@@ -69,6 +70,36 @@ namespace Optern.Application.Services.TrackService
             catch (Exception ex)
             {
                 return Response<TrackDTO>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
+            }
+        }
+
+        public async Task<Response<List<TrackWithSubTracksDTO>>> GetAllWithSubTracks()
+        {
+            try
+            {
+                var tracks = await _dbContext.Tracks.Include(t => t.SubTracks)
+                    .ToListAsync();
+
+                if (tracks.Any())
+                {
+                    var trackDtos = tracks.Select(t => new TrackWithSubTracksDTO
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        SubTracks = t.SubTracks.Select(s => new SubTrackDTO
+                        {
+                            Id = s.Id,
+                            Name = s.Name,
+                        }).ToList()
+                    }).ToList();
+
+                    return Response<List<TrackWithSubTracksDTO>>.Success(trackDtos);
+                }
+                return Response<List<TrackWithSubTracksDTO>>.Failure("No Tracks Found!", 404);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<TrackWithSubTracksDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
         }
     }

@@ -16,10 +16,8 @@ namespace Optern.Application.Services.SubTrackService
 {
     public class SubTrackService : GenericRepository<SubTrack>, ISubTrackService
     {
-        private readonly OpternDbContext _context;
         public SubTrackService(OpternDbContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<Response<SubTrackDTO>> Add(string name, int trackId)
@@ -55,7 +53,7 @@ namespace Optern.Application.Services.SubTrackService
         {
             try
             {
-                var subTracks = await _context.SubTracks
+                var subTracks = await _dbContext.SubTracks
                     .Include(s => s.Track)
                     .Where(s => s.TrackId == trackId).ToListAsync();
 

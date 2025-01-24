@@ -34,8 +34,11 @@ builder.Services
 	.AddType<AuthQuery>()
 	.AddType<TrackQuery>()
 	.AddType<SubTrackQuery>()
-	.AddMutationType<AuthMutation>()
-	.AddFluentValidation();
+	.AddMutationType(m=>m.Name("Mutation"))
+	.AddType<AuthMutation>()
+	.AddType<TrackMutation>()
+	.AddType<SubTrackMutation>()
+    .AddFluentValidation();
 
 builder.Services.AddCors(options =>
 {
