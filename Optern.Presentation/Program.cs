@@ -4,8 +4,11 @@ using Optern.Application.Mappings;
 using Optern.Infrastructure;
 using Optern.Infrastructure.DependencyInjection;
 using Optern.Infrastructure.Validations;
+using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.Rooms.Query;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,18 +26,23 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
 
-// Register Graphql
 builder.Services
     .AddGraphQLServer()
-    .AddQueryType<AuthQuery>()
+    .AddQueryType<RootQuery>() 
+    .AddTypeExtension<AuthQuery>() 
+    .AddTypeExtension<RoomQuery>() 
     .AddMutationType<AuthMutation>()
+    .AddFiltering()
+    .AddSorting()
     .AddFluentValidation();
+
+
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000") 
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
