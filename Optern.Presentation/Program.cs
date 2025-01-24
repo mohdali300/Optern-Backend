@@ -6,6 +6,10 @@ using Optern.Infrastructure.DependencyInjection;
 using Optern.Infrastructure.Validations;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
+using Optern.Presentation.GraphQlApi.SubTrack.Query;
+using Optern.Presentation.GraphQlApi.Track.Mutation;
+using Optern.Presentation.GraphQlApi.Track.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +31,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<AuthQuery>()
+    .AddQueryType<TrackQuery>()
+    .AddQueryType<SubTrackQuery>()
     .AddMutationType<AuthMutation>()
+    .AddMutationType<TrackMutation>()
+    .AddMutationType<SubTrackMutation>()
     .AddFluentValidation();
 
 builder.Services.AddCors(options =>
