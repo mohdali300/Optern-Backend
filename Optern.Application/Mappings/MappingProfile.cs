@@ -5,6 +5,7 @@ using AutoMapper;
 using Optern.Application.DTOs.Post;
 using Optern.Application.DTOs.Comment;
 using Optern.Application.DTOs.React;
+using Optern.Application.DTOs.Room.RoomDTO;
 
 namespace Optern.Application.Mappings
 {
@@ -22,6 +23,7 @@ namespace Optern.Application.Mappings
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
                  .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
 
+
             //post
             CreateMap<Post, PostDTO>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
@@ -33,6 +35,11 @@ namespace Optern.Application.Mappings
             //react
             CreateMap<Reacts, ReactDTO>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+          // Map Room To RoomDTO
+            CreateMap<Room, RoomDTO>()
+              .ForMember(dest => dest.NumberOfParticipants,
+               opt => opt.MapFrom(src => src.UserRooms.Count));
+
         }
     }
 }
