@@ -12,6 +12,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace Optern.Presentation.GraphQlApi.Auth.Mutation
 {
+    [ExtendObjectType("Mutation")]
     public class AuthMutation
     {
         [GraphQLDescription("Register")]
