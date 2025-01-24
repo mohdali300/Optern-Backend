@@ -22,5 +22,10 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
 
        
 
+        [GraphQLDescription("Get Recommended Posts based on reactions count")]
+        public async Task<Response<List<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
+         ) => await postService.GetRecommendedPostsAsync(topN);
+
+
     }
 }

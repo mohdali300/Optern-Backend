@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Optern.Application.DTOs.Comment;
 using Optern.Application.DTOs.Post;
 using Optern.Application.DTOs.React;
+using Optern.Application.DTOs.Tags;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IPostService;
 using Optern.Application.Interfaces.ITrackService;
@@ -84,5 +86,32 @@ namespace Optern.Application.Services.PostService
                 return Response<PostWithDetailsDTO>.Failure($"Failed to fetch post details: {ex.Message}");
             }
         }
+
+        public async Task<Response<List<PostDTO>>> GetRecommendedPostsAsync(int topN)
+        {
+            try
+            {
+                var recommendedPosts = await _dbContext.Posts
+                    .Include(p => p.Reacts) 
+                    .Include(p => p.PostTags) 
+                    .OrderByDescending(p => p.Reacts.Count) 
+                    .Take(topN) 
+                    .ToListAsync(); 
+
+                if (recommendedPosts.Any())
+                {
+                    var postDtos = _mapper.Map<List<PostDTO>>(recommendedPosts);
+                    return Response<List<PostDTO>>.Success(postDtos, "Posts fetched successfully.");
+                }
+
+                return Response<List<PostDTO>>.Failure(new List<PostDTO>(),"No posts found.", 404);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<PostDTO>>.Failure("Error occurred while fetching recommended posts.", 500, new List<string> { ex.Message });
+            }
+        }
+
+
     }
 }
