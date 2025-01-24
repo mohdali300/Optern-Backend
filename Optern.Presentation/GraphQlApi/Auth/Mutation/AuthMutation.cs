@@ -1,12 +1,13 @@
 ﻿using Optern.Application.DTOs.Login;
-using Optern.Application.DTOs.Refresh_Token;
 using Optern.Application.DTOs.ResetPassword;
 using Optern.Application.DTOS.Register;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
-using Optern.Application.Interfaces.IJWTService;
-using Optern.Application.Response;
 using Optern.Domain.Enums;
+using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
+using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
+using Optern.Infrastructure.ExternalInterfaces.IJWTService;
+using Optern.Infrastructure.Response;
 using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace Optern.Presentation.GraphQlApi.Auth.Mutation

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Optern.Application.Response
+namespace Optern.Infrastructure.Response
 {
     public class Response<T>
     {

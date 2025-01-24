@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Optern.Application.DTOs.Login;
-using Optern.Application.DTOs.Mail;
 using Optern.Application.DTOs.ResetPassword;
 using Optern.Application.DTOS.Register;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
-using Optern.Application.Interfaces.IJWTService;
-using Optern.Application.Response;
 using Optern.Domain.Entities;
 using Optern.Domain.Enums;
+using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
+using Optern.Infrastructure.ExternalInterfaces.IJWTService;
+using Optern.Infrastructure.ExternalInterfaces.IMail;
 using Optern.Infrastructure.ExternalServices.MailService;
+using Optern.Infrastructure.Response;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -98,56 +99,56 @@ namespace Optern.Application.Services.AuthService
 				return Response<string>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
 			}
 		}
-        #endregion
+		#endregion
 
-        #region Confirm Account
-        public async Task<Response<bool>> ConfirmAccount(string email, string otpCode)
-        {
-            try
-            {
-                var otpData = _httpContextAccessor.HttpContext.Request.Cookies["OtpRegister"];
-                if (string.IsNullOrEmpty(otpData))
-                {
-                    return Response<bool>.Failure("Invalid or Expired OTP", 400);
-                }
+		#region Confirm Account
+		public async Task<Response<bool>> ConfirmAccount(string email, string otpCode)
+		{
+			try
+			{
+				var otpData = _httpContextAccessor.HttpContext.Request.Cookies["OtpRegister"];
+				if (string.IsNullOrEmpty(otpData))
+				{
+					return Response<bool>.Failure("Invalid or Expired OTP", 400);
+				}
 
-                var parts = otpData.Split('|');
-                if (parts.Length != 3) 
-                {
-                    return Response<bool>.Failure("Invalid OTP data", 400);
-                }
+				var parts = otpData.Split('|');
+				if (parts.Length != 3) 
+				{
+					return Response<bool>.Failure("Invalid OTP data", 400);
+				}
 
-                var storedOtp = parts[0];
-                var storedEmail = parts[2];
+				var storedOtp = parts[0];
+				var storedEmail = parts[2];
 
-                if (email != storedEmail || otpCode != storedOtp)
-                {
-                    return Response<bool>.Failure("Invalid or Expired OTP", 400);
-                }
+				if (email != storedEmail || otpCode != storedOtp)
+				{
+					return Response<bool>.Failure("Invalid or Expired OTP", 400);
+				}
 
-                var user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
-                {
-                    return Response<bool>.Failure("Invalid Email", 404);
-                }
+				var user = await _userManager.FindByEmailAsync(email);
+				if (user == null)
+				{
+					return Response<bool>.Failure("Invalid Email", 404);
+				}
 
-                user.EmailConfirmed = true;
-                await _userManager.UpdateAsync(user);
+				user.EmailConfirmed = true;
+				await _userManager.UpdateAsync(user);
 
-                _httpContextAccessor.HttpContext.Response.Cookies.Delete("OtpRegister");
+				_httpContextAccessor.HttpContext.Response.Cookies.Delete("OtpRegister");
 
-                return Response<bool>.Success(true, "Account Confirmed Successfully", 200);
-            }
-            catch (Exception ex)
-            {
-                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
-            }
-        }
+				return Response<bool>.Success(true, "Account Confirmed Successfully", 200);
+			}
+			catch (Exception ex)
+			{
+				return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #region SendResetPassword
-        public async Task<Response<bool>> SendResetPasswordEmail(string email)
+		#region SendResetPassword
+		public async Task<Response<bool>> SendResetPasswordEmail(string email)
 		{
 			try
 			{
@@ -172,10 +173,10 @@ namespace Optern.Application.Services.AuthService
 				return Response<bool>.Failure($"An unexpected error occurred: {ex.Message}", 500);
 			}
 		}
-        #endregion
+		#endregion
 
-        #region VerifyOtpAndResetPassword
-        public async Task<Response<bool>> VerifyOtpAndResetPassword(ResetPasswordDto dto)
+		#region VerifyOtpAndResetPassword
+		public async Task<Response<bool>> VerifyOtpAndResetPassword(ResetPasswordDto dto)
 		{
 			try
 			{
@@ -223,10 +224,10 @@ namespace Optern.Application.Services.AuthService
 				return Response<bool>.Failure($"An unexpected error occurred: {ex.Message}", 500);
 			}
 		}
-        #endregion
+		#endregion
 
-        #region ResendOtp
-        public async Task<Response<bool>> ResendOtpAsync(string email, OtpType otpType)
+		#region ResendOtp
+		public async Task<Response<bool>> ResendOtpAsync(string email, OtpType otpType)
 		{
 			try
 			{
@@ -277,7 +278,7 @@ namespace Optern.Application.Services.AuthService
 				var refreshToken = await GetOrCreateRefreshToken(user);
 
 				var userRoles = await _userManager.GetRolesAsync(user);
-                var cookieOptions = new CookieOptions
+				var cookieOptions = new CookieOptions
 				{
 					HttpOnly = true,
 					Secure = false,
@@ -292,8 +293,8 @@ namespace Optern.Application.Services.AuthService
 						Name = $"{user.FirstName ?? string.Empty} {user.LastName ?? string.Empty}",
 						IsAuthenticated = true,
 						Token = new JwtSecurityTokenHandler().WriteToken(token),
-						RefreshTokenExpiration = refreshToken.ExpiresOn,
 						Roles = userRoles?.ToList() ?? new List<string>(),
+						ProfilePicture = user.ProfilePicture
 					},
 					"User login successfully", 200);
 			}

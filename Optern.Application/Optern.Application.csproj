@@ -16,5 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Optern.Domain\Optern.Domain.csproj" />
+    <ProjectReference Include="..\Optern.Infrastructure\Optern.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
