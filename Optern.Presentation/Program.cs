@@ -29,24 +29,23 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
 // Register Graphql
 builder.Services
-    .AddGraphQLServer()
-    .AddQueryType<AuthQuery>()
-    .AddQueryType<TrackQuery>()
-    .AddQueryType<SubTrackQuery>()
-    .AddMutationType<AuthMutation>()
-    .AddMutationType<TrackMutation>()
-    .AddMutationType<SubTrackMutation>()
-    .AddFluentValidation();
+	.AddGraphQLServer()
+	.AddQueryType(q => q.Name("Query"))
+	.AddType<AuthQuery>()
+	.AddType<TrackQuery>()
+	.AddType<SubTrackQuery>()
+	.AddMutationType<AuthMutation>()
+	.AddFluentValidation();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+	options.AddPolicy("AllowSpecificOrigin", policy =>
+	{
+		policy.WithOrigins("http://localhost:3000")
+			  .AllowAnyHeader()
+			  .AllowAnyMethod()
+			  .AllowCredentials();
+	});
 });
 
 var app = builder.Build();
@@ -54,8 +53,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 app.UseCors("AllowSpecificOrigin");
