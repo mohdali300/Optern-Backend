@@ -2,9 +2,10 @@
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Optern.Application.DTOs.Mail;
-using Optern.Application.Response;
+using Optern.Infrastructure.ExternalDTOs.Mail;
+using Optern.Infrastructure.ExternalInterfaces.IMail;
 using Optern.Infrastructure.ExternalServices.MailService;
+using Optern.Infrastructure.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,4 @@
-namespace Optern.Application.Interfaces.ICacheService
+namespace Optern.Infrastructure.ExternalInterfaces.ICacheService
 {
 	public interface ICacheService
 	{

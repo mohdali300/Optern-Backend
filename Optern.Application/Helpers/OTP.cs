@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Optern.Application.DTOs.Mail;
-using Optern.Application.Response;
 using Optern.Domain.Enums;
+using Optern.Infrastructure.ExternalDTOs.Mail;
+using Optern.Infrastructure.ExternalInterfaces.IMail;
 using Optern.Infrastructure.ExternalServices.MailService;
+using Optern.Infrastructure.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;

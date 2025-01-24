@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Optern.Application.DTOs.Login
+namespace Optern.Infrastructure.ExternalDTOs.LoginForJWT
 {
     public class LogInResponseDTO
     {
