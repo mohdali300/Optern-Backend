@@ -36,6 +36,7 @@ builder.Services
 	.AddType<AuthQuery>()
 	.AddType<TrackQuery>()
 	.AddType<SubTrackQuery>()
+	.AddType<PostQuery>()
 	.AddMutationType<AuthMutation>()
 	.AddFluentValidation();
 

@@ -12,6 +12,6 @@ namespace Optern.Application.DTOs.Post
         public string? Title { get; set; }
         public ContentType? Content { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
     }
 }

@@ -34,6 +34,7 @@ namespace Optern.Application.Services.PostService
             try
             {
                 var latestPosts = await _dbContext.Posts
+                    .Include(post => post.Creator)
                 .OrderByDescending(post => post.CreatedDate)
                 .Take(count)
                 .ToListAsync();
@@ -79,6 +80,7 @@ namespace Optern.Application.Services.PostService
             try
             {
                 var comments = await _dbContext.Comments
+                    .Include(comment => comment.User)
                     .Where(comment => comment.PostId == postId)
                     .OrderBy(comment => comment.CommentDate)
                     .ToListAsync();
@@ -100,6 +102,7 @@ namespace Optern.Application.Services.PostService
             try
             {
                 var reacts = await _dbContext.Reacts
+                    .Include(react => react.User)
                     .Where(react => react.PostId == postId)
                     .OrderBy(react => react.ReactDate)
                     .ToListAsync();
