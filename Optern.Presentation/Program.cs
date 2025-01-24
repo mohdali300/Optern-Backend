@@ -8,7 +8,10 @@ using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
 using Optern.Presentation.GraphQlApi.Rooms.Query;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
+using Optern.Presentation.GraphQlApi.SubTrack.Query;
+using Optern.Presentation.GraphQlApi.Track.Mutation;
+using Optern.Presentation.GraphQlApi.Track.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,26 +30,26 @@ builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
 
 builder.Services
-    .AddGraphQLServer()
-    .AddQueryType<RootQuery>() 
-    .AddTypeExtension<AuthQuery>() 
-    .AddTypeExtension<RoomQuery>() 
-    .AddMutationType<AuthMutation>()
-    .AddFiltering()
-    .AddSorting()
-    .AddFluentValidation();
+	.AddGraphQLServer()
+	.AddQueryType(q => q.Name("Query"))
+	.AddType<AuthQuery>()
+	.AddType<RoomQuery>()
+	.AddType<TrackQuery>()
+	.AddType<SubTrackQuery>()
+	.AddMutationType<AuthMutation>()
+	.AddFluentValidation();
 
 
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000") 
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+	options.AddPolicy("AllowSpecificOrigin", policy =>
+	{
+		policy.WithOrigins("http://localhost:3000")
+			  .AllowAnyHeader()
+			  .AllowAnyMethod()
+			  .AllowCredentials();
+	});
 });
 
 var app = builder.Build();
@@ -54,8 +57,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 app.UseCors("AllowSpecificOrigin");

@@ -14,6 +14,6 @@ namespace Optern.Application.Interfaces.IRoomService
         public Task<Response<IEnumerable<RoomDTO>>> GetAllAsync();
         public Task<Response<IEnumerable<RoomDTO>>> GetCreatedRooms(string id);
         public Task<Response<IEnumerable<RoomDTO>>> GetPopularRooms();
-        public Task<Response<IEnumerable<RoomDTO>>> JoinedRooms(string id);
+        public Task<Response<IEnumerable<RoomDTO>>> GetJoinedRooms(string id);
     }
 }

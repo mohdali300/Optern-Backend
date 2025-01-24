@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Optern.Application.DTOs.Room.RoomDTO;
 using Optern.Application.Interfaces.IRoomService;
@@ -15,41 +16,32 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.RoomService
 {
-    public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context) :IRoomService
+    public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IRoomService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<Response<IEnumerable<RoomDTO>>> GetAllAsync()
         {
             try
             {
                 var rooms = await _unitOfWork.Rooms.GetAllAsync();
-                if(rooms == null)
+                if (!rooms.Any())
                 {
-                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 404);
+                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 204);
                 }
-                var roomsDtos = rooms.OrderByDescending(r=>r.CreatedAt)
-                    .Select(r=>new RoomDTO
-                {
-                    Name = r.Name,
-                    Description = r.Description,
-                    Capacity = r.Capacity,
-                    CoverPicture = r.CoverPicture,
-                    CreatedAt = r.CreatedAt,
-                });
 
-                return roomsDtos.Any() ? Response<IEnumerable<RoomDTO>>.Success(roomsDtos, "", 200) :
-                                         Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(),"No Rooms Found", 204);
+                var roomsDtos = _mapper.Map<IEnumerable<RoomDTO>>(rooms);
+
+                return Response<IEnumerable<RoomDTO>>.Success(roomsDtos, "", 200);
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later", 500);
+                return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
-
         }
-
-        public async Task<Response<IEnumerable<RoomDTO>>> GetPopularRooms()
+     public async Task<Response<IEnumerable<RoomDTO>>> GetPopularRooms()
         {
             try
             {
@@ -88,7 +80,7 @@ namespace Optern.Application.Services.RoomService
             try {
                 var createdRooms = await _context.Rooms
                     .Include(r => r.UserRooms)
-                    .Where(r => r.CreatorId == id)
+                    .Where(r => r.CreatorId == id) 
                     .Select(r => new RoomDTO
                     {
                         Name = r.Name,
@@ -112,7 +104,7 @@ namespace Optern.Application.Services.RoomService
             }
         }
 
-        public async Task<Response<IEnumerable<RoomDTO>>> JoinedRooms(string id)
+        public async Task<Response<IEnumerable<RoomDTO>>> GetJoinedRooms(string id)
         {
             try
             {
