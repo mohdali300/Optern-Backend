@@ -6,6 +6,7 @@ using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
+using Optern.Infrastructure.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,15 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.SubTrackService
 {
-    public class SubTrackService : GenericRepository<SubTrack>, ISubTrackService
+    public class SubTrackService :ISubTrackService
     {
-        public SubTrackService(OpternDbContext context) : base(context)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly OpternDbContext _context;
+
+        public SubTrackService(IUnitOfWork unitOfWork, OpternDbContext context)
         {
+            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Response<SubTrackDTO>> Add(string name, int trackId)
@@ -32,7 +38,7 @@ namespace Optern.Application.Services.SubTrackService
                         TrackId = trackId
                     };
 
-                    await AddAsync(subTrack);
+                    await _unitOfWork.SubTracks.AddAsync(subTrack);
                     if (subTrack != null)
                     {
                         var dto = new SubTrackDTO { Id = subTrack.Id, Name = subTrack.Name };
@@ -53,7 +59,7 @@ namespace Optern.Application.Services.SubTrackService
         {
             try
             {
-                var subTracks = await _dbContext.SubTracks
+                var subTracks = await _context.SubTracks
                     .Include(s => s.Track)
                     .Where(s => s.TrackId == trackId).ToListAsync();
 
@@ -68,7 +74,7 @@ namespace Optern.Application.Services.SubTrackService
                     return Response<List<SubTrackDTO>>.Success(subTrackDtos);
                 }
 
-                return Response<List<SubTrackDTO>>.Failure("No subTracks found!",404);
+                return Response<List<SubTrackDTO>>.Failure("No subTracks found!",204);
             }
             catch (Exception ex)
             {

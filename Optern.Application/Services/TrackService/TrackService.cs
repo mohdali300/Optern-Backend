@@ -7,6 +7,7 @@ using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
+using Optern.Infrastructure.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,18 +16,23 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.TrackService
 {
-    public class TrackService : GenericRepository<Track>, ITrackService
+    public class TrackService :ITrackService
     {
-        public TrackService(OpternDbContext context):base(context)
-        {           
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly OpternDbContext _context;
+
+        public TrackService(IUnitOfWork unitOfWork, OpternDbContext context)
+        {
+            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Response<List<TrackDTO>>> GetAll()
         {
             try
             {
-                var tracks = await GetAllAsync();
-                if (tracks != null||tracks.Any())
+                var tracks = await _unitOfWork.Tracks.GetAllAsync();
+                if (tracks != null && tracks.Any())
                 {
                     var trackDtos = tracks.Select(t => new TrackDTO
                     {
@@ -37,7 +43,7 @@ namespace Optern.Application.Services.TrackService
                     return Response<List<TrackDTO>>.Success(trackDtos);
                 }
 
-                return Response<List<TrackDTO>>.Failure("No tracks found!", 404);
+                return Response<List<TrackDTO>>.Failure("No tracks found!", 204);
             }
             catch(Exception ex)
             {
@@ -56,7 +62,7 @@ namespace Optern.Application.Services.TrackService
                         Name = name,
                     };
 
-                    await AddAsync(track);
+                    await _unitOfWork.Tracks.AddAsync(track);
                     if (track != null)
                     {
                         var dto=new TrackDTO { Id = track.Id, Name=track.Name };
@@ -77,7 +83,7 @@ namespace Optern.Application.Services.TrackService
         {
             try
             {
-                var tracks = await _dbContext.Tracks.Include(t => t.SubTracks)
+                var tracks = await _context.Tracks.Include(t => t.SubTracks)
                     .ToListAsync();
 
                 if (tracks.Any())
@@ -95,7 +101,7 @@ namespace Optern.Application.Services.TrackService
 
                     return Response<List<TrackWithSubTracksDTO>>.Success(trackDtos);
                 }
-                return Response<List<TrackWithSubTracksDTO>>.Failure("No Tracks Found!", 404);
+                return Response<List<TrackWithSubTracksDTO>>.Failure("No Tracks Found!", 204);
             }
             catch (Exception ex)
             {

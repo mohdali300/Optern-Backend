@@ -11,6 +11,9 @@ namespace Optern.Infrastructure.UnitOfWork
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<PostTags> PostTags { get; }
+        IGenericRepository<Room>Rooms { get; }
+        IGenericRepository<Track> Tracks { get; }
+        IGenericRepository<SubTrack> SubTracks { get; }
 
         Task<int> SaveAsync();
     }

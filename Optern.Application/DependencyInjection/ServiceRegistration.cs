@@ -4,11 +4,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
+using Optern.Application.Interfaces.IRoomService;
+using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Application.Interfaces.ISubTrackService;
 using Optern.Application.Interfaces.ITagService;
 using Optern.Application.Interfaces.ITrackService;
 using Optern.Application.Mappings;
 using Optern.Application.Services.AuthService;
+using Optern.Application.Services.RoomService;
+using Optern.Application.Services.RoomTrackService;
 using Optern.Application.Services.SubTrackService;
 using Optern.Application.Services.TagService;
 using Optern.Application.Services.TrackService;
@@ -68,6 +72,8 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<ITagsService, TagsService>();
             services.AddScoped<ITrackService, TrackService>();
             services.AddScoped<ISubTrackService, SubTrackService>();
+            services.AddScoped<IRoomService, RoomService>();
+            services.AddScoped<IRoomTrackService, RoomTrackService>();
 
 
             return services;
