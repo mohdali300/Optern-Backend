@@ -2,6 +2,7 @@
 using Optern.Application.DTOs.Tags;
 using Optern.Domain.Entities;
 using AutoMapper;
+using Optern.Application.DTOs.Room.RoomDTO;
 
 namespace Optern.Application.Mappings
 {
@@ -18,6 +19,12 @@ namespace Optern.Application.Mappings
             CreateMap<PostTags, TagDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
                  .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
+
+          // Map Room To RoomDTO
+            CreateMap<Room, RoomDTO>()
+              .ForMember(dest => dest.NumberOfParticipants,
+               opt => opt.MapFrom(src => src.UserRooms.Count));
+
         }
     }
 }
