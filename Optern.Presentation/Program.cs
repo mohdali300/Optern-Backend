@@ -7,6 +7,8 @@ using Optern.Infrastructure.Validations;
 using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.Post.Mutation;
+using Optern.Presentation.GraphQlApi.Post.Query;
 using Optern.Presentation.GraphQlApi.Rooms.Query;
 using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
 using Optern.Presentation.GraphQlApi.SubTrack.Query;
@@ -36,6 +38,7 @@ builder.Services
 	.AddType<RoomQuery>()
 	.AddType<TrackQuery>()
 	.AddType<SubTrackQuery>()
+	.AddType<PostQuery>()
 	.AddMutationType<AuthMutation>()
 	.AddFluentValidation();
 
