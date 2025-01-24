@@ -2,6 +2,9 @@
 using Optern.Application.DTOs.Tags;
 using Optern.Domain.Entities;
 using AutoMapper;
+using Optern.Application.DTOs.Post;
+using Optern.Application.DTOs.Comment;
+using Optern.Application.DTOs.React;
 
 namespace Optern.Application.Mappings
 {
@@ -18,6 +21,18 @@ namespace Optern.Application.Mappings
             CreateMap<PostTags, TagDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
                  .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
+
+            //post
+            CreateMap<Post, PostDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
+
+            //comment
+            CreateMap<Comment, CommentDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+
+            //react
+            CreateMap<Reacts, ReactDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
         }
     }
 }
