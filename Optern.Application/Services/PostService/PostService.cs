@@ -53,69 +53,35 @@ namespace Optern.Application.Services.PostService
             }
         
         }
-        public async Task<Response<PostDTO>> GetPostByIdAsync(int id)
-        {
 
+        public async Task<Response<PostWithDetailsDTO>> GetPostDetailsByIdAsync(int id)
+        {
             try
             {
-                var post = await GetByIdAsync(id);
-                if (post != null )
+                
+                var post = await _dbContext.Posts
+                    .Include(p => p.Creator) 
+                    .Include(p => p.Comments) 
+                        .ThenInclude(c => c.User) 
+                    .Include(p => p.Reacts) 
+                        .ThenInclude(r => r.User) 
+                    .SingleOrDefaultAsync(p => p.Id == id);
+
+               
+                if (post == null)
                 {
-
-                    var postDtos = _mapper.Map<PostDTO>(post);
-
-                    return Response<PostDTO>.Success(postDtos, "post fetched successfully");
+                    return Response<PostWithDetailsDTO>.Failure("Post not found!", 404);
                 }
-                return Response<PostDTO>.Failure("post not found!", 404);
+
+                
+                var postDetailsDto = _mapper.Map<PostWithDetailsDTO>(post);
+
+                return Response<PostWithDetailsDTO>.Success(postDetailsDto, "Post details fetched successfully.");
             }
             catch (Exception ex)
             {
-                return Response<PostDTO>.Failure($"Failed to fetch latest posts: {ex.Message}");
-            }
-
-        }
-
-        public async Task<Response<List<CommentDTO>>> GetCommentsByPostIdAsync(int postId)
-        {
-            try
-            {
-                var comments = await _dbContext.Comments
-                    .Include(comment => comment.User)
-                    .Where(comment => comment.PostId == postId)
-                    .OrderBy(comment => comment.CommentDate)
-                    .ToListAsync();
-
-                if (comments == null || !comments.Any())
-                    return Response<List<CommentDTO>>.Failure("No comments found for the specified post.", 404);
-
-                var commentDtos = _mapper.Map<List<CommentDTO>>(comments);
-                return Response<List<CommentDTO>>.Success(commentDtos, "Comments fetched successfully.");
-            }
-            catch (Exception ex)
-            {
-                return Response<List<CommentDTO>>.Failure($"Failed to fetch comments: {ex.Message}");
-            }
-        }
-
-        public async Task<Response<List<ReactDTO>>> GetReactsByPostIdAsync(int postId)
-        {
-            try
-            {
-                var reacts = await _dbContext.Reacts
-                    .Include(react => react.User)
-                    .Where(react => react.PostId == postId)
-                    .OrderBy(react => react.ReactDate)
-                    .ToListAsync();
-
-                if (reacts == null || !reacts.Any())
-                    return Response<List<ReactDTO>>.Failure("No reacts found for the specified post.", 404);
-
-                var reactDtos = _mapper.Map<List<ReactDTO>>(reacts);
-                return Response<List<ReactDTO>>.Success(reactDtos, "Reacts fetched successfully.");
-            }
-            catch (Exception ex)
-            {
-                return Response<List<ReactDTO>>.Failure($"Failed to fetch reacts: {ex.Message}");
+                
+                return Response<PostWithDetailsDTO>.Failure($"Failed to fetch post details: {ex.Message}");
             }
         }
     }
