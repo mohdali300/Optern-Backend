@@ -21,6 +21,8 @@ namespace Optern.Application.Mappings
             //post
             CreateMap<Post, PostDTO>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
+            CreateMap<Post, PostWithDetailsDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
 
             //comment
             CreateMap<Comment, CommentDTO>()

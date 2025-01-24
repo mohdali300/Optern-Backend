@@ -16,17 +16,11 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
         public async Task<Response<List<PostDTO>>> GetLatestPostsAsync([Service] IPostService _postService,int count)
            => await _postService.GetLatestPostsAsync(count);
 
-        [GraphQLDescription("Get Post By Id")]
-        public async Task<Response<PostDTO>> GetPostByIdAsync([Service] IPostService _postService, int id)
-           => await _postService.GetPostByIdAsync(id);
+        [GraphQLDescription("Get Post Details By Id")]
+        public async Task<Response<PostWithDetailsDTO>> GetPostDetailsByIdAsync([Service] IPostService _postService, int id)
+           => await _postService.GetPostDetailsByIdAsync(id);
 
-        [GraphQLDescription("Get all comments for a specific post")]
-        public async Task<Response<List<CommentDTO>>> GetCommentsByPostIdAsync([Service] IPostService _postService, int postId)
-           => await _postService.GetCommentsByPostIdAsync(postId);
-
-        [GraphQLDescription("Get all reacts for a specific post")]
-        public async Task<Response<List<ReactDTO>>> GetReactsByPostIdAsync([Service] IPostService _postService, int postId)
-           => await _postService.GetReactsByPostIdAsync(postId);
+       
 
         [GraphQLDescription("Get Recommended Posts based on reactions count")]
         public async Task<Response<List<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
