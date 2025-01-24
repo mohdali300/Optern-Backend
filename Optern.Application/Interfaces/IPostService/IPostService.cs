@@ -16,6 +16,8 @@ namespace Optern.Application.Interfaces.IPostService
         public Task<Response<PostDTO>> GetPostByIdAsync(int id);
         public Task<Response<List<CommentDTO>>> GetCommentsByPostIdAsync(int postId);
         public Task<Response<List<ReactDTO>>> GetReactsByPostIdAsync(int postId);
+       public Task<Response<List<PostDTO>>> GetRecommendedPostsAsync(int topN);
+
 
     }
 }

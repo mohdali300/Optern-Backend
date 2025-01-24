@@ -18,12 +18,6 @@ namespace Optern.Application.Mappings
             // Mapping Tag entity to TagDTO
             CreateMap<Tags, TagDTO>();
 
-            // Mapping PostTags entity to a DTO 
-            CreateMap<PostTags, TagDTO>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
-                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
-
-
             //post
             CreateMap<Post, PostDTO>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
