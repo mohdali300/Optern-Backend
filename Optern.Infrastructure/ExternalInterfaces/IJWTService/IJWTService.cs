@@ -15,6 +15,6 @@ namespace Optern.Infrastructure.ExternalInterfaces.IJWTService
     {
         public Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser User);
         public RefreshToken CreateRefreshToken();
-        public Task<Response<LogInResponseDTO>> NewRefreshToken(RefreshTokenDTO model);
+        public Task<Response<LogInResponseDTO>> NewRefreshToken();
     }
 }
