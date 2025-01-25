@@ -10,7 +10,9 @@ using Optern.Presentation.GraphQlApi.Auth.Query;
 using Optern.Presentation.GraphQlApi.FavouritePost.Query;
 using Optern.Presentation.GraphQlApi.Post.Mutation;
 using Optern.Presentation.GraphQlApi.Post.Query;
+using Optern.Presentation.GraphQlApi.Rooms.Mutation;
 using Optern.Presentation.GraphQlApi.Rooms.Query;
+using Optern.Presentation.GraphQlApi.RoomTrack.Query;
 using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
 using Optern.Presentation.GraphQlApi.SubTrack.Query;
 using Optern.Presentation.GraphQlApi.Tag;
@@ -40,11 +42,16 @@ builder.Services
 	.AddType<RoomQuery>()
 	.AddType<TrackQuery>()
 	.AddType<SubTrackQuery>()
-	.AddType<PostQuery>()
-	.AddType<TagQuery>()
-	.AddType<FavouritePostsQuery>()
-	.AddMutationType<AuthMutation>()
-	.AddFluentValidation();
+	.AddType<RoomTrackQuery>()
+    .AddType<PostQuery>()
+    .AddType<TagQuery>()
+    .AddType<FavouritePostsQuery>()
+    .AddMutationType(m=>m.Name("Mutation"))
+	.AddType<AuthMutation>()
+	.AddType<RoomMutation>()
+	.AddType<TrackMutation>()
+	.AddType<SubTrackMutation>()
+    .AddFluentValidation();
 
 
 

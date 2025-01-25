@@ -57,6 +57,14 @@ namespace Optern.Infrastructure.Repositories
         {
           return  await _dbSet.FindAsync(id);
         }
+        public virtual async Task<T> GetByIdAsync(string id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+        public virtual async Task<T> GetByExpressionAsync(Expression<Func<T, bool>> predicate) // this to compare more than one condition
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
 
         public async Task SaveChangesAsync()
         {

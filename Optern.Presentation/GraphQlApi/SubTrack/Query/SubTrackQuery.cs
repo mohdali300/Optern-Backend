@@ -9,7 +9,7 @@ namespace Optern.Presentation.GraphQlApi.SubTrack.Query
 	public class SubTrackQuery
 	{
 		[GraphQLDescription("Get All SubTracks For Track")]
-		public async Task<Response<List<SubTrackDTO>>> GetAllByTrackId([Service] ISubTrackService _subTrackService, int trackId)
+		public async Task<Response<List<SubTrackDTO>>> GetAllSubTracksByTrackId([Service] ISubTrackService _subTrackService, int trackId)
 			=> await _subTrackService.GetAllByTrackId(trackId);
 	}
 }

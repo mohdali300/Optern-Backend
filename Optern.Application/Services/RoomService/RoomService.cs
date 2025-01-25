@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Room.RoomDTO;
+using Optern.Application.DTOs.Room;
+using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
+using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
 using System;
@@ -22,6 +24,7 @@ namespace Optern.Application.Services.RoomService
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
 
+        #region GetAllAsync
         public async Task<Response<IEnumerable<RoomDTO>>> GetAllAsync()
         {
             try
@@ -40,8 +43,11 @@ namespace Optern.Application.Services.RoomService
             {
                 return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
-        }
-     public async Task<Response<IEnumerable<RoomDTO>>> GetPopularRooms()
+        } 
+        #endregion
+
+        #region GetPopularRooms
+        public async Task<Response<IEnumerable<RoomDTO>>> GetPopularRooms()
         {
             try
             {
@@ -74,13 +80,17 @@ namespace Optern.Application.Services.RoomService
             {
                 return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
-        }
+        } 
+        #endregion
+
+        #region GetCreatedRooms
         public async Task<Response<IEnumerable<RoomDTO>>> GetCreatedRooms(string id)
         {
-            try {
+            try
+            {
                 var createdRooms = await _context.Rooms
                     .Include(r => r.UserRooms)
-                    .Where(r => r.CreatorId == id) 
+                    .Where(r => r.CreatorId == id)
                     .Select(r => new RoomDTO
                     {
                         Name = r.Name,
@@ -89,7 +99,7 @@ namespace Optern.Application.Services.RoomService
                         CoverPicture = r.CoverPicture,
                         NumberOfParticipants = r.UserRooms.Count(),
                         CreatedAt = r.CreatedAt,
-                        RoomType= r.RoomType,   
+                        RoomType = r.RoomType,
                     })
                     .ToListAsync();
 
@@ -97,34 +107,36 @@ namespace Optern.Application.Services.RoomService
                                             Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There is no Created Rooms Until Now", 204);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
 
             }
-        }
+        } 
+        #endregion
 
+        #region GetJoinedRooms
         public async Task<Response<IEnumerable<RoomDTO>>> GetJoinedRooms(string id)
         {
             try
             {
-               var joinedRooms= await _context.Rooms.Join(_context.UserRooms,
-                   room => room.Id,
-                   userRoom=>userRoom.RoomId,
-                   (room, userRoom)=> new {Room=room,UserRoom=userRoom}
-                   )
-                    .Where(r=>r.UserRoom.UserId==id)
-                    .Select(r=>new RoomDTO
-                    {
-                        Name = r.Room.Name,
-                        Description = r.Room.Description,
-                        Capacity = r.Room.Capacity,
-                        CoverPicture = r.Room.CoverPicture,
-                        NumberOfParticipants = r.Room.UserRooms.Count(),
-                        CreatedAt = r.Room.CreatedAt,
-                        RoomType = r.Room.RoomType,
-                    })
-                   .ToListAsync();
+                var joinedRooms = await _context.Rooms.Join(_context.UserRooms,
+                    room => room.Id,
+                    userRoom => userRoom.RoomId,
+                    (room, userRoom) => new { Room = room, UserRoom = userRoom }
+                    )
+                     .Where(r => r.UserRoom.UserId == id)
+                     .Select(r => new RoomDTO
+                     {
+                         Name = r.Room.Name,
+                         Description = r.Room.Description,
+                         Capacity = r.Room.Capacity,
+                         CoverPicture = r.Room.CoverPicture,
+                         NumberOfParticipants = r.Room.UserRooms.Count(),
+                         CreatedAt = r.Room.CreatedAt,
+                         RoomType = r.Room.RoomType,
+                     })
+                    .ToListAsync();
 
                 return joinedRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(joinedRooms, "", 200) :
                                            Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "You have not joined any room yet.", 204);
@@ -133,6 +145,46 @@ namespace Optern.Application.Services.RoomService
             {
                 return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
-        }
+        } 
+        #endregion
+
+        #region JoinToRoom
+        public async Task<Response<string>> JoinToRoom(JoinRoomDTO model)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.RoomId))
+                {
+                    return Response<string>.Failure("Invalid Data Model", 400);
+                }
+                var roomExist = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
+                var userExist = await _unitOfWork.Users.GetByIdAsync(model.UserId);
+
+                if (roomExist == null || userExist == null)
+                {
+                    return Response<string>.Failure($"Invalid Data", 400);
+                }
+
+                var isUserInRoom = await _unitOfWork.UserRoom
+                    .GetByExpressionAsync(u => u.UserId == model.UserId && u.RoomId == model.RoomId);
+                if (isUserInRoom != null)
+                {
+                    return Response<string>.Failure($"You Already Joined To This Room Before!", 400);
+                }
+                var joinRoom = await _unitOfWork.UserRoom.AddAsync(new UserRoom
+                {
+                    RoomId = model.RoomId,
+                    UserId = model.UserId,
+                });
+                await _unitOfWork.SaveAsync();
+                return Response<string>.Success($"You have successfully to joined the room ", "You have successfully joined to the room ", 201);
+
+            }
+            catch (Exception ex)
+            {
+                return Response<string>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+        } 
+        #endregion
     }
 }

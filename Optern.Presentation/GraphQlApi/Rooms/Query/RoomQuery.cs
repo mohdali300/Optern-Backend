@@ -1,4 +1,4 @@
-﻿using Optern.Application.DTOs.Room.RoomDTO;
+﻿using Optern.Application.DTOs.Room;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Response;
