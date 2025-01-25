@@ -17,7 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Optern.Application\Optern.Application.csproj" />
-    <ProjectReference Include="..\Optern.Infrastructure\Optern.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />

@@ -14,12 +14,22 @@ namespace Optern.Infrastructure.UnitOfWork
     {
         private readonly OpternDbContext _context;
         public IGenericRepository<PostTags> PostTags { get; private set; }
+        public IGenericRepository<Room> Rooms { get; private set; }
+        public IGenericRepository<UserRoom> UserRoom { get; private set; }
+        public IGenericRepository<Track> Tracks { get; private set; }
+        public IGenericRepository<SubTrack> SubTracks { get; private set; }
+        public IGenericRepository<ApplicationUser> Users { get; private set; }
 
 
         public UnitOfWork(OpternDbContext context) 
         {
             _context = context;
             PostTags = new  GenericRepository<PostTags>(context);  
+            Rooms = new  GenericRepository<Room>(context);
+            UserRoom= new GenericRepository<UserRoom>(context);
+            Tracks = new GenericRepository<Track>(context);
+            SubTracks = new GenericRepository<SubTrack>(context);
+            Users= new GenericRepository<ApplicationUser>(context);
         }
 
         public async Task<int> SaveAsync()

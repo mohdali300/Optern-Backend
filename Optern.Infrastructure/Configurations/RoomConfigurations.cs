@@ -59,10 +59,6 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .HasForeignKey(r => r.CreatorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(r => r.SubTracks)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasMany(r => r.UserRooms)
                 .WithOne(ur => ur.Room)
                 .HasForeignKey(ur => ur.RoomId)

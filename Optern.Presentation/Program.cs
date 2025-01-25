@@ -4,8 +4,20 @@ using Optern.Application.Mappings;
 using Optern.Infrastructure;
 using Optern.Infrastructure.DependencyInjection;
 using Optern.Infrastructure.Validations;
+using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.FavouritePost.Query;
+using Optern.Presentation.GraphQlApi.Post.Mutation;
+using Optern.Presentation.GraphQlApi.Post.Query;
+using Optern.Presentation.GraphQlApi.Rooms.Mutation;
+using Optern.Presentation.GraphQlApi.Rooms.Query;
+using Optern.Presentation.GraphQlApi.RoomTrack.Query;
+using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
+using Optern.Presentation.GraphQlApi.SubTrack.Query;
+using Optern.Presentation.GraphQlApi.Tag;
+using Optern.Presentation.GraphQlApi.Track.Mutation;
+using Optern.Presentation.GraphQlApi.Track.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,22 +35,35 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
 
-// Register Graphql
 builder.Services
-    .AddGraphQLServer()
-    .AddQueryType<AuthQuery>()
-    .AddMutationType<AuthMutation>()
+	.AddGraphQLServer()
+	.AddQueryType(q => q.Name("Query"))
+	.AddType<AuthQuery>()
+	.AddType<RoomQuery>()
+	.AddType<TrackQuery>()
+	.AddType<SubTrackQuery>()
+	.AddType<RoomTrackQuery>()
+    .AddType<PostQuery>()
+    .AddType<TagQuery>()
+    .AddType<FavouritePostsQuery>()
+    .AddMutationType(m=>m.Name("Mutation"))
+	.AddType<AuthMutation>()
+	.AddType<RoomMutation>()
+	.AddType<TrackMutation>()
+	.AddType<SubTrackMutation>()
     .AddFluentValidation();
+
+
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+	options.AddPolicy("AllowSpecificOrigin", policy =>
+	{
+		policy.WithOrigins("http://localhost:3000")
+			  .AllowAnyHeader()
+			  .AllowAnyMethod()
+			  .AllowCredentials();
+	});
 });
 
 var app = builder.Build();
@@ -46,8 +71,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 app.UseCors("AllowSpecificOrigin");
