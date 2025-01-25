@@ -7,6 +7,8 @@ using Optern.Infrastructure.Validations;
 using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.Comment.Mutation;
+using Optern.Presentation.GraphQlApi.Comment.Query;
 using Optern.Presentation.GraphQlApi.FavouritePost.Query;
 using Optern.Presentation.GraphQlApi.Post.Mutation;
 using Optern.Presentation.GraphQlApi.Post.Query;
@@ -46,11 +48,13 @@ builder.Services
     .AddType<PostQuery>()
     .AddType<TagQuery>()
     .AddType<FavouritePostsQuery>()
+	.AddType<CommentQuery>()
     .AddMutationType(m=>m.Name("Mutation"))
 	.AddType<AuthMutation>()
 	.AddType<RoomMutation>()
 	.AddType<TrackMutation>()
 	.AddType<SubTrackMutation>()
+	.AddType<CommentMutation>()
     .AddFluentValidation();
 
 

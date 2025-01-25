@@ -66,7 +66,8 @@ namespace Optern.Application.Services.PostService
                     .Include(p => p.Comments) 
                         .ThenInclude(c => c.User) 
                     .Include(p => p.Reacts) 
-                        .ThenInclude(r => r.User) 
+                        .ThenInclude(r => r.User)
+                    .Include(p => p.PostTags)
                     .SingleOrDefaultAsync(p => p.Id == id);
 
                
@@ -112,6 +113,7 @@ namespace Optern.Application.Services.PostService
             }
         }
 
+       
 
     }
 }

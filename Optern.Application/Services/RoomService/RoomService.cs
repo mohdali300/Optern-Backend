@@ -159,7 +159,7 @@ namespace Optern.Application.Services.RoomService
                 }
                 var roomExist = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
                 var userExist = await _unitOfWork.Users.GetByIdAsync(model.UserId);
-
+                
                 if (roomExist == null || userExist == null)
                 {
                     return Response<string>.Failure($"Invalid Data", 400);
