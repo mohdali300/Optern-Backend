@@ -26,6 +26,7 @@ namespace Optern.Application.Services.SubTrackService
             _context = context;
         }
 
+        #region Add
         public async Task<Response<SubTrackDTO>> Add(string name, int trackId)
         {
             try
@@ -54,7 +55,9 @@ namespace Optern.Application.Services.SubTrackService
                 return Response<SubTrackDTO>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
         }
+        #endregion
 
+        #region GetAllByTrackId
         public async Task<Response<List<SubTrackDTO>>> GetAllByTrackId(int trackId)
         {
             try
@@ -74,12 +77,13 @@ namespace Optern.Application.Services.SubTrackService
                     return Response<List<SubTrackDTO>>.Success(subTrackDtos);
                 }
 
-                return Response<List<SubTrackDTO>>.Failure("No subTracks found!",204);
+                return Response<List<SubTrackDTO>>.Failure("No subTracks found!", 204);
             }
             catch (Exception ex)
             {
                 return Response<List<SubTrackDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
-        }
+        } 
+        #endregion
     }
 }
