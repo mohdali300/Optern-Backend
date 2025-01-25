@@ -25,7 +25,7 @@ namespace Optern.Domain.Entities
 		public virtual ApplicationUser Creator {get;set;}
         public virtual ICollection<UserRoom> UserRooms { get; set; }
         public virtual Chat Chat { get; set; }
-        public virtual ICollection<Notes> Notes { get; set; }
+        public virtual Repository Repository { get; set; }
         public virtual ICollection<Notifications> Notifications { get; set; }
         public virtual ICollection<WorkSpace> WorkSpaces { get; set; }
         public virtual ICollection<RoomSkills> RoomSkills { get; set;}

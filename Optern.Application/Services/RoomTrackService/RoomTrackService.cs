@@ -26,9 +26,33 @@ namespace Optern.Application.Services.RoomTrackService
             _context = context;
         }
 
-        public Task<Response<IEnumerable<RoomDTO>>> GetSubTrackRooms(int subTrackId)
+        #region SubTrackRooms
+        public async Task<Response<IEnumerable<RoomDTO>>> GetSubTrackRooms(int subTrackId)
         {
-            throw new NotImplementedException();
-        }
+            try
+            {
+                var roomDtos = await _context.RoomTracks.Include(rt => rt.Room)
+                    .Where(rt => rt.SubTrackId == subTrackId)
+                    .Select(rt => new RoomDTO
+                    {
+                        Name = rt.Room.Name,
+                        Description = rt.Room.Description,
+                        Capacity = rt.Room.Capacity,
+                        CoverPicture = rt.Room.CoverPicture,
+                        NumberOfParticipants = rt.Room.UserRooms.Count(),
+                        RoomType = rt.Room.RoomType,
+                        CreatedAt = rt.Room.CreatedAt,
+                    })
+                    .ToListAsync();
+
+                return (roomDtos != null && roomDtos.Any()) ? Response<IEnumerable<RoomDTO>>.Success(roomDtos) :
+                    Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "No rooms found in this stack!", 204);
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<RoomDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
+            }
+        } 
+        #endregion
     }
 }

@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Optern.Infrastructure.Configurations
 {
-    public class NotesConfiguration : IEntityTypeConfiguration<Notes>
+    public class RepositoryConfiguration : IEntityTypeConfiguration<Repository>
     {
-        public void Configure(EntityTypeBuilder<Notes> builder)
+        public void Configure(EntityTypeBuilder<Repository> builder)
         {
             #region Attributes
             // Table Name
-            builder.ToTable("Notes");
+            builder.ToTable("Repository");
 
             //Primary Key
             builder.HasKey(n => n.Id);
@@ -23,28 +23,17 @@ namespace Optern.Infrastructure.Configurations
              .ValueGeneratedOnAdd();
 
             // Properties
-
-            builder.Property(n => n.Content)
-                   .IsRequired()
-                   .HasMaxLength(500);
-
-            builder.Property(n => n.CreatedAt)
-                   .HasDefaultValueSql("NOW()");
-
-            builder.Property(n => n.UpdatedAt)
-                   .HasDefaultValueSql("NOW()");
-
             builder.Property(r=> r.RoomId)
                .IsRequired();
             #endregion
 
             #region Relations
 
-
-            builder.HasOne(n => n.Room)
-                   .WithMany(r => r.Notes)
-                   .HasForeignKey(n => n.RoomId)
+            builder.HasOne(r => r.Room)
+                   .WithOne(ro => ro.Repository)
+                   .HasForeignKey<Repository>(r => r.RoomId)
                    .OnDelete(DeleteBehavior.Cascade);
+
             #endregion
 
 

@@ -35,23 +35,25 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
 
+#region Register GraphQL
 builder.Services
-	.AddGraphQLServer()
-	.AddQueryType(q => q.Name("Query"))
-	.AddType<AuthQuery>()
-	.AddType<RoomQuery>()
-	.AddType<TrackQuery>()
-	.AddType<SubTrackQuery>()
-	.AddType<RoomTrackQuery>()
-    .AddType<PostQuery>()
-    .AddType<TagQuery>()
-    .AddType<FavouritePostsQuery>()
-    .AddMutationType(m=>m.Name("Mutation"))
-	.AddType<AuthMutation>()
-	.AddType<RoomMutation>()
-	.AddType<TrackMutation>()
-	.AddType<SubTrackMutation>()
-    .AddFluentValidation();
+.AddGraphQLServer()
+.AddQueryType(q => q.Name("Query"))
+.AddType<AuthQuery>()
+.AddType<RoomQuery>()
+.AddType<TrackQuery>()
+.AddType<SubTrackQuery>()
+.AddType<RoomTrackQuery>()
+.AddType<PostQuery>()
+.AddType<TagQuery>()
+.AddType<FavouritePostsQuery>()
+.AddMutationType(m => m.Name("Mutation"))
+.AddType<AuthMutation>()
+.AddType<RoomMutation>()
+.AddType<TrackMutation>()
+.AddType<SubTrackMutation>()
+.AddFluentValidation(); 
+#endregion
 
 
 
