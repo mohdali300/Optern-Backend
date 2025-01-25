@@ -23,7 +23,7 @@ namespace Optern.Infrastructure.Response
             Errors = errors ?? new List<string>();
         }
 
-        public static Response<T> Success(T data, string message = null, int statusCode = 200)
+        public static Response<T> Success(T data, string message = "", int statusCode = 200)
             => new Response<T>(true, data, message, statusCode, null);
 
         public static Response<T> Failure(string message, int statusCode = 400, List<string> errors = null)

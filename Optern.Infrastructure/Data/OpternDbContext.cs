@@ -33,7 +33,8 @@ namespace Optern.Infrastructure.Data
         public DbSet<Experience> Experiences { get; set; }
         public DbSet<FavoritePosts> FavoritePosts { get; set; }
         public DbSet<Message> Messages { get; set; }
-        public DbSet<Notes> Notes { get; set; }
+        public DbSet<Repository> Repositories { get; set; }
+        public DbSet<RepositoryFile> RepositoryFiles { get; set; }
         public DbSet<Notifications> Notifications { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<PostTags> PostTags { get; set; }

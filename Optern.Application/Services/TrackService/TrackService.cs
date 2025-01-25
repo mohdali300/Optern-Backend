@@ -27,6 +27,7 @@ namespace Optern.Application.Services.TrackService
             _context = context;
         }
 
+        #region GetAll
         public async Task<Response<List<TrackDTO>>> GetAll()
         {
             try
@@ -45,12 +46,14 @@ namespace Optern.Application.Services.TrackService
 
                 return Response<List<TrackDTO>>.Failure("No tracks found!", 204);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Response<List<TrackDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
         }
+        #endregion
 
+        #region Add
         public async Task<Response<TrackDTO>> Add(string name)
         {
             try
@@ -65,7 +68,7 @@ namespace Optern.Application.Services.TrackService
                     await _unitOfWork.Tracks.AddAsync(track);
                     if (track != null)
                     {
-                        var dto=new TrackDTO { Id = track.Id, Name=track.Name };
+                        var dto = new TrackDTO { Id = track.Id, Name = track.Name };
                         return Response<TrackDTO>.Success(dto, "Track added successfully.");
                     }
                     return Response<TrackDTO>.Failure("Failed to add the track, please try again later.", 400);
@@ -78,7 +81,9 @@ namespace Optern.Application.Services.TrackService
                 return Response<TrackDTO>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
         }
+        #endregion
 
+        #region GetAllWithSubTracks
         public async Task<Response<List<TrackWithSubTracksDTO>>> GetAllWithSubTracks()
         {
             try
@@ -107,6 +112,7 @@ namespace Optern.Application.Services.TrackService
             {
                 return Response<List<TrackWithSubTracksDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
-        }
+        } 
+        #endregion
     }
 }
