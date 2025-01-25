@@ -10,6 +10,7 @@ namespace Optern.Domain.Enums
     {
         Text,
         Link,
-        Image
+        Image,
+        Others
     }
 }
