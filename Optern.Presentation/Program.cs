@@ -9,6 +9,7 @@ using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
 using Optern.Presentation.GraphQlApi.Comment.Mutation;
 using Optern.Presentation.GraphQlApi.Comment.Query;
+using Optern.Presentation.GraphQlApi.FavouritePost.Mutation;
 using Optern.Presentation.GraphQlApi.FavouritePost.Query;
 using Optern.Presentation.GraphQlApi.Post.Mutation;
 using Optern.Presentation.GraphQlApi.Post.Query;
@@ -56,6 +57,7 @@ builder.Services
 .AddType<TrackMutation>()
 .AddType<SubTrackMutation>()
 .AddType<CommentMutation>()
+.AddType<FavouritePostsMutation>()
 .AddFluentValidation(); 
 #endregion
 	
