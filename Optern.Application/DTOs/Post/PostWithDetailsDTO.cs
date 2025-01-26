@@ -1,5 +1,6 @@
 ﻿using Optern.Application.DTOs.Comment;
 using Optern.Application.DTOs.React;
+using Optern.Application.DTOs.Tags;
 using Optern.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,7 @@ namespace Optern.Application.DTOs.Post
         public string? UserName { get; set; }
         public List<CommentDTO>? Comments { get; set; } = new();
         public List<ReactDTO>? Reacts { get; set; } = new();
+        public List<TagDTO>? Tags { get; set; } = new();
+
     }
 }

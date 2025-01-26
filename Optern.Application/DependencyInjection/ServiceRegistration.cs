@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
+using Optern.Application.Interfaces.ICommentService;
 using Optern.Application.Interfaces.IFavoritePostsService;
 using Optern.Application.Interfaces.IPostService;
 using Optern.Application.Interfaces.IRoomService;
@@ -14,6 +15,7 @@ using Optern.Application.Interfaces.ITrackService;
 using Optern.Application.Interfaces.IUserService;
 using Optern.Application.Mappings;
 using Optern.Application.Services.AuthService;
+using Optern.Application.Services.CommentService;
 using Optern.Application.Services.FavoritePostsService;
 using Optern.Application.Services.PostService;
 using Optern.Application.Services.RoomService;
@@ -86,6 +88,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IFavoritePostsService, FavoritePostsService>();
             services.AddScoped<IRoomTrackService, RoomTrackService>();
+            services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<IUserService, UserService>();
 
 

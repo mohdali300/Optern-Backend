@@ -66,6 +66,16 @@ namespace Optern.Infrastructure.Repositories
             return await _dbSet.FirstOrDefaultAsync(predicate);
         }
 
+        public virtual async Task<IEnumerable<T>> GetAllByExpressionAsync(Expression<Func<T, bool>> predicate)
+        {
+          
+
+                var results = await _dbSet.Where(predicate).ToListAsync();
+                return results ?? Enumerable.Empty<T>();
+           
+        }
+
+
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();
@@ -83,5 +93,28 @@ namespace Optern.Infrastructure.Repositories
             _dbSet.UpdateRange(entities);
             await _dbContext.SaveChangesAsync();
         }
+
+        public virtual async Task<IEnumerable<T>> GetAllAsync(
+    Expression<Func<T, bool>>? filter = null,
+    string? includeProperties = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var includeProperty in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+
     }
 }

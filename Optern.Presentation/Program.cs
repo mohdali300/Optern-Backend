@@ -7,6 +7,9 @@ using Optern.Infrastructure.Validations;
 using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.Comment.Mutation;
+using Optern.Presentation.GraphQlApi.Comment.Query;
+using Optern.Presentation.GraphQlApi.FavouritePost.Mutation;
 using Optern.Presentation.GraphQlApi.FavouritePost.Query;
 using Optern.Presentation.GraphQlApi.Post.Mutation;
 using Optern.Presentation.GraphQlApi.Post.Query;
@@ -35,23 +38,29 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
 
+#region Register GraphQL
 builder.Services
-	.AddGraphQLServer()
-	.AddQueryType(q => q.Name("Query"))
-	.AddType<AuthQuery>()
-	.AddType<RoomQuery>()
-	.AddType<TrackQuery>()
-	.AddType<SubTrackQuery>()
-	.AddType<RoomTrackQuery>()
-    .AddType<PostQuery>()
-    .AddType<TagQuery>()
-    .AddType<FavouritePostsQuery>()
-    .AddMutationType(m=>m.Name("Mutation"))
-	.AddType<AuthMutation>()
-	.AddType<RoomMutation>()
-	.AddType<TrackMutation>()
-	.AddType<SubTrackMutation>()
-    .AddFluentValidation();
+.AddGraphQLServer()
+.AddQueryType(q => q.Name("Query"))
+.AddType<AuthQuery>()
+.AddType<RoomQuery>()
+.AddType<TrackQuery>()
+.AddType<SubTrackQuery>()
+.AddType<RoomTrackQuery>()
+.AddType<PostQuery>()
+.AddType<TagQuery>()
+.AddType<FavouritePostsQuery>()
+.AddType<CommentQuery>()
+.AddMutationType(m => m.Name("Mutation"))
+.AddType<AuthMutation>()
+.AddType<RoomMutation>()
+.AddType<TrackMutation>()
+.AddType<SubTrackMutation>()
+.AddType<CommentMutation>()
+.AddType<FavouritePostsMutation>()
+.AddFluentValidation(); 
+#endregion
+	
 
 
 

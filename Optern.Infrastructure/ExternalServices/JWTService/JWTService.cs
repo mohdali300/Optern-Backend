@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -23,12 +24,14 @@ namespace Optern.Infrastructure.ExternalServices.JWTService
 		private readonly UserManager<ApplicationUser> _userManager;
 		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly IConfiguration _configuration;
+		private readonly IHttpContextAccessor _httpContextAccessor;
 
-		public JWTService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager, IConfiguration _configuration)
+		public JWTService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager, IHttpContextAccessor _httpContextAccessor,IConfiguration _configuration)
 		{
 			this._userManager = _userManager;
 			this._roleManager = _roleManager;
 			this._configuration = _configuration;
+			this._httpContextAccessor = _httpContextAccessor;
 		}
 		public async Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser User)
 		{
@@ -70,17 +73,18 @@ namespace Optern.Infrastructure.ExternalServices.JWTService
 			};
 		}
 
-		public async Task<Response<LogInResponseDTO>> NewRefreshToken(RefreshTokenDTO model)
+		public async Task<Response<LogInResponseDTO>> NewRefreshToken()
 		{
+			var RefreshToken = _httpContextAccessor.HttpContext.Request.Cookies["secure_rtk"];
 			try
 			{
-				var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == model.RefreshToken));
+				var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == RefreshToken));
 				if (user == null)
 				{
 					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Not Authenticated User", 400);
 				}
 
-				var refreshToken = user.RefreshTokens.Single(t => t.Token == model.RefreshToken);
+				var refreshToken = user.RefreshTokens.Single(t => t.Token == RefreshToken);
 
 				if (!refreshToken.IsActive)
 				{

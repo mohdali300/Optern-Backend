@@ -10,7 +10,11 @@ namespace Optern.Infrastructure.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
+        IGenericRepository<FavoritePosts> FavoritePosts { get; }
         IGenericRepository<PostTags> PostTags { get; }
+        IGenericRepository<Tags> Tags { get; }
+
+        IGenericRepository<Post> Posts {  get; }
         IGenericRepository<Room>Rooms { get; }
         IGenericRepository<UserRoom> UserRoom { get; }
         IGenericRepository<Track> Tracks { get; }
@@ -18,6 +22,7 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<ApplicationUser> Users { get; }
         IGenericRepository<RoomSkills> RoomSkills { get; }
         IGenericRepository<RoomTrack> RoomTracks { get; }
+
 
         Task<int> SaveAsync();
     }
