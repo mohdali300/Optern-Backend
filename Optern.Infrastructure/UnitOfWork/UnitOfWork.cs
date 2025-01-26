@@ -19,6 +19,10 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Track> Tracks { get; private set; }
         public IGenericRepository<SubTrack> SubTracks { get; private set; }
         public IGenericRepository<ApplicationUser> Users { get; private set; }
+        public IGenericRepository<FavoritePosts> FavoritePosts { get; private set; }
+
+        public IGenericRepository<Post> Posts { get; private set; }
+
 
 
         public UnitOfWork(OpternDbContext context) 
@@ -30,6 +34,8 @@ namespace Optern.Infrastructure.UnitOfWork
             Tracks = new GenericRepository<Track>(context);
             SubTracks = new GenericRepository<SubTrack>(context);
             Users= new GenericRepository<ApplicationUser>(context);
+            FavoritePosts= new GenericRepository<FavoritePosts>(context);
+            Posts= new GenericRepository<Post>(context);    
         }
 
         public async Task<int> SaveAsync()

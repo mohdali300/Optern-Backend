@@ -14,6 +14,9 @@ namespace Optern.Infrastructure.Repositories
         Task<T> GetByIdAsync(int id);
         Task<T> GetByIdAsync(string id);
         Task<T> GetByExpressionAsync(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null,string? includeProperties = null);
+        Task<IEnumerable<T>> GetAllByExpressionAsync(Expression<Func<T, bool>> predicate);
+
         Task<IEnumerable<T>> GetAllAsync();
         Task SaveChangesAsync();
         Task<T> AddAsync(T entity);
