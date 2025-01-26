@@ -19,6 +19,8 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Track> Tracks { get; private set; }
         public IGenericRepository<SubTrack> SubTracks { get; private set; }
         public IGenericRepository<ApplicationUser> Users { get; private set; }
+        public IGenericRepository<RoomSkills> RoomSkills { get; private set; }
+        public IGenericRepository<RoomTrack> RoomTracks { get; private set; }
 
 
         public UnitOfWork(OpternDbContext context) 
@@ -30,6 +32,8 @@ namespace Optern.Infrastructure.UnitOfWork
             Tracks = new GenericRepository<Track>(context);
             SubTracks = new GenericRepository<SubTrack>(context);
             Users= new GenericRepository<ApplicationUser>(context);
+            RoomSkills= new GenericRepository<RoomSkills>(context);
+            RoomTracks= new GenericRepository<RoomTrack>(context);
         }
 
         public async Task<int> SaveAsync()
