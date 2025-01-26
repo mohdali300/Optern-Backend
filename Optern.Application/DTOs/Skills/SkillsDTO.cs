@@ -8,7 +8,7 @@ namespace Optern.Application.DTOs.Skills
 {
     public class SkillsDTO
     {
-        public string RoomId { get; set; }
-        public int SkillId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }
