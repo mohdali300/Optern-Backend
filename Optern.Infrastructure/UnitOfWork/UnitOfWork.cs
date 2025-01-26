@@ -23,6 +23,8 @@ namespace Optern.Infrastructure.UnitOfWork
 
         public IGenericRepository<Post> Posts { get; private set; }
 
+        public IGenericRepository<Tags> Tags { get; private set; }
+
 
 
         public UnitOfWork(OpternDbContext context) 
@@ -35,7 +37,8 @@ namespace Optern.Infrastructure.UnitOfWork
             SubTracks = new GenericRepository<SubTrack>(context);
             Users= new GenericRepository<ApplicationUser>(context);
             FavoritePosts= new GenericRepository<FavoritePosts>(context);
-            Posts= new GenericRepository<Post>(context);    
+            Posts= new GenericRepository<Post>(context);  
+            Tags= new GenericRepository<Tags>(context);
         }
 
         public async Task<int> SaveAsync()

@@ -12,6 +12,7 @@ namespace Optern.Infrastructure.UnitOfWork
     {
         IGenericRepository<FavoritePosts> FavoritePosts { get; }
         IGenericRepository<PostTags> PostTags { get; }
+        IGenericRepository<Tags> Tags { get; }
 
         IGenericRepository<Post> Posts {  get; }
         IGenericRepository<Room>Rooms { get; }

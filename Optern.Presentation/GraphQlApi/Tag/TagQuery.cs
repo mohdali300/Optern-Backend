@@ -10,7 +10,7 @@ namespace Optern.Presentation.GraphQlApi.Tag
         [GraphQLDescription("Retrieve the top most frequent tags.")]
         public async Task<Response<IEnumerable<TagDTO>>> GetTopTags(
             [Service] ITagsService _tagsService,
-            int topN
+            int? topN
         )
             => await _tagsService.GetTopTagsAsync(topN);
     }

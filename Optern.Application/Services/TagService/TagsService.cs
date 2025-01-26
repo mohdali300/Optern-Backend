@@ -7,6 +7,7 @@ using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
+using Optern.Infrastructure.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,50 +15,52 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.TagService
 {
-    public class TagsService : GenericRepository<PostTags>, ITagsService
+    public class TagsService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) :  ITagsService
     {
 
-        private readonly OpternDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly OpternDbContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
-        public TagsService(OpternDbContext context, IMapper mapper) : base(context)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
-        public async Task<Response<IEnumerable<TagDTO>>> GetTopTagsAsync(int topN)
+        #region Get Tags (All Or Top N Frequent)
+        public async Task<Response<IEnumerable<TagDTO>>> GetTopTagsAsync(int? topN)
         {
             try
             {
+                // Return all Tags if number not provided (for search)
+                if (!topN.HasValue || topN <= 0)
+                {
+                    var allTags = await _unitOfWork.Tags.GetAllAsync();  
+                    var tagDTOs = _mapper.Map<IEnumerable<TagDTO>>(allTags);
+                    return Response<IEnumerable<TagDTO>>.Success(tagDTOs, "Tags retrieved successfully.");
+                }
+
                 var topTags = await _context.PostTags
-                    .GroupBy(pt => pt.TagId)
-                    .OrderByDescending(group => group.Count())
-                    .Take(topN)
-                    .Select(group => new
-                    {
-                        TagId = group.Key,
-                        Tag = group.FirstOrDefault().Tag 
-                    })
-                    .ToListAsync();
+                .GroupBy(pt => pt.TagId)
+                .OrderByDescending(group => group.Count())
+                .Take(topN.Value)
+                .Select(group => new
+                {
+                    TagId = group.Key,
+                    Tag = group.FirstOrDefault().Tag
+                })
+                .ToListAsync();
 
                 if (!topTags.Any())
                 {
                     return Response<IEnumerable<TagDTO>>.Success(new List<TagDTO>(), "No tags found.");
                 }
 
-                var tagDTOs = _mapper.Map<IEnumerable<TagDTO>>(topTags.Select(t => t.Tag));
+                var tagDTOss = _mapper.Map<IEnumerable<TagDTO>>(topTags.Select(t => t.Tag));
 
-                return Response<IEnumerable<TagDTO>>.Success(tagDTOs, "Tags retrieved successfully.");
+                return Response<IEnumerable<TagDTO>>.Success(tagDTOss, "Tags retrieved successfully.");
             }
             catch (Exception ex)
             {
                 return Response<IEnumerable<TagDTO>>.Failure("Error occurred while fetching tags.", 500, new List<string> { ex.Message });
             }
         }
-
-
-
-
+        #endregion
 
     }
 }
