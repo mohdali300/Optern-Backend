@@ -3,6 +3,7 @@ using FluentValidation;
 using Optern.Application.Mappings;
 using Optern.Infrastructure;
 using Optern.Infrastructure.DependencyInjection;
+using Optern.Infrastructure.Hubs;
 using Optern.Infrastructure.Validations;
 using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
@@ -36,6 +37,12 @@ builder.Services.AddSwaggerGen();
 
 // Register FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
+
+// register SignalR
+builder.Services.AddSignalR(options =>
+{
+	options.EnableDetailedErrors = true;
+});
 
 
 #region Register GraphQL
@@ -90,6 +97,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
 
+app.MapHub<ChatHub>("/ChatHub");
+app.MapHub<NotificationHub>("/NotificationHub");
 app.MapControllers();
 app.MapGraphQL("/ui/graphql");
 app.Run();
