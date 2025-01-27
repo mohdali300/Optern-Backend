@@ -29,7 +29,6 @@ namespace Optern.Application.DTOs.Comment
         public List<ReactDTO>? Reacts { get; set; } = new List<ReactDTO>(); // List of reactions to this comment
         public int ReplyCount { get; set; }  // count number of comments of the post
         public int ReactCount { get; set; }  // count number of react of the post
-
         public int ReactCommentCount { get; set; } // count number of reacts of the comment 
         public int ReplyCommentCount { get; set; } // count number of replies of the comment
 
