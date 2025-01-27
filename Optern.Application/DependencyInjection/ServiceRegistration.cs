@@ -12,6 +12,7 @@ using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Application.Interfaces.ISubTrackService;
 using Optern.Application.Interfaces.ITagService;
 using Optern.Application.Interfaces.ITrackService;
+using Optern.Application.Interfaces.IUserService;
 using Optern.Application.Mappings;
 using Optern.Application.Services.AuthService;
 using Optern.Application.Services.CommentService;
@@ -22,13 +23,16 @@ using Optern.Application.Services.RoomTrackService;
 using Optern.Application.Services.SubTrackService;
 using Optern.Application.Services.TagService;
 using Optern.Application.Services.TrackService;
+using Optern.Application.Services.UserService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalDTOs.Mail;
 using Optern.Infrastructure.ExternalInterfaces.ICacheService;
+using Optern.Infrastructure.ExternalInterfaces.IFileService;
 using Optern.Infrastructure.ExternalInterfaces.IJWTService;
 using Optern.Infrastructure.ExternalInterfaces.IMail;
 using Optern.Infrastructure.ExternalServices.CacheService;
+using Optern.Infrastructure.ExternalServices.FileService;
 using Optern.Infrastructure.ExternalServices.JWTService;
 using Optern.Infrastructure.ExternalServices.MailService;
 using Optern.Infrastructure.UnitOfWork;
@@ -70,6 +74,8 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IJWTService, JWTService>();
             services.AddScoped<OTP>();
             services.AddScoped<ICacheService, CacheService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
+
 
 
             // Dependency Injection for Application Services
@@ -83,6 +89,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IFavoritePostsService, FavoritePostsService>();
             services.AddScoped<IRoomTrackService, RoomTrackService>();
             services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<IUserService, UserService>();
 
 
             return services;

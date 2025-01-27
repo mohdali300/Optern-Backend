@@ -1,4 +1,5 @@
-﻿using Optern.Application.DTOs.Skills;
+﻿using Microsoft.AspNetCore.Http;
+using Optern.Application.DTOs.Skills;
 using Optern.Application.DTOs.SubTrack;
 using Optern.Application.DTOs.Track;
 using Optern.Domain.Enums;
@@ -24,13 +25,13 @@ namespace Optern.Application.DTOs.Room
         }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int? Capacity { get; set; }
+        public int Capacity { get; set; }
         public int? NumberOfParticipants { get; set; }
         public RoomType RoomType { get; set; }
-        public string CoverPicture { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public ICollection<TrackDTO>? Tracks { get; set; } = new HashSet<TrackDTO>();
-        public ICollection<SubTrackDTO>? SubTracks { get; set; } = new HashSet<SubTrackDTO>();
-        public ICollection<SkillsDTO>? Skills { get; set; } = new List<SkillsDTO>();
+        public string? CoverPicture { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string CreatorId { get; set; }
+        public ICollection<int>? SubTracks { get; set; } = new HashSet<int>();
+        public ICollection<int>? Skills { get; set; } = new List<int>();
     }
 }

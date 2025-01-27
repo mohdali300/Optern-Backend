@@ -28,7 +28,7 @@ namespace Optern.Infrastructure.Repositories
             return entity;
         }
 
-        public virtual async Task AddRangeAsync(ICollection<T> entities)
+        public virtual async Task AddRangeAsync(IEnumerable<T> entities)
         {
             await _dbSet.AddRangeAsync(entities);
             await _dbContext.SaveChangesAsync();

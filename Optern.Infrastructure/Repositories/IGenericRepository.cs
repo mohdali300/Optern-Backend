@@ -20,7 +20,7 @@ namespace Optern.Infrastructure.Repositories
         Task<IEnumerable<T>> GetAllAsync();
         Task SaveChangesAsync();
         Task<T> AddAsync(T entity);
-        Task AddRangeAsync(ICollection<T> entities);
+        Task AddRangeAsync(IEnumerable<T> entities);
         Task UpdateAsync(T entity);
         Task UpdateRangeAsync(ICollection<T> entities);
         Task DeleteAsync(T entity);
