@@ -13,18 +13,32 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
        
 
         [GraphQLDescription("Get Latest Posts")]
-        public async Task<Response<List<PostDTO>>> GetLatestPostsAsync([Service] IPostService _postService,int count)
+        public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync([Service] IPostService _postService,int count)
            => await _postService.GetLatestPostsAsync(count);
 
-        [GraphQLDescription("Get Post Details By Id")]
-        public async Task<Response<PostWithDetailsDTO>> GetPostDetailsByIdAsync([Service] IPostService _postService, int id)
-           => await _postService.GetPostDetailsByIdAsync(id);
+        [GraphQLDescription("Get Posts Details by Id or Username")]
+        public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(
+       [Service] IPostService postService,
+       int? postId = null,
+       string? username = null)
+        {
+            return await postService.GetPostsByIdOrUserAsync(postId, username);
+        }
 
-       
 
         [GraphQLDescription("Get Recommended Posts based on reactions count")]
-        public async Task<Response<List<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
+        public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
          ) => await postService.GetRecommendedPostsAsync(topN);
+
+
+        [GraphQLDescription("Search for posts, users, or tags based on criteria")]
+        public async Task<Response<IEnumerable<SearchPostDTO>>> SearchPostsAsync(
+    [Service] IPostService postService,
+    string? tagName = null,
+    string? username = null,
+    string? keyword = null
+       ) => await postService.SearchPostsAsync(tagName, username, keyword);
+
 
 
     }

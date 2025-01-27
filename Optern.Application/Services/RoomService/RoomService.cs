@@ -12,6 +12,7 @@ using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalInterfaces.IFileService;
+using Optern.Infrastructure.ExternalServices.FileService;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
@@ -24,13 +25,13 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.RoomService
 {
-    public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,IUserService userService, IFileService fileService) : IRoomService
+    public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,IUserService userService, ICloudinaryService cloudinaryService) : IRoomService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly IUserService _userService = userService;
-        private readonly IFileService _fileService= fileService;
+        private readonly ICloudinaryService _cloudinaryService= cloudinaryService;
 
         #region GetAllAsync
         public async Task<Response<IEnumerable<RoomDTO>>> GetAllAsync()
@@ -40,7 +41,7 @@ namespace Optern.Application.Services.RoomService
                 var rooms = await _unitOfWork.Rooms.GetAllAsync();
                 if (!rooms.Any())
                 {
-                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 204);
+                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 404);
                 }
 
                 var roomsDtos = _mapper.Map<IEnumerable<RoomDTO>>(rooms);
@@ -82,7 +83,7 @@ namespace Optern.Application.Services.RoomService
                      .ToListAsync();
 
                 return rooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(rooms, "", 200) :
-                                     Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There Are No Created Rooms Until Now", 204);
+                                     Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There Are No Created Rooms Until Now", 404);
             }
             catch (Exception ex)
             {
@@ -112,7 +113,7 @@ namespace Optern.Application.Services.RoomService
                     .ToListAsync();
 
                 return createdRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(createdRooms, "", 200) :
-                                            Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There is no Created Rooms Until Now", 204);
+                                            Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There is no Created Rooms Until Now", 404);
 
             }
             catch (Exception ex)
@@ -143,7 +144,7 @@ namespace Optern.Application.Services.RoomService
                     .ToListAsync();
 
                 return joinedRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(joinedRooms, "", 200) :
-                                           Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "You have not joined any room yet.", 204);
+                                           Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "You have not joined any room yet.", 404);
             }
             catch (Exception ex)
             {
@@ -191,8 +192,9 @@ namespace Optern.Application.Services.RoomService
         }
         #endregion
 
+
         #region Create Room
-        public async Task<Response<RoomDTO>> CreateRoom(RoomDTO model, IFormFile CoverPicture)
+        public async Task<Response<RoomDTO>> CreateRoom(RoomDTO model, IFile CoverPicture)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -204,7 +206,7 @@ namespace Optern.Application.Services.RoomService
                 }
                 // current login User  
                 var currentUser = await _userService.GetCurrentUserAsync();
-                var CoverPicturePath = await _fileService.SaveFileAsync(CoverPicture, "RoomsCoverPictures");
+                var CoverPicturePath = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
                 var room = new Room
                 {
                     Name = model.Name,
@@ -260,7 +262,7 @@ namespace Optern.Application.Services.RoomService
                 return Response<RoomDTO>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
 
-        } 
+        }
         #endregion
     }
 }
