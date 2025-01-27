@@ -31,6 +31,9 @@ namespace Optern.Application.DTOs.Post
         public List<ReactDTO>? Reacts { get; set; } = new();
         public List<TagDTO>? Tags { get; set; } = new();
 
+        public int ReactCount { get; set; } 
+        public int CommentCount { get; set; }
+
 
 
     }
