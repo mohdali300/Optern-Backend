@@ -35,27 +35,31 @@ namespace Optern.Application.Mappings
 
 
             CreateMap<Post, PostWithDetailsDTO>()
-          .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName))
-          .ForMember(dest => dest.ReactCount, opt => opt.MapFrom(src => src.Reacts.Count))
-          .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName))
+                .ForMember(dest => dest.ReactCount, opt => opt.MapFrom(src => src.Reacts.Count))
+                .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count));
 
             //post
             CreateMap<Post, PostDTO>()
-            .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.UserName))
-            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
+                .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.UserName))
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
 
             CreateMap<Post, PostWithDetailsDTO>()
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.UserName));
 
             //comment
             CreateMap<Comment, CommentDTO>()
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
-            .ForMember(dest => dest.Reacts, opt => opt.MapFrom(src => src.CommentReacts));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.Reacts, opt => opt.MapFrom(src => src.CommentReacts));
 
 
             //react
             CreateMap<Reacts, ReactDTO>()
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture));
+            CreateMap<CommentReacts, CommentReactDTO>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture));
 
             #endregion
 
