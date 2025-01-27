@@ -60,6 +60,7 @@ builder.Services
 .AddType<TagQuery>()
 .AddType<FavouritePostsQuery>()
 .AddType<CommentQuery>()
+.AddType<ReactQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
