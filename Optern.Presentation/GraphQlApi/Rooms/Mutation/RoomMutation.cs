@@ -13,7 +13,7 @@ namespace Optern.Presentation.GraphQlApi.Rooms.Mutation
             await _roomService.JoinToRoom(model);
 
         [GraphQLDescription("Create Room")]
-        public async Task<Response<RoomDTO>> CreateRoom([Service] IRoomService _roomService, RoomDTO model ,IFormFile CoverPicture) =>
+        public async Task<Response<RoomDTO>> CreateRoom([Service] IRoomService _roomService, RoomDTO model ,IFile CoverPicture) =>
           await _roomService.CreateRoom(model, CoverPicture);
 
     }

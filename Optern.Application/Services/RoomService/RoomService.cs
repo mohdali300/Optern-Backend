@@ -12,6 +12,7 @@ using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalInterfaces.IFileService;
+using Optern.Infrastructure.ExternalServices.FileService;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
@@ -24,13 +25,13 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.RoomService
 {
-    public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,IUserService userService, IFileService fileService) : IRoomService
+    public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,IUserService userService, ICloudinaryService cloudinaryService) : IRoomService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly IUserService _userService = userService;
-        private readonly IFileService _fileService= fileService;
+        private readonly ICloudinaryService _cloudinaryService= cloudinaryService;
 
         #region GetAllAsync
         public async Task<Response<IEnumerable<RoomDTO>>> GetAllAsync()
@@ -192,7 +193,7 @@ namespace Optern.Application.Services.RoomService
         #endregion
 
         #region Create Room
-        public async Task<Response<RoomDTO>> CreateRoom(RoomDTO model, IFormFile CoverPicture)
+        public async Task<Response<RoomDTO>> CreateRoom(RoomDTO model, IFile CoverPicture)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -204,7 +205,7 @@ namespace Optern.Application.Services.RoomService
                 }
                 // current login User  
                 var currentUser = await _userService.GetCurrentUserAsync();
-                var CoverPicturePath = await _fileService.SaveFileAsync(CoverPicture, "RoomsCoverPictures");
+                var CoverPicturePath = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
                 var room = new Room
                 {
                     Name = model.Name,
