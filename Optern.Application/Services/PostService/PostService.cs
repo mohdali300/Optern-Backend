@@ -28,64 +28,132 @@ namespace Optern.Application.Services.PostService
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
 
-        public async Task<Response<List<PostDTO>>> GetLatestPostsAsync(int count)
+        #region Get Latest Posts
+
+        public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync(int count)
         {
             if (count <= 0)
-                return Response<List<PostDTO>>.Failure("Invalid count value", 400);
+                return Response<IEnumerable<PostDTO>>.Failure("Invalid count value", 400);
+
             try
             {
                 var latestPosts = await _context.Posts
                     .Include(post => post.Creator)
-                .OrderByDescending(post => post.CreatedDate)
-                .Take(count)
-                .ToListAsync();
+                    .Include(post => post.PostTags)
+                        .ThenInclude(postTag => postTag.Tag)
+                    .OrderByDescending(post => post.CreatedDate)
+                    .Take(count)
+                    .ToListAsync();
+
                 if (latestPosts != null && latestPosts.Any())
                 {
-
                     var postDtos = _mapper.Map<List<PostDTO>>(latestPosts);
 
-                    return Response<List<PostDTO>>.Success(postDtos, "Latest posts fetched successfully");
+                    return Response<IEnumerable<PostDTO>>.Success(postDtos, "Latest posts fetched successfully");
                 }
-                return Response<List<PostDTO>>.Failure("No Posts found!", 404);
+
+                return Response<IEnumerable<PostDTO>>.Failure("No Posts found!", 404);
             }
             catch (Exception ex)
             {
-                return Response<List<PostDTO>>.Failure($"Failed to fetch latest posts: {ex.Message}");
+                return Response<IEnumerable<PostDTO>>.Failure($"Failed to fetch latest posts: {ex.Message}", 500);
             }
-
         }
+        #endregion
 
-        public async Task<Response<PostWithDetailsDTO>> GetPostDetailsByIdAsync(int id)
+        #region Get Posts (id - name -all)
+        public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(int? postId = null, string? username =null)
         {
             try
             {
-
-                var post = await _context.Posts
+                var query = _context.Posts
                     .Include(p => p.Creator)
-                    .Include(p => p.Comments)
-                        .ThenInclude(c => c.User)
-                    .Include(p => p.Reacts)
-                        .ThenInclude(r => r.User)
                     .Include(p => p.PostTags)
-                    .SingleOrDefaultAsync(p => p.Id == id);
+                        .ThenInclude(pt => pt.Tag)
+                    .Include(p => p.Comments)
+                        .ThenInclude(c => c.CommentReacts)
+                    .Include(p => p.Reacts) 
+                    .AsQueryable();
 
-
-                if (post == null)
+                if (!string.IsNullOrEmpty(username))
                 {
-                    return Response<PostWithDetailsDTO>.Failure("Post not found!", 404);
+                    query = query.Where(p => p.Creator.UserName == username);
                 }
 
+                if (postId.HasValue)
+                {
+                    query = query.Where(p => p.Id == postId);
+                }
 
-                var postDetailsDto = _mapper.Map<PostWithDetailsDTO>(post);
+                query = query.OrderByDescending(p => p.CreatedDate);
 
-                return Response<PostWithDetailsDTO>.Success(postDetailsDto, "Post details fetched successfully.");
+                var posts = await query.ToListAsync();
+                
+
+                var postDetails = posts.Select(p => new PostWithDetailsDTO
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content,
+                    CreatedDate = p.CreatedDate,
+                    UserName = p.Creator.UserName,
+                    // Reacts for the post itself
+                    Reacts = p.Reacts.Select(r => new ReactDTO
+                    {
+                        UserId = r.UserId,
+                        ReactType = r.ReactType,
+                        UserName = r.User.UserName
+                    }).ToList(),
+                    Tags = p.PostTags.Select(pt => new TagDTO { Name = pt.Tag.Name }).ToList(),
+                    ReactCount = p.Reacts.Count(),
+                    CommentCount = p.Comments.Count(),
+                    // Comments with reacts
+                    Comments = p.Comments.Select(c => new CommentDTO
+                    {
+                        Id = c.Id,
+                        Content = c.Content,
+                        CommentDate = c.CommentDate,
+                        UserName = c.User.UserName,
+                        ReactCommentCount = c.CommentReacts.Count, 
+                       // ReplyCommentCount = c.Replies.Count,
+                        // Reacts for the comment itself
+                        Reacts = c.CommentReacts.Select(r => new ReactDTO
+                        {
+                            UserId = r.UserId,
+                            ReactType = r.ReactType,
+                            UserName = r.User.UserName
+                        }).ToList()
+                    }).ToList()  
+                }).ToList();
+                
+
+              //  var postDetails = _mapper.Map<List<PostWithDetailsDTO>>(posts);
+
+
+                if (!postDetails.Any())
+                {
+                    return Response<IEnumerable<PostWithDetailsDTO>>.Success(
+                        new List<PostWithDetailsDTO>(),
+                        "No posts found",
+                        200
+                    );
+                }
+
+                return Response<IEnumerable<PostWithDetailsDTO>>.Success(
+                    postDetails,
+                    "Posts retrieved successfully.",
+                    200
+                );
             }
             catch (Exception ex)
             {
-
-                return Response<PostWithDetailsDTO>.Failure($"Failed to fetch post details: {ex.Message}");
+                return Response<IEnumerable<PostWithDetailsDTO>>.Failure(
+                    $"An error occurred while retrieving posts: {ex.Message}",
+                    500
+                );
             }
         }
+        #endregion
 
 
         #region Get Recommended Posts (Only Post Title  Required (post creator (Optoinal)))

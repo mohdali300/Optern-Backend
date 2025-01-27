@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Optern.Application.DTOs.React;
 
 namespace Optern.Application.DTOs.Comment
 {
@@ -16,6 +17,7 @@ namespace Optern.Application.DTOs.Comment
             CommentDate = DateTime.Now;
             UserName = string.Empty;
             Replies= new List<CommentDTO>();
+            Reacts = new List<ReactDTO>();
 
 
         }
@@ -24,6 +26,12 @@ namespace Optern.Application.DTOs.Comment
         public DateTime? CommentDate { get; set; }
         public string? UserName { get; set; }
         public List<CommentDTO>? Replies { get; set; } = new List<CommentDTO>(); // For nested replies
+        public List<ReactDTO>? Reacts { get; set; } = new List<ReactDTO>(); // List of reactions to this comment
+        public int ReplyCount { get; set; }  // count number of comments of the post
+        public int ReactCount { get; set; }  // count number of react of the post
+
+        public int ReactCommentCount { get; set; } // count number of reacts of the comment 
+        public int ReplyCommentCount { get; set; } // count number of replies of the comment
 
         public string TimeAgo
         {
