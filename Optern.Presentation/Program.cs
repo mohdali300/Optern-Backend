@@ -58,10 +58,11 @@ builder.Services
 .AddType<SubTrackMutation>()
 .AddType<CommentMutation>()
 .AddType<FavouritePostsMutation>()
-.AddFluentValidation(); 
+.AddType<UploadType>()
+.AddFluentValidation();
 #endregion
-	
 
+builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
 
 
 builder.Services.AddCors(options =>
@@ -86,7 +87,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();

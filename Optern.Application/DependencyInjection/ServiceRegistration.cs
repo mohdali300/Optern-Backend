@@ -74,7 +74,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IJWTService, JWTService>();
             services.AddScoped<OTP>();
             services.AddScoped<ICacheService, CacheService>();
-            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 
 
