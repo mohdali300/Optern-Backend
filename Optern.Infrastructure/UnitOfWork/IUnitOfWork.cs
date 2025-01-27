@@ -22,6 +22,8 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<ApplicationUser> Users { get; }
         IGenericRepository<RoomSkills> RoomSkills { get; }
         IGenericRepository<RoomTrack> RoomTracks { get; }
+        IGenericRepository<Comment> Comments { get; }
+        IGenericRepository<Reacts> Reacts { get; }
 
 
         Task<int> SaveAsync();

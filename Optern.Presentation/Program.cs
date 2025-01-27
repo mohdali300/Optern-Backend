@@ -14,6 +14,8 @@ using Optern.Presentation.GraphQlApi.FavouritePost.Mutation;
 using Optern.Presentation.GraphQlApi.FavouritePost.Query;
 using Optern.Presentation.GraphQlApi.Post.Mutation;
 using Optern.Presentation.GraphQlApi.Post.Query;
+using Optern.Presentation.GraphQlApi.React.Mutation;
+using Optern.Presentation.GraphQlApi.React.Query;
 using Optern.Presentation.GraphQlApi.Rooms.Mutation;
 using Optern.Presentation.GraphQlApi.Rooms.Query;
 using Optern.Presentation.GraphQlApi.RoomTrack.Query;
@@ -66,6 +68,7 @@ builder.Services
 .AddType<CommentMutation>()
 .AddType<FavouritePostsMutation>()
 .AddType<UploadType>()
+.AddType<ReactMutation>()
 .AddFluentValidation();
 #endregion
 
