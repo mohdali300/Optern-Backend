@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Optern.Infrastructure.Data;
 
 namespace Optern.Infrastructure.Repositories
@@ -115,6 +116,15 @@ namespace Optern.Infrastructure.Repositories
 
             return await query.ToListAsync();
         }
+
+        public IDbContextTransaction BeginTransaction() =>
+          _dbContext.Database.BeginTransaction();
+
+        public void Commit() =>
+            _dbContext.Database.CommitTransaction();
+
+        public void RollBack() =>
+            _dbContext.Database.RollbackTransaction();
 
     }
 }
