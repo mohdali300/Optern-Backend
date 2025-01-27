@@ -23,8 +23,18 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
        
 
         [GraphQLDescription("Get Recommended Posts based on reactions count")]
-        public async Task<Response<List<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
+        public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
          ) => await postService.GetRecommendedPostsAsync(topN);
+
+
+        [GraphQLDescription("Search for posts, users, or tags based on criteria")]
+        public async Task<Response<IEnumerable<SearchPostDTO>>> SearchPostsAsync(
+    [Service] IPostService postService,
+    string? tagName = null,
+    string? username = null,
+    string? keyword = null
+       ) => await postService.SearchPostsAsync(tagName, username, keyword);
+
 
 
     }
