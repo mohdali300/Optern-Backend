@@ -41,7 +41,7 @@ namespace Optern.Application.Services.RoomService
                 var rooms = await _unitOfWork.Rooms.GetAllAsync();
                 if (!rooms.Any())
                 {
-                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 204);
+                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 404);
                 }
 
                 var roomsDtos = _mapper.Map<IEnumerable<RoomDTO>>(rooms);
@@ -83,7 +83,7 @@ namespace Optern.Application.Services.RoomService
                      .ToListAsync();
 
                 return rooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(rooms, "", 200) :
-                                     Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There Are No Created Rooms Until Now", 204);
+                                     Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There Are No Created Rooms Until Now", 404);
             }
             catch (Exception ex)
             {
@@ -113,7 +113,7 @@ namespace Optern.Application.Services.RoomService
                     .ToListAsync();
 
                 return createdRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(createdRooms, "", 200) :
-                                            Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There is no Created Rooms Until Now", 204);
+                                            Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There is no Created Rooms Until Now", 404);
 
             }
             catch (Exception ex)
@@ -144,7 +144,7 @@ namespace Optern.Application.Services.RoomService
                     .ToListAsync();
 
                 return joinedRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(joinedRooms, "", 200) :
-                                           Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "You have not joined any room yet.", 204);
+                                           Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "You have not joined any room yet.", 404);
             }
             catch (Exception ex)
             {
@@ -191,6 +191,7 @@ namespace Optern.Application.Services.RoomService
             }
         }
         #endregion
+
 
         #region Create Room
         public async Task<Response<RoomDTO>> CreateRoom(RoomDTO model, IFile CoverPicture)
@@ -261,7 +262,7 @@ namespace Optern.Application.Services.RoomService
                 return Response<RoomDTO>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
 
-        } 
+        }
         #endregion
     }
 }

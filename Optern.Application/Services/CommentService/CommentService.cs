@@ -33,7 +33,7 @@ namespace Optern.Application.Services.CommentService
                     .ToListAsync();
 
                 if (comments == null || !comments.Any())
-                    return Response<List<CommentDTO>>.Failure("No comments found for the specified post.", 404);
+                    return Response<List<CommentDTO>>.Failure(new List<CommentDTO>(), "No comments found for the specified post.", 404);
 
                 // Map comments with their replies
                 var commentDtos = comments
@@ -51,6 +51,7 @@ namespace Optern.Application.Services.CommentService
 
         public async Task<Response<CommentDTO>> AddCommentAsync(AddCommentInputDTO input, string userId)
         {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
                 var newComment = new Comment
@@ -64,7 +65,6 @@ namespace Optern.Application.Services.CommentService
                 _dbContext.Comments.Add(newComment);
                 await _dbContext.SaveChangesAsync();
 
-                // Map to DTO
                 var commentDto = new CommentDTO
                 {
                     Id = newComment.Id,
@@ -73,20 +73,26 @@ namespace Optern.Application.Services.CommentService
                     UserName = (await _dbContext.Users.FindAsync(userId))?.UserName
                 };
 
+                await transaction.CommitAsync();
+
                 return Response<CommentDTO>.Success(commentDto, "Comment added successfully.");
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 return Response<CommentDTO>.Failure(new CommentDTO(), $"Error adding comment: {ex.Message}");
             }
         }
         public async Task<Response<CommentDTO>> AddReplyAsync(AddReplyInputDTO input, string userId)
         {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
                 var parentComment = await _dbContext.Comments.FindAsync(input.ParentId);
                 if (parentComment == null)
-                    return Response<CommentDTO>.Failure(new CommentDTO(),"Parent comment not found.");
+                {
+                    return Response<CommentDTO>.Failure(new CommentDTO(), "Parent comment not found.");
+                }
 
                 var newReply = new Comment
                 {
@@ -100,7 +106,6 @@ namespace Optern.Application.Services.CommentService
                 _dbContext.Comments.Add(newReply);
                 await _dbContext.SaveChangesAsync();
 
-                // Map to DTO
                 var replyDto = new CommentDTO
                 {
                     Id = newReply.Id,
@@ -109,13 +114,87 @@ namespace Optern.Application.Services.CommentService
                     UserName = (await _dbContext.Users.FindAsync(userId))?.UserName
                 };
 
+                await transaction.CommitAsync();
+
                 return Response<CommentDTO>.Success(replyDto, "Reply added successfully.");
             }
             catch (Exception ex)
             {
-                return Response<CommentDTO>.Failure(new CommentDTO(),$"Error adding reply: {ex.Message}");
+                await transaction.RollbackAsync();
+                return Response<CommentDTO>.Failure(new CommentDTO(), $"Error adding reply: {ex.Message}");
             }
         }
+        public async Task<Response<CommentDTO>> UpdateCommentAsync(int commentId, UpdateCommentInputDTO input)
+        {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                
+                var comment = await _dbContext.Comments
+                    .Include(c => c.User) 
+                    .FirstOrDefaultAsync(c => c.Id == commentId);
+
+                if (comment == null)
+                {
+                    return Response<CommentDTO>.Failure(new CommentDTO(),"Comment not found.", 404);
+                }
+
+                
+                comment.Content = input.UpdatedContent;
+                comment.CommentDate = DateTime.UtcNow;
+
+                _dbContext.Comments.Update(comment);
+                await _dbContext.SaveChangesAsync();
+
+                
+                await transaction.CommitAsync();
+
+                
+                var updatedCommentDto = new CommentDTO
+                {
+                    Id = comment.Id,
+                    Content = comment.Content,
+                    CommentDate = comment.CommentDate,
+                    UserName = comment.User.UserName
+                };
+
+                return Response<CommentDTO>.Success(updatedCommentDto, "Comment updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                
+                await transaction.RollbackAsync();
+                return Response<CommentDTO>.Failure(new CommentDTO(),$"Failed to update comment: {ex.Message}");
+            }
+        }
+        public async Task<Response<bool>> DeleteCommentAsync(int commentId)
+        {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var comment = await _dbContext.Comments
+                    .Include(c => c.comment) // Include replies to cascade deletion
+                    .FirstOrDefaultAsync(c => c.Id == commentId);
+
+                if (comment == null)
+                {
+                    return Response<bool>.Failure(false, "Comment not found.");
+                }
+
+                _dbContext.Comments.Remove(comment);
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "Comment deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Error deleting comment: {ex.Message}");
+            }
+        }
+
 
         //recursive helper for comments with their replies
         private CommentDTO MapCommentWithReplies(Comment parent, List<Comment> allComments)
