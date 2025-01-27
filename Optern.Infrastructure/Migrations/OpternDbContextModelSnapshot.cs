@@ -592,40 +592,6 @@ namespace Optern.Infrastructure.Migrations
                     b.ToTable("Messages", (string)null);
                 });
 
-            modelBuilder.Entity("Optern.Domain.Entities.Notes", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("RoomId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("Notes", (string)null);
-                });
-
             modelBuilder.Entity("Optern.Domain.Entities.Notifications", b =>
                 {
                     b.Property<int>("Id")
@@ -887,6 +853,57 @@ namespace Optern.Infrastructure.Migrations
                         .HasDatabaseName("IX_Reacts_UserId");
 
                     b.ToTable("Reacts", (string)null);
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.Repository", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("RoomId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId")
+                        .IsUnique();
+
+                    b.ToTable("Repository", (string)null);
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.RepositoryFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RepositoryId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RepositoryId");
+
+                    b.ToTable("RepositoryFile", (string)null);
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.Room", b =>
@@ -1466,7 +1483,7 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("Optern.Domain.Entities.ApplicationUser.RefreshTokens#Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
                                 .HasColumnType("text");
@@ -1492,7 +1509,7 @@ namespace Optern.Infrastructure.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken", (string)null);
+                            b1.ToTable("RefreshToken");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
@@ -1654,17 +1671,6 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("Optern.Domain.Entities.Notes", b =>
-                {
-                    b.HasOne("Optern.Domain.Entities.Room", "Room")
-                        .WithMany("Notes")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-                });
-
             modelBuilder.Entity("Optern.Domain.Entities.Notifications", b =>
                 {
                     b.HasOne("Optern.Domain.Entities.Room", "Room")
@@ -1771,6 +1777,28 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.Repository", b =>
+                {
+                    b.HasOne("Optern.Domain.Entities.Room", "Room")
+                        .WithOne("Repository")
+                        .HasForeignKey("Optern.Domain.Entities.Repository", "RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.RepositoryFile", b =>
+                {
+                    b.HasOne("Optern.Domain.Entities.Repository", "Repository")
+                        .WithMany("RepositoryFiles")
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repository");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.Room", b =>
@@ -2072,14 +2100,20 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("Reacts");
                 });
 
+            modelBuilder.Entity("Optern.Domain.Entities.Repository", b =>
+                {
+                    b.Navigation("RepositoryFiles");
+                });
+
             modelBuilder.Entity("Optern.Domain.Entities.Room", b =>
                 {
                     b.Navigation("Chat")
                         .IsRequired();
 
-                    b.Navigation("Notes");
-
                     b.Navigation("Notifications");
+
+                    b.Navigation("Repository")
+                        .IsRequired();
 
                     b.Navigation("RoomSkills");
 
