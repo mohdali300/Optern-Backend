@@ -15,7 +15,7 @@ namespace Optern.Presentation.GraphQlApi.React.Mutation
             => await _reactService.ManageReactAsync(postId, userId, reactType);
 
         [GraphQLDescription("Manage Comment React")]
-        public async Task<Response<ReactDTO>> ManageCommentReactAsync([Service] IReactService _reactService, int commentId, string userId, ReactType reactType)
-            => await _reactService.ManageReactAsync(commentId, userId, reactType);
+        public async Task<Response<CommentReactDTO>> ManageCommentReactAsync([Service] IReactService _reactService, int commentId, string userId, ReactType reactType)
+            => await _reactService.ManageCommentReactAsync(commentId, userId, reactType);
     }
 }
