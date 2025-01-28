@@ -73,9 +73,9 @@ namespace Optern.Infrastructure.ExternalServices.JWTService
 			};
 		}
 
-		public async Task<Response<LogInResponseDTO>> NewRefreshToken()
+		public async Task<Response<LogInResponseDTO>> NewRefreshToken(RefreshTokenDTO refresh)
 		{
-			var RefreshToken = _httpContextAccessor.HttpContext.Request.Cookies["secure_rtk"];
+			var RefreshToken = refresh.RefreshToken;
 			try
 			{
 				var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == RefreshToken));
@@ -91,14 +91,15 @@ namespace Optern.Infrastructure.ExternalServices.JWTService
 					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "InActive Token", 400);
 				}
 
-				refreshToken.RevokedOn = DateTime.UtcNow;
+				// refreshToken.RevokedOn = DateTime.UtcNow;
 
-				var newRefreshToken = CreateRefreshToken();
-				user.RefreshTokens.Add(newRefreshToken);
+				// var newRefreshToken = CreateRefreshToken();
+				// user.RefreshTokens.Add(newRefreshToken);
 				await _userManager.UpdateAsync(user);
 				var Roles = await _userManager.GetRolesAsync(user);
 				var jwtToken = await GenerateJwtToken(user);
-
+			
+				
 				return Response<LogInResponseDTO>.Success(new LogInResponseDTO
 				{
 					UserId = user.Id,

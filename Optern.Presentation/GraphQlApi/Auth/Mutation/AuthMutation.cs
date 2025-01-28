@@ -48,7 +48,7 @@ namespace Optern.Presentation.GraphQlApi.Auth.Mutation
           => await _authService.LogInAsync(model);
 
         [GraphQLDescription("New Refresh Token")]
-        public async Task<Response<LogInResponseDTO>> NewRefreshToken([Service] IJWTService _JWTService)
-           => await _JWTService.NewRefreshToken();
+        public async Task<Response<LogInResponseDTO>> NewRefreshToken([Service] IJWTService _JWTService,RefreshTokenDTO refreshToken)
+           =>   await  _JWTService.NewRefreshToken(refreshToken);
     }
 }
