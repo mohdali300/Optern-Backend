@@ -34,6 +34,7 @@ namespace Optern.Application.Services.CommentService
 
                 var allComments = await _dbContext.Comments
                     .Include(comment => comment.User)
+                    .Include(comment=>comment.CommentReacts)
                     .Where(comment => comment.ParentId == commentId)
                     .OrderBy(comment => comment.CommentDate)
                     .ToListAsync();
