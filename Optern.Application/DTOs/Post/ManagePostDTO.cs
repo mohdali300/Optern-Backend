@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.DTOs.Post
 {
-    public class CreatePostDTO
+    public class ManagePostDTO
     {
-        [Required]
         public string Title { get; set; }
-        [Required]
         public string Content { get; set; }
         public List<string>? Tags { get; set; } 
     }
