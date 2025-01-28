@@ -8,9 +8,9 @@ namespace Optern.Presentation.GraphQlApi.Comment.Query
     [ExtendObjectType("Query")]
     public class CommentQuery
     {
-        [GraphQLDescription("Get Comment with Replies")]
-        public async Task<Response<List<CommentDTO>>> GetCommentsWithRepliesAsync([Service] ICommentService _commentService,int id)
-            => await _commentService.GetCommentsWithRepliesAsync(id);
+        [GraphQLDescription("Get Replies For Comment")]
+        public async Task<Response<List<CommentDTO>>> GetRepliesForCommentAsync([Service] ICommentService _commentService,int id)
+            => await _commentService.GetRepliesForCommentAsync(id);
 
 
        

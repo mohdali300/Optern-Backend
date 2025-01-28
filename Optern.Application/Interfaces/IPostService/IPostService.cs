@@ -12,9 +12,9 @@ namespace Optern.Application.Interfaces.IPostService
 {
     public interface IPostService
     {
-        public Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync(int count);
+        public Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync(string? userId = null, int? lastIdx = null, int limit = 10);
 
-        public Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(int? postId = null, string? username = null);
+        public Task<Response<PostWithDetailsDTO>> GetPostByIdAsync(int postId);
 
         public Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync(int topN);
 
