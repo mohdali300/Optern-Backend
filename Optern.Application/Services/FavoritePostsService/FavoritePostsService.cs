@@ -28,44 +28,51 @@ namespace Optern.Application.Services.FavoritePostsService
         #region Add Post to Favourite
         public async Task<Response<string>> AddToFavoriteAsync(AddToFavoriteDTO model)
         {
+          
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-
-                if (string.IsNullOrEmpty(model.UserId) || model.PostId<=0 )
+                if (string.IsNullOrEmpty(model.UserId) || model.PostId <= 0)
                 {
-                    return Response<string>.Failure("Invalid Data Model", 400);
+                    return Response<string>.Failure("", "Invalid Data Model", 400);
                 }
                 var user = await _unitOfWork.Users.GetByIdAsync(model.UserId);
                 var post = await _unitOfWork.Posts.GetByIdAsync(model.PostId);
 
-
-                if (user == null || post==null)
+                if (user == null || post == null)
                 {
-                    return Response<string>.Failure("Invalid Data", 404);
+                    return Response<string>.Failure("","User or Post not found", 404);
                 }
-               
 
                 var existingFavorite = await _unitOfWork.FavoritePosts
                     .GetByExpressionAsync(fp => fp.UserId == model.UserId && fp.PostId == model.PostId);
                 if (existingFavorite != null)
                 {
-                    return Response<string>.Failure("This post is already in your favorites.", 400);
+                    return Response<string>.Failure("","This post is already in your favorites.", 400);
                 }
 
                 var favoritePost = _mapper.Map<FavoritePosts>(model);
-                favoritePost.SavedAt=DateTime.UtcNow;
+                favoritePost.SavedAt = DateTime.UtcNow;
                 await _unitOfWork.FavoritePosts.AddAsync(favoritePost);
                 await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
 
-
-                return Response<string>.Success("", "Post added to favorites successfully.", 200);
+                return Response<string>.Success("Post added to favorites successfully", "Post added to favorites successfully.", 200);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure("Database error occurred while adding the post to favorites.", dbEx.Message, 500);
             }
             catch (Exception ex)
             {
-                return Response<string>.Failure($"An error occurred while adding the post to favorites: {ex.Message}");
+                await transaction.RollbackAsync();
+                return Response<string>.Failure("An unexpected error occurred while adding the post to favorites.", ex.Message, 500);
             }
         }
+
         #endregion
+
 
         #region Get Favourite Posts 
         public async Task<Response<IEnumerable<FavouritePostsDTO>>> GetFavoritePostsByUserAsync(string userId)
@@ -104,8 +111,10 @@ namespace Optern.Application.Services.FavoritePostsService
 
 public async Task<Response<string>> DeleteFavoritePostAsync(string userId, int? postId = null)
 {
-    try
-    {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
         
                 if (string.IsNullOrEmpty(userId) || postId<=0 )
                  {
@@ -121,7 +130,7 @@ public async Task<Response<string>> DeleteFavoritePostAsync(string userId, int? 
 
 
                 if (postId == null)
-        {
+                 {
             var favoritePosts = await _unitOfWork.FavoritePosts
                 .GetAllByExpressionAsync(fp => fp.UserId == userId);
 
@@ -149,14 +158,22 @@ public async Task<Response<string>> DeleteFavoritePostAsync(string userId, int? 
         }
 
         await _unitOfWork.SaveAsync();
+        await transaction.CommitAsync();
 
-        return Response<string>.Success("", postId == null
+
+                return Response<string>.Success("", postId == null
             ? "All favorite posts deleted successfully."
             : "Favorite post deleted successfully.", 200);
     }
-    catch (Exception ex)
+            catch (DbUpdateException dbEx)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure("Database error occurred while Deleting the post to favorites.", dbEx.Message, 500);
+            }
+            catch (Exception ex)
     {
-        return Response<string>.Failure($"An error occurred while deleting the favorite post(s): {ex.Message}");
+                await transaction.RollbackAsync();
+                return Response<string>.Failure($"An error occurred while deleting the favorite post(s): {ex.Message}");
     }
 }
 
