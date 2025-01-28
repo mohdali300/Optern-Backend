@@ -24,8 +24,7 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<RoomTrack> RoomTracks { get; }
         IGenericRepository<Comment> Comments { get; }
         IGenericRepository<Reacts> Reacts { get; }
-
-
+        IGenericRepository<WorkSpace> WorkSpace { get; }
         Task<int> SaveAsync();
     }
 }
