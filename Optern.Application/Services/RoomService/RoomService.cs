@@ -34,29 +34,29 @@ namespace Optern.Application.Services.RoomService
         private readonly ICloudinaryService _cloudinaryService= cloudinaryService;
 
         #region GetAllAsync
-        public async Task<Response<IEnumerable<RoomDTO>>> GetAllAsync()
+        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetAllAsync()
         {
             try
             {
                 var rooms = await _unitOfWork.Rooms.GetAllAsync();
                 if (!rooms.Any())
                 {
-                    return Response<IEnumerable<RoomDTO>>.Failure("No Rooms Found", 404);
+                    return Response<IEnumerable<CreateRoomDTO>>.Failure("No Rooms Found", 404);
                 }
 
-                var roomsDtos = _mapper.Map<IEnumerable<RoomDTO>>(rooms);
+                var roomsDtos = _mapper.Map<IEnumerable<CreateRoomDTO>>(rooms);
 
-                return Response<IEnumerable<RoomDTO>>.Success(roomsDtos, "", 200);
+                return Response<IEnumerable<CreateRoomDTO>>.Success(roomsDtos, "", 200);
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
+                return Response<IEnumerable<CreateRoomDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
         } 
         #endregion
 
         #region GetPopularRooms
-        public async Task<Response<IEnumerable<RoomDTO>>> GetPopularRooms()
+        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetPopularRooms()
         {
             try
             {
@@ -71,7 +71,7 @@ namespace Optern.Application.Services.RoomService
                       }
                     )
                     .OrderByDescending(r => r.NumberOfUsers)
-                     .Select(r => new RoomDTO
+                     .Select(r => new CreateRoomDTO
                      {
                          Name = r.Room.Name,
                          Description = r.Room.Description,
@@ -82,25 +82,25 @@ namespace Optern.Application.Services.RoomService
                      })
                      .ToListAsync();
 
-                return rooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(rooms, "", 200) :
-                                     Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There Are No Created Rooms Until Now", 404);
+                return rooms.Any() ? Response<IEnumerable<CreateRoomDTO>>.Success(rooms, "", 200) :
+                                     Response<IEnumerable<CreateRoomDTO>>.Failure(new List<CreateRoomDTO>(), "There Are No Created Rooms Until Now", 404);
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<IEnumerable<CreateRoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
         } 
         #endregion
 
         #region GetCreatedRooms
-        public async Task<Response<IEnumerable<RoomDTO>>> GetCreatedRooms(string id)
+        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetCreatedRooms(string id)
         {
             try
             {
                 var createdRooms = await _context.Rooms
                     .Include(r => r.UserRooms)
                     .Where(r => r.CreatorId == id)
-                    .Select(r => new RoomDTO
+                    .Select(r => new CreateRoomDTO
                     {
                         Name = r.Name,
                         Description = r.Description,
@@ -112,26 +112,26 @@ namespace Optern.Application.Services.RoomService
                     })
                     .ToListAsync();
 
-                return createdRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(createdRooms, "", 200) :
-                                            Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "There is no Created Rooms Until Now", 404);
+                return createdRooms.Any() ? Response<IEnumerable<CreateRoomDTO>>.Success(createdRooms, "", 200) :
+                                            Response<IEnumerable<CreateRoomDTO>>.Failure(new List<CreateRoomDTO>(), "There is no Created Rooms Until Now", 404);
 
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<IEnumerable<CreateRoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
 
             }
         } 
         #endregion
 
         #region GetJoinedRooms
-        public async Task<Response<IEnumerable<RoomDTO>>> GetJoinedRooms(string id)
+        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetJoinedRooms(string id)
         {
             try
             {
                 var joinedRooms = await _context.Rooms.Include(r=>r.UserRooms)
                      .Where(r => r.UserRooms.Any(r=>r.UserId==id))
-                     .Select(r => new RoomDTO
+                     .Select(r => new CreateRoomDTO
                      {
                          Name = r.Name,
                          Description = r.Description,
@@ -143,12 +143,12 @@ namespace Optern.Application.Services.RoomService
                      })
                     .ToListAsync();
 
-                return joinedRooms.Any() ? Response<IEnumerable<RoomDTO>>.Success(joinedRooms, "", 200) :
-                                           Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "You have not joined any room yet.", 404);
+                return joinedRooms.Any() ? Response<IEnumerable<CreateRoomDTO>>.Success(joinedRooms, "", 200) :
+                                           Response<IEnumerable<CreateRoomDTO>>.Failure(new List<CreateRoomDTO>(), "You have not joined any room yet.", 404);
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<RoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<IEnumerable<CreateRoomDTO>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
         } 
         #endregion
@@ -156,6 +156,8 @@ namespace Optern.Application.Services.RoomService
         #region JoinToRoom
         public async Task<Response<string>> JoinToRoom(JoinRoomDTO model)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
                 if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.RoomId))
@@ -182,19 +184,20 @@ namespace Optern.Application.Services.RoomService
                     UserId = model.UserId,
                 });
                 await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
                 return Response<string>.Success($"You have successfully to joined the room ", "You have successfully joined to the room ", 201);
 
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 return Response<string>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
         }
         #endregion
 
-
         #region Create Room
-        public async Task<Response<RoomDTO>> CreateRoom(RoomDTO model, IFile CoverPicture)
+        public async Task<Response<CreateRoomDTO>> CreateRoom(CreateRoomDTO model, IFile CoverPicture)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -202,7 +205,7 @@ namespace Optern.Application.Services.RoomService
             {
                 if (model == null)
                 {
-                    return Response<RoomDTO>.Failure("Invalid Data Model", 400);
+                    return Response<CreateRoomDTO>.Failure("Invalid Data Model", 400);
                 }
                 // current login User  
                 var currentUser = await _userService.GetCurrentUserAsync();
@@ -223,7 +226,7 @@ namespace Optern.Application.Services.RoomService
                 if (!validate.IsValid)
                 {
                     var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
-                    return Response<RoomDTO>.Failure(new RoomDTO(), $"Invalid Data Model: {errorMessages}", 400);
+                    return Response<CreateRoomDTO>.Failure(new CreateRoomDTO(), $"Invalid Data Model: {errorMessages}", 400);
                 }
 
                 await _unitOfWork.Rooms.AddAsync(room);
@@ -251,18 +254,51 @@ namespace Optern.Application.Services.RoomService
 
                 await transaction.CommitAsync();
 
-                var roomDto = _mapper.Map<RoomDTO>(room);
+                var roomDto = _mapper.Map<CreateRoomDTO>(room);
 
-                return Response<RoomDTO>.Success(roomDto, "Room Added Successfully", 201);
+                return Response<CreateRoomDTO>.Success(roomDto, "Room Added Successfully", 201);
 
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<RoomDTO>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<CreateRoomDTO>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
 
         }
         #endregion
+
+        public async Task<Response<RoomDetailsDTO>> GetRoomById(string id)
+        {
+            try
+            {
+                var  room = await _context.Rooms
+                    .Include(room => room.RoomSkills)
+                        .ThenInclude(room => room.Skill)
+                    .Include(room => room.UserRooms)
+                    .Where(r => r.Id == id)
+                    .Select(room => new RoomDetailsDTO
+                    {
+                        Id = room.Id,
+                        Name = room.Name,
+                        Description = room.Description,
+                        RoomType = room.RoomType,
+                        CreatorName = $"{room.Creator.FirstName} {room.Creator.LastName}",
+                        CoverPicture = room.CoverPicture,
+                        CreatedAt = room.CreatedAt,
+                        Members = room.UserRooms.Count,
+                        Skills = room.RoomSkills
+                        .Select(rs => rs.Skill.Name).ToList()
+                    }).FirstOrDefaultAsync();
+                    
+              
+                    return room == null? Response<RoomDetailsDTO>.Failure(new RoomDetailsDTO(), "This Room Not Found", 404):
+                                         Response<RoomDetailsDTO>.Success(room, "Room Fetched Successfully", 200);
+            }
+            catch (Exception ex) 
+            {
+                return Response<RoomDetailsDTO>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+        }
     }
 }
