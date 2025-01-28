@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace Optern.Domain.Entities
         public string Content {  get; set; }
         public ContentType ContentType { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        public DateTime EditedDate { get; set; }
 
         //Foreign Keys
         public string CreatorId { get; set; }

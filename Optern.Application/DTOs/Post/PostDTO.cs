@@ -19,6 +19,9 @@ namespace Optern.Application.DTOs.Post
 		public List<string>? Tags { get; set; } = new List<string>();
 		public DateTime? CreatedDate { get; set; }
 
+        public DateTime? EditedDate { get; set; }
+
+
         public int ReactsCount { get; set; }
         public int CommentsCount { get; set; }
 

@@ -308,7 +308,7 @@ namespace Optern.Application.Services.PostService
         #region Add Post
 
 
-        public async Task<Response<PostDTO>> CreatePostAsync(string userId, CreatePostDTO model)
+        public async Task<Response<PostDTO>> CreatePostAsync(string userId, ManagePostDTO model)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -439,6 +439,127 @@ namespace Optern.Application.Services.PostService
         }
         #endregion
 
+        #region Edit Post
+        public async Task<Response<PostDTO>> EditPostAsync(int postId, string userId, ManagePostDTO model)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var post = await _context.Posts
+                     .Include(p => p.Creator)
+                     .Include(p => p.PostTags)
+                     .ThenInclude(pt => pt.Tag)
+                     .FirstOrDefaultAsync(p => p.Id == postId);
+
+                if (post == null)
+                {
+                    return Response<PostDTO>.Failure(new PostDTO(), "Post not found", 404);
+                }
+
+                if (post.Creator == null)
+                {
+                    return Response<PostDTO>.Failure(new PostDTO(), "Post creator is missing", 400);
+                }
+
+                if (post.CreatorId != userId)
+                {
+                    return Response<PostDTO>.Failure(new PostDTO(), "You are not authorized to edit this post", 403);
+                }
+
+                bool isUpdated = false;
+
+                if (!string.IsNullOrEmpty(model.Title) && model.Title != post.Title)
+                {
+                    post.Title = model.Title;
+                    isUpdated = true;
+                }
+
+                if (!string.IsNullOrEmpty(model.Content) && model.Content != post.Content)
+                {
+                    post.Content = model.Content;
+                    isUpdated = true;
+                }
+
+                var validate = new PostValidator().Validate(post);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<PostDTO>.Failure(new PostDTO(), $"Invalid Data Model: {errorMessages}", 400);
+                }
+
+                if (post.PostTags == null)
+                {
+                    post.PostTags = new List<PostTags>();
+                }
+
+                if (model.Tags != null)
+                {
+                    var existingTags = post.PostTags.Select(pt => pt.Tag).ToList();
+                    var tagsToAdd = model.Tags.Except(existingTags.Select(t => t.Name)).ToList();
+                    var tagsToRemove = existingTags.Where(et => !model.Tags.Contains(et.Name)).ToList();
+
+                    foreach (var tagName in tagsToAdd)
+                    {
+                        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Name == tagName);
+                        if (tag == null)
+                        {
+                            tag = new Tags { Name = tagName };
+                            await _unitOfWork.Tags.AddAsync(tag);
+                            await _unitOfWork.SaveAsync();
+                        }
+
+                        post.PostTags.Add(new PostTags { PostId = post.Id, TagId = tag.Id });
+                        isUpdated = true;
+                    }
+
+                    foreach (var tagToRemove in tagsToRemove)
+                    {
+                        var postTagToRemove = post.PostTags.FirstOrDefault(pt => pt.TagId == tagToRemove.Id);
+                        if (postTagToRemove != null)
+                        {
+                            post.PostTags.Remove(postTagToRemove);
+                            isUpdated = true;
+                        }
+                    }
+                }
+
+                if (isUpdated)
+                {
+                    post.EditedDate = DateTime.UtcNow;
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+                }
+
+                var postDTO = new PostDTO
+                {
+                    Id = post.Id,
+                    Title = post.Title ?? string.Empty,
+                    Content = post.Content ?? string.Empty,
+                    Tags = post.PostTags?.Select(pt => pt.Tag.Name).ToList() ?? new List<string>(),
+                    CreatedDate = post.CreatedDate,
+                    EditedDate = post.EditedDate,
+                    ProfilePicture = post.Creator?.ProfilePicture ?? string.Empty,
+                    CreatorName = $"{post.Creator?.FirstName ?? ""} {post.Creator?.LastName ?? ""}",
+                    ReactsCount = post.Reacts?.Count() ?? 0, 
+                    CommentsCount = post.Comments?.Count() ?? 0  
+                };
+
+                return Response<PostDTO>.Success(postDTO, "Post edited successfully.", 200);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<PostDTO>.Failure(new PostDTO(), $"Database error: {ex.Message}", 500);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<PostDTO>.Failure(new PostDTO(), $"Server error: {ex.Message}", 500);
+            }
+        }
+
+        #endregion
 
     }
 }
