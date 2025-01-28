@@ -70,6 +70,7 @@ builder.Services
 .AddType<FavouritePostsMutation>()
 .AddType<UploadType>()
 .AddType<ReactMutation>()
+.AddType<PostMutation>()
 .AddFluentValidation();
 #endregion
 
