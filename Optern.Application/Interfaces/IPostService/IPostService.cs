@@ -25,6 +25,13 @@ namespace Optern.Application.Interfaces.IPostService
             string? keyword = null);
 
 
+        public Task<Response<PostDTO>> CreatePostAsync(string userId, CreatePostDTO model);
+
+        public Task<Response<string>> DeletePostAsync(int postId, string userId);
+
+
+
+
 
 
     }

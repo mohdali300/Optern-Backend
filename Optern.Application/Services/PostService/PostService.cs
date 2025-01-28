@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Optern.Application.DTOs.Comment;
 using Optern.Application.DTOs.Post;
 using Optern.Application.DTOs.React;
+using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.Tags;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IPostService;
@@ -13,6 +14,7 @@ using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
+using Optern.Infrastructure.Validations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -301,5 +303,142 @@ namespace Optern.Application.Services.PostService
         }
 
         #endregion
+
+
+        #region Add Post
+
+
+        public async Task<Response<PostDTO>> CreatePostAsync(string userId, CreatePostDTO model)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                if (model == null || string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.Content))
+                {
+                    return Response<PostDTO>.Failure(new PostDTO(),"Title and Content cannot be empty.", 400);
+                }
+
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return Response<PostDTO>.Failure(new PostDTO(),"User not found.", 404);
+                }
+
+                var post = new Post
+                {
+                    Title = model.Title,
+                    Content = model.Content,
+                    CreatorId = user.Id,
+                    CreatedDate = DateTime.UtcNow,
+                    ContentType = Domain.Enums.ContentType.Text
+                };
+                var validate = new PostValidator().Validate(post);
+
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<PostDTO>.Failure(new PostDTO(), $"Invalid Data Model: {errorMessages}", 400);
+                }
+                await _unitOfWork.Posts.AddAsync(post);
+                await _unitOfWork.SaveAsync();
+
+                var postTags = new List<PostTags>();
+                if (model.Tags != null && model.Tags.Any())
+                {
+                    var distinctTags = model.Tags.Select(tag => tag.Trim().ToLowerInvariant()).Distinct();
+
+                    foreach (var tagName in distinctTags)
+                    {
+                        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Name == tagName);
+                        if (tag == null)
+                        {
+                            tag = new Tags { Name = tagName };
+                            await _unitOfWork.Tags.AddAsync(tag);
+                            await _unitOfWork.SaveAsync();
+                        }
+
+                        postTags.Add(new PostTags
+                        {
+                            PostId = post.Id,
+                            TagId = tag.Id
+                        });
+                    }
+
+                    await _unitOfWork.PostTags.AddRangeAsync(postTags);
+                    await _unitOfWork.SaveAsync();
+                }
+
+                await transaction.CommitAsync();
+
+                var postResponse = new PostDTO
+                {
+                    Title = post.Title ?? string.Empty,
+                    Content = post.Content ?? string.Empty,
+                    Tags = postTags.Select(pt => pt.Tag.Name).ToList() ?? new List<string>(),
+                    CreatedDate = post.CreatedDate,
+                    ProfilePicture = user.ProfilePicture ?? string.Empty,
+                    CreatorName = $"{user.FirstName ?? ""} {user.LastName ?? ""}",
+                    ReactsCount = 0,
+                    CommentsCount = 0
+                };
+
+                return Response<PostDTO>.Success(postResponse ?? new PostDTO(), "Post created successfully.", 201);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<PostDTO>.Failure($"Database error: {ex.Message}", 500);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<PostDTO>.Failure($"Server error: {ex.Message}", 500);
+            }
+        }
+
+
+        #endregion
+
+
+        #region Delete Post
+        public async Task<Response<string>> DeletePostAsync(int postId, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var post = await _unitOfWork.Posts.GetByIdAsync(postId);
+                if (post == null)
+                {
+                    return Response<string>.Failure("", "Post not found", 404);
+                }
+
+                if (post.CreatorId != userId)
+                {
+                    return Response<string>.Failure("","You are not authorized to delete this post", 403);
+                }
+
+                await _unitOfWork.Posts.DeleteAsync(post);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                return Response<string>.Success("Post deleted successfully", "Post deleted successfully", 200);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure($"Database error: {ex.Message}", 500, new List<string> { "Database error occurred" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure($"Server error: {ex.Message}", 500, new List<string> { "Server error occurred" });
+            }
+
+        }
+        #endregion
+
+
     }
 }
