@@ -24,6 +24,7 @@ using Optern.Presentation.GraphQlApi.SubTrack.Query;
 using Optern.Presentation.GraphQlApi.Tag;
 using Optern.Presentation.GraphQlApi.Track.Mutation;
 using Optern.Presentation.GraphQlApi.Track.Query;
+using Optern.Presentation.GraphQlApi.WorkSpace.Mutation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,7 @@ builder.Services
 .AddType<UploadType>()
 .AddType<ReactMutation>()
 .AddType<PostMutation>()
+.AddType<WorkSpaceMutation>()
 .AddFluentValidation();
 #endregion
 

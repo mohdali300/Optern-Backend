@@ -14,6 +14,7 @@ using Optern.Application.Interfaces.ISubTrackService;
 using Optern.Application.Interfaces.ITagService;
 using Optern.Application.Interfaces.ITrackService;
 using Optern.Application.Interfaces.IUserService;
+using Optern.Application.Interfaces.IWorkSpaceService;
 using Optern.Application.Mappings;
 using Optern.Application.Services.AuthService;
 using Optern.Application.Services.CommentService;
@@ -26,6 +27,7 @@ using Optern.Application.Services.SubTrackService;
 using Optern.Application.Services.TagService;
 using Optern.Application.Services.TrackService;
 using Optern.Application.Services.UserService;
+using Optern.Application.Services.WorkSpaceService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalDTOs.Mail;
@@ -93,6 +95,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IReactService, ReactService>();
+            services.AddScoped<IWorkSpaceService, WorkSpaceService>();
 
 
             return services;

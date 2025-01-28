@@ -7,6 +7,7 @@ using Optern.Application.DTOs.Comment;
 using Optern.Application.DTOs.React;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.FavoritePosts;
+using Optern.Application.DTOs.WorkSpace;
 
 namespace Optern.Application.Mappings
 {
@@ -66,7 +67,8 @@ namespace Optern.Application.Mappings
               .ForMember(dest => dest.NumberOfParticipants,
                opt => opt.MapFrom(src => src.UserRooms.Count));
 
-
-		}
+			CreateMap<WorkSpace, WorkSpaceDTO>();
+       
+        }
 	}
 }
