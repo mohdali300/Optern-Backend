@@ -10,7 +10,7 @@ namespace Optern.Application.Interfaces.IRoomTrackService
 {
     public interface IRoomTrackService
     {
-        public Task<Response<IEnumerable<RoomDTO>>> GetSubTrackRooms(int subTrackId);
+        public Task<Response<IEnumerable<CreateRoomDTO>>> GetSubTrackRooms(int subTrackId);
 
     }
 }
