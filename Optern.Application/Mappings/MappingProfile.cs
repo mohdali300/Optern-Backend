@@ -60,7 +60,7 @@ namespace Optern.Application.Mappings
             #endregion
 
             // Map Room To RoomDTO
-            CreateMap<Room, RoomDTO>()
+            CreateMap<Room, CreateRoomDTO>()
               .ForMember(dest => dest.NumberOfParticipants,
                opt => opt.MapFrom(src => src.UserRooms.Count));
 

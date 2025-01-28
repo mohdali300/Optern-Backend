@@ -27,13 +27,13 @@ namespace Optern.Application.Services.RoomTrackService
         }
 
         #region SubTrackRooms
-        public async Task<Response<IEnumerable<RoomDTO>>> GetSubTrackRooms(int subTrackId)
+        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetSubTrackRooms(int subTrackId)
         {
             try
             {
                 var roomDtos = await _context.RoomTracks.Include(rt => rt.Room)
                     .Where(rt => rt.SubTrackId == subTrackId)
-                    .Select(rt => new RoomDTO
+                    .Select(rt => new CreateRoomDTO
                     {
                         Name = rt.Room.Name,
                         Description = rt.Room.Description,
@@ -45,12 +45,12 @@ namespace Optern.Application.Services.RoomTrackService
                     })
                     .ToListAsync();
 
-                return (roomDtos != null && roomDtos.Any()) ? Response<IEnumerable<RoomDTO>>.Success(roomDtos) :
-                    Response<IEnumerable<RoomDTO>>.Failure(new List<RoomDTO>(), "No rooms found in this stack!", 204);
+                return (roomDtos != null && roomDtos.Any()) ? Response<IEnumerable<CreateRoomDTO>>.Success(roomDtos) :
+                    Response<IEnumerable<CreateRoomDTO>>.Failure(new List<CreateRoomDTO>(), "No rooms found in this stack!", 204);
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<RoomDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
+                return Response<IEnumerable<CreateRoomDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
         } 
         #endregion
