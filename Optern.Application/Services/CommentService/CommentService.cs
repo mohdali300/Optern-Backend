@@ -77,7 +77,7 @@ namespace Optern.Application.Services.CommentService
                     Id = newComment.Id,
                     Content = newComment.Content,
                     CommentDate = newComment.CommentDate,
-                    UserName = (await _dbContext.Users.FindAsync(userId))?.UserName
+                    UserName = (await _dbContext.Users.FindAsync(userId))?.FirstName + " " + (await _dbContext.Users.FindAsync(userId))?.LastName
                 };
 
                 await transaction.CommitAsync();
