@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Optern.Domain.Enums
 {
-    public enum ReactType
-    {
-        Insightful,
-        Like,
-        Love,
-        Funny
-    }
+	public enum ReactType
+	{
+		VOTEUP,
+		VOTEDOWN,
+		NOTVOTEYET
+	}
 }
