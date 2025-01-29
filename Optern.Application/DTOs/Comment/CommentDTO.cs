@@ -13,11 +13,13 @@ namespace Optern.Application.DTOs.Comment
         public CommentDTO()
         {
             Id = 0;
-            Content=string.Empty;
+            Content = string.Empty;
             CommentDate = DateTime.Now;
             UserName = string.Empty;
-            Replies= new List<CommentDTO>();
+            ProfilePicture = string.Empty;
             Reacts = new List<ReactDTO>();
+            ReplyCommentCount = 0;  
+            ReactCommentCount = 0;  
 
 
         }
@@ -25,12 +27,10 @@ namespace Optern.Application.DTOs.Comment
         public string? Content { get; set; }
         public DateTime? CommentDate { get; set; }
         public string? UserName { get; set; }
-        public List<CommentDTO>? Replies { get; set; } = new List<CommentDTO>(); // For nested replies
+        public string? ProfilePicture { get; set; }
         public List<ReactDTO>? Reacts { get; set; } = new List<ReactDTO>(); // List of reactions to this comment
-        public int ReplyCount { get; set; }  // count number of comments of the post
-        public int ReactCount { get; set; }  // count number of react of the post
-        public int ReactCommentCount { get; set; } // count number of reacts of the comment 
-        public int ReplyCommentCount { get; set; } // count number of replies of the comment
+        public int? ReactCommentCount { get; set; } // count number of reacts of the comment 
+        public int? ReplyCommentCount { get; set; } // count number of replies of the comment
 
         public string TimeAgo
         {

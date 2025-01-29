@@ -13,17 +13,21 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
        
 
         [GraphQLDescription("Get Latest Posts")]
-        public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync([Service] IPostService _postService,int count)
-           => await _postService.GetLatestPostsAsync(count);
+        public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync([Service] IPostService _postService, string? userId = null, int lastIdx = 0, int limit = 10)
+           => await _postService.GetLatestPostsAsync(userId,lastIdx,limit);
 
-        [GraphQLDescription("Get Posts Details by Id or Username")]
-        public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(
-       [Service] IPostService postService,
-       int? postId = null,
-       string? username = null)
-        {
-            return await postService.GetPostsByIdOrUserAsync(postId, username);
-        }
+       [GraphQLDescription("Get Posts Details by Id")]
+        public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync([Service] IPostService _postService,int postId)
+            =>await _postService.GetPostByIdAsync(postId);
+
+
+       // public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(
+       //[Service] IPostService postService,
+       //int? postId = null,
+       //string? username = null)
+       // {
+       //     return await postService.GetPostsByIdOrUserAsync(postId, username);
+       // }
 
 
         [GraphQLDescription("Get Recommended Posts based on reactions count")]

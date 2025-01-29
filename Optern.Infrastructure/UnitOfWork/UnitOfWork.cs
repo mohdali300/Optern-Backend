@@ -30,6 +30,7 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Comment> Comments { get; private set; }
 
         public IGenericRepository<Reacts> Reacts { get; private set; }
+        public IGenericRepository<WorkSpace> WorkSpace  { get; private set; }
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -47,6 +48,7 @@ namespace Optern.Infrastructure.UnitOfWork
             Tags= new GenericRepository<Tags>(context);
             Comments= new GenericRepository<Comment>(context);
             Reacts= new GenericRepository<Reacts>(context);
+            WorkSpace= new GenericRepository<WorkSpace>(context);
         }
 
         public async Task<int> SaveAsync()

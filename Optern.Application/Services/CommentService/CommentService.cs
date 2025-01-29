@@ -20,35 +20,42 @@ namespace Optern.Application.Services.CommentService
         {
         }
 
-        
-        public async Task<Response<List<CommentDTO>>> GetCommentsWithRepliesAsync(int id)
+
+        public async Task<Response<List<CommentDTO>>> GetRepliesForCommentAsync(int commentId)
         {
             try
             {
-                // Fetch all comments for the post
-                var comments = await _dbContext.Comments
+                var targetComment = await _dbContext.Comments
                     .Include(comment => comment.User)
-                    .Where(comment => comment.PostId == id)
+                    .FirstOrDefaultAsync(comment => comment.Id == commentId);
+
+                if (targetComment == null)
+                    return Response<List<CommentDTO>>.Failure(new List<CommentDTO>(), "Comment not found.", 404);
+
+                var allComments = await _dbContext.Comments
+                    .Include(comment => comment.User)
+                    .Include(comment=>comment.CommentReacts)
+                    .Where(comment => comment.ParentId == commentId)
                     .OrderBy(comment => comment.CommentDate)
                     .ToListAsync();
 
-                if (comments == null || !comments.Any())
-                    return Response<List<CommentDTO>>.Failure(new List<CommentDTO>(), "No comments found for the specified post.", 404);
+                var commentDTOs = allComments.Select(comment => new CommentDTO
+                {
+                    Id = comment.Id,
+                    Content = comment.Content,
+                    CommentDate = comment.CommentDate,
+                    UserName = $"{comment.User?.FirstName} {comment.User?.LastName}",
+                    ProfilePicture=comment.User?.ProfilePicture,
+                    ReactCommentCount = comment.CommentReacts?.Count() ?? 0, 
+                }).ToList();
 
-                // Map comments with their replies
-                var commentDtos = comments
-                    .Where(c => c.ParentId == null) // Parent comments
-                    .Select(parent => MapCommentWithReplies(parent, comments)) // Include replies recursively
-                    .ToList();
-
-                return Response<List<CommentDTO>>.Success(commentDtos, "Comments with replies fetched successfully.");
+                return Response<List<CommentDTO>>.Success(commentDTOs, "Replies for the comment fetched successfully.");
             }
             catch (Exception ex)
             {
-                return Response<List<CommentDTO>>.Failure(new List<CommentDTO>(),$"Failed to fetch comments with replies: {ex.Message}");
+                return Response<List<CommentDTO>>.Failure(new List<CommentDTO>(), $"Failed to fetch replies for the comment: {ex.Message}", 500);
             }
         }
-
         public async Task<Response<CommentDTO>> AddCommentAsync(AddCommentInputDTO input, string userId)
         {
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -196,20 +203,5 @@ namespace Optern.Application.Services.CommentService
         }
 
 
-        //recursive helper for comments with their replies
-        private CommentDTO MapCommentWithReplies(Comment parent, List<Comment> allComments)
-        {
-            return new CommentDTO
-            {
-                Id = parent.Id,
-                Content = parent.Content,
-                CommentDate = parent.CommentDate,
-                UserName = parent.User?.UserName,
-                Replies = allComments
-                    .Where(c => c.ParentId == parent.Id) // Get replies to this comment
-                    .Select(reply => MapCommentWithReplies(reply, allComments)) // Recursive mapping
-                    .ToList()
-            };
-        }
     }
 }

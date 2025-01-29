@@ -79,14 +79,12 @@ namespace Optern.Infrastructure.Repositories
 
         public async Task SaveChangesAsync()
         {
-            await _dbContext.SaveChangesAsync();
-
+            await _dbContext.SaveChangesAsync(); 
         }
 
         public virtual async Task UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
-            await _dbContext.SaveChangesAsync();
         }
 
         public virtual async Task UpdateRangeAsync(ICollection<T> entities)
