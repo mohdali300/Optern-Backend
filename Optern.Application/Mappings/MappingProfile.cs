@@ -23,14 +23,6 @@ namespace Optern.Application.Mappings
 				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
 				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
 
-			CreateMap<FavoritePosts, FavouritePostsDTO>()
-				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Post.Id))
-				.ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Post.Title))
-				.ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Post.Content))
-				.ForMember(dest => dest.CreatorId, opt => opt.MapFrom(src => src.Post.CreatorId))
-				.ForMember(dest => dest.CreatorUserName, opt => opt.MapFrom(src => src.Post.Creator.UserName))
-				.ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Post.PostTags));
-
 
 			CreateMap<AddToFavoriteDTO, FavoritePosts>();
 

@@ -93,9 +93,10 @@ namespace Optern.Infrastructure.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync(
-    Expression<Func<T, bool>>? filter = null,
-    string? includeProperties = null)
+        public virtual IQueryable<T> GetQueryable(
+          Expression<Func<T, bool>>? filter = null,
+          string? includeProperties = null,
+          Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
         {
             IQueryable<T> query = _dbSet;
 
@@ -112,8 +113,14 @@ namespace Optern.Infrastructure.Repositories
                 }
             }
 
-            return await query.ToListAsync();
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            return query;
         }
+
 
         public IDbContextTransaction BeginTransaction() =>
           _dbContext.Database.BeginTransaction();
