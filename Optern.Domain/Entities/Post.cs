@@ -25,7 +25,7 @@ namespace Optern.Domain.Entities
         public virtual ApplicationUser Creator { get; set; }
         public virtual ICollection<Reacts> Reacts { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
-        public virtual ICollection<FavoritePosts> FavoritePosts { get; set; }
+    public virtual ICollection<FavoritePosts> FavoritePosts { get; set; }
         public virtual ICollection<PostTags> PostTags { get; set; }
 
     }
