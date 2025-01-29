@@ -10,6 +10,7 @@ using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IPostService;
 using Optern.Application.Interfaces.ITrackService;
 using Optern.Domain.Entities;
+using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
@@ -93,7 +94,7 @@ namespace Optern.Application.Services.PostService
 				);
 			}
 		}
-		public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync(int postId)
+		public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync(int postId,string? userId = null)
 		{
 			try
 			{
@@ -114,6 +115,7 @@ namespace Optern.Application.Services.PostService
 						Tags = p.PostTags.Select(pt => new TagDTO { Name = pt.Tag.Name }).ToList(),
 						ReactCount = p.Reacts.Count,
 						CommentCount = _context.Comments.Count(c => c.PostId == p.Id),
+						UserReact = ReactType.NOTVOTEYET
 					})
 					.FirstOrDefaultAsync();
 
@@ -144,6 +146,16 @@ namespace Optern.Application.Services.PostService
 					ReplyCommentCount = _context.Comments.Count(c => c.ParentId == parent.Id),
 					
 				}).ToList();
+				
+				if(userId is not null)
+				{
+					var react = await _context.Reacts.Where(r => r.UserId == userId && r.PostId == postId).Select(r=>r.ReactType).ToListAsync();
+					
+					if(react is not null && react.Any())
+					{
+						post.UserReact = react[0];
+					}
+				}
 
 				return Response<PostWithDetailsDTO>.Success(
 					post,

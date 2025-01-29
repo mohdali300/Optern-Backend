@@ -17,8 +17,8 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
            => await _postService.GetLatestPostsAsync(userId,lastIdx,limit);
 
        [GraphQLDescription("Get Posts Details by Id")]
-        public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync([Service] IPostService _postService,int postId)
-            =>await _postService.GetPostByIdAsync(postId);
+        public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync([Service] IPostService _postService,int postId,string? userId = null)
+            =>await _postService.GetPostByIdAsync(postId,userId);
 
 
        // public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(
