@@ -1,13 +1,5 @@
-﻿using Optern.Application.DTOs.Comment;
-using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.React;
-using Optern.Application.DTOs.Track;
-using Optern.Application.Interfaces.IPostService;
-using Optern.Application.Interfaces.ITrackService;
-using Optern.Infrastructure.Response;
-namespace Optern.Presentation.GraphQlApi.Post.Query
-{
-    [ExtendObjectType("Query")]
+﻿
+ [ExtendObjectType("Query")]
     public class PostQuery
     {
        
@@ -37,4 +29,3 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
 
 
     }
-}

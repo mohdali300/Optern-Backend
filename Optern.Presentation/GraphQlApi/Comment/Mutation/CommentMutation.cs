@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Comment;
-using Optern.Application.Interfaces.ICommentService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.Comment.Mutation
-{
+﻿
     [ExtendObjectType("Mutation")]
     public class CommentMutation
     {
@@ -24,4 +19,3 @@ namespace Optern.Presentation.GraphQlApi.Comment.Mutation
            => await _commentService.DeleteCommentAsync(commentId);
 
     }
-}

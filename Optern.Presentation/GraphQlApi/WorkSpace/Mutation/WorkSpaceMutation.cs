@@ -1,10 +1,4 @@
-﻿using Optern.Application.DTOs.WorkSpace;
-using Optern.Application.Interfaces.IWorkSpaceService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.WorkSpace.Mutation
-{
-
+﻿
     [ExtendObjectType("Mutation")]
     public class WorkSpaceMutation
     {
@@ -21,4 +15,3 @@ namespace Optern.Presentation.GraphQlApi.WorkSpace.Mutation
                     await _workSpaceService.DeleteWorkSpace(id);
 
     }
-}

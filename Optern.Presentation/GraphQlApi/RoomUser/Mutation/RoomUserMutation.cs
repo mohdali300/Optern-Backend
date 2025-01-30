@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.RoomUset;
-using Optern.Application.Interfaces.IRoomUserService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.RoomUser.Mutation
-{
+﻿
     [ExtendObjectType("Mutation")]
     public class RoomUserMutation
     {
@@ -18,4 +13,4 @@ namespace Optern.Presentation.GraphQlApi.RoomUser.Mutation
 
 
     }
-}
+

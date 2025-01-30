@@ -1,10 +1,4 @@
-﻿using Optern.Application.DTOs.Room;
-using Optern.Application.Interfaces.IRoomService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.Rooms.Query
-{
+﻿
     [ExtendObjectType("Query")]
     public class RoomQuery
     {
@@ -29,4 +23,4 @@ namespace Optern.Presentation.GraphQlApi.Rooms.Query
         public async Task<Response<RoomDetailsDTO>> GetRoomByID([Service] IRoomService _roomService, string id) =>
           await _roomService.GetRoomById(id);
     }
-}
+

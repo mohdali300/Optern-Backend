@@ -1,36 +1,4 @@
-using AppAny.HotChocolate.FluentValidation;
-using FluentValidation;
-using Optern.Application.Mappings;
-using Optern.Infrastructure;
-using Optern.Infrastructure.DependencyInjection;
-using Optern.Infrastructure.Hubs;
-using Optern.Infrastructure.Validations;
-using Optern.Presentation.GraphQlApi;
-using Optern.Presentation.GraphQlApi.Auth.Mutation;
-using Optern.Presentation.GraphQlApi.Auth.Query;
-using Optern.Presentation.GraphQlApi.Comment.Mutation;
-using Optern.Presentation.GraphQlApi.Comment.Query;
-using Optern.Presentation.GraphQlApi.FavouritePost.Mutation;
-using Optern.Presentation.GraphQlApi.FavouritePost.Query;
-using Optern.Presentation.GraphQlApi.Post.Mutation;
-using Optern.Presentation.GraphQlApi.Post.Query;
-using Optern.Presentation.GraphQlApi.React.Mutation;
-using Optern.Presentation.GraphQlApi.React.Query;
-using Optern.Presentation.GraphQlApi.Rooms.Mutation;
-using Optern.Presentation.GraphQlApi.Rooms.Query;
-using Optern.Presentation.GraphQlApi.RoomTrack.Query;
-using Optern.Presentation.GraphQlApi.Sprint.Mutation;
-using Optern.Presentation.GraphQlApi.Sprint.Query;
-using Optern.Presentation.GraphQlApi.RoomUser.Mutation;
-using Optern.Presentation.GraphQlApi.RoomUser.Query;
-using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
-using Optern.Presentation.GraphQlApi.SubTrack.Query;
-using Optern.Presentation.GraphQlApi.Tag;
-using Optern.Presentation.GraphQlApi.Task.Mutation;
-using Optern.Presentation.GraphQlApi.Track.Mutation;
-using Optern.Presentation.GraphQlApi.Track.Query;
-using Optern.Presentation.GraphQlApi.WorkSpace.Mutation;
-
+// Initialize builder
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
