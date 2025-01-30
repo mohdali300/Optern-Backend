@@ -12,6 +12,7 @@ namespace Optern.Domain.Entities
         public string Title { get; set;}
         public DateTime StartDate { get; set;}
         public DateTime EndDate { get; set;}
+        public string Goal { get; set;}
         // Foreign Keys
         public int WorkSpaceId { get; set;}
 
