@@ -21,15 +21,6 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
             =>await _postService.GetPostByIdAsync(postId,userId);
 
 
-       // public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(
-       //[Service] IPostService postService,
-       //int? postId = null,
-       //string? username = null)
-       // {
-       //     return await postService.GetPostsByIdOrUserAsync(postId, username);
-       // }
-
-
         [GraphQLDescription("Get Recommended Posts based on reactions count")]
         public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
          ) => await postService.GetRecommendedPostsAsync(topN);
@@ -40,8 +31,8 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
     [Service] IPostService postService,
     string? tagName = null,
     string? username = null,
-    string? keyword = null
-       ) => await postService.SearchPostsAsync(tagName, username, keyword);
+    string? keyword = null,
+    int lastIdx = 0, int limit = 10) => await postService.SearchPostsAsync(tagName, username, keyword,lastIdx,limit);
 
 
 

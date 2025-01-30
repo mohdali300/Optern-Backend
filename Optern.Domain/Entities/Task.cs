@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Optern.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using T = Optern.Domain.Enums;
 
 namespace Optern.Domain.Entities
 {
@@ -14,7 +16,7 @@ namespace Optern.Domain.Entities
         public string StartDate { get; set; } 
         public string DueDate { get; set; } 
         public string EndDate { get; set; } 
-        public TaskStatus Status { get; set; }
+        public TaskState Status { get; set; }
 
         // Foreign Keys
         public int SprintId { get; set; }

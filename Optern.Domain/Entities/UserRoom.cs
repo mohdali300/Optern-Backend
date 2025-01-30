@@ -15,6 +15,7 @@ namespace Optern.Domain.Entities
         public bool IsAdmin { get; set; }=false;
         public DateTime JoinedAt { get; set; }=DateTime.Now;
 
+        public bool IsAdmin { get; set; }   
         // Navigation Property
 
         public virtual Room Room { get; set; }
