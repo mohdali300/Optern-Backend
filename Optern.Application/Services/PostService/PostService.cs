@@ -390,6 +390,7 @@ namespace Optern.Application.Services.PostService
 
 				var postResponse = new PostDTO
 				{
+					Id = post.Id,
 					Title = post.Title ?? string.Empty,
 					Content = post.Content ?? string.Empty,
 					Tags = postTags.Select(pt => pt.Tag.Name).ToList() ?? new List<string>(),
