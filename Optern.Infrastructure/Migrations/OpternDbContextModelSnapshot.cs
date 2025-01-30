@@ -1208,6 +1208,12 @@ namespace Optern.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("RoomId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1486,7 +1492,7 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Optern.Domain.Entities.ApplicationUser.RefreshTokens#Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
                                 .HasColumnType("text");
@@ -1512,7 +1518,7 @@ namespace Optern.Infrastructure.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken");
+                            b1.ToTable("RefreshToken", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
