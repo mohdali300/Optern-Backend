@@ -23,6 +23,8 @@ namespace Optern.Domain.Entities
 
         public virtual ICollection<UserTasks> AssignedTasks { get; set; }
         public virtual Sprint Sprint { get; set; }
+        public virtual ICollection<BookMarkedTask> BookMarkedTasks { get; set; }
+
 
     }
 }

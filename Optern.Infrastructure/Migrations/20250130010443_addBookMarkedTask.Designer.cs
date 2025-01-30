@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250130010443_addBookMarkedTask")]
+    partial class addBookMarkedTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -269,6 +272,9 @@ namespace Optern.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("PostId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TaskId")
                         .HasColumnType("integer");
 
@@ -277,6 +283,8 @@ namespace Optern.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PostId");
 
                     b.HasIndex("TaskId");
 
@@ -1547,6 +1555,10 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.BookMarkedTask", b =>
                 {
+                    b.HasOne("Optern.Domain.Entities.Post", null)
+                        .WithMany("BookMarkedTasks")
+                        .HasForeignKey("PostId");
+
                     b.HasOne("Optern.Domain.Entities.Task", "Task")
                         .WithMany("BookMarkedTasks")
                         .HasForeignKey("TaskId")
@@ -2139,6 +2151,8 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.Post", b =>
                 {
+                    b.Navigation("BookMarkedTasks");
+
                     b.Navigation("Comments");
 
                     b.Navigation("FavoritePosts");

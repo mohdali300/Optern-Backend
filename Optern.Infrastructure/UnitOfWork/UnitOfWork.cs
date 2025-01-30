@@ -22,6 +22,8 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<RoomSkills> RoomSkills { get; private set; }
         public IGenericRepository<RoomTrack> RoomTracks { get; private set; }
         public IGenericRepository<FavoritePosts> FavoritePosts { get; private set; }
+        public IGenericRepository<BookMarkedTask> BookMarkedTask { get; }
+
 
         public IGenericRepository<Post> Posts { get; private set; }
 
@@ -49,6 +51,7 @@ namespace Optern.Infrastructure.UnitOfWork
             Comments= new GenericRepository<Comment>(context);
             Reacts= new GenericRepository<Reacts>(context);
             WorkSpace= new GenericRepository<WorkSpace>(context);
+            BookMarkedTask=new GenericRepository<BookMarkedTask>(context);
         }
 
         public async Task<int> SaveAsync()

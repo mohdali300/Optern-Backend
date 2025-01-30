@@ -1,13 +1,20 @@
+#region Usings
 using AppAny.HotChocolate.FluentValidation;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Optern.Application.Mappings;
 using Optern.Infrastructure;
 using Optern.Infrastructure.DependencyInjection;
+using Optern.Infrastructure.ExternalServices.BackgroundJobs;
+using Optern.Infrastructure.ExternalServices.UserCleanUp;
 using Optern.Infrastructure.Hubs;
 using Optern.Infrastructure.Validations;
 using Optern.Presentation.GraphQlApi;
 using Optern.Presentation.GraphQlApi.Auth.Mutation;
 using Optern.Presentation.GraphQlApi.Auth.Query;
+using Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation;
+using Optern.Presentation.GraphQlApi.BookMarkedTask.Query;
 using Optern.Presentation.GraphQlApi.Comment.Mutation;
 using Optern.Presentation.GraphQlApi.Comment.Query;
 using Optern.Presentation.GraphQlApi.FavouritePost.Mutation;
@@ -24,7 +31,8 @@ using Optern.Presentation.GraphQlApi.SubTrack.Query;
 using Optern.Presentation.GraphQlApi.Tag;
 using Optern.Presentation.GraphQlApi.Track.Mutation;
 using Optern.Presentation.GraphQlApi.Track.Query;
-using Optern.Presentation.GraphQlApi.WorkSpace.Mutation;
+using Optern.Presentation.GraphQlApi.WorkSpace.Mutation; 
+#endregion
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +70,7 @@ builder.Services
 .AddType<FavouritePostsQuery>()
 .AddType<CommentQuery>()
 .AddType<ReactQuery>()
+.AddType<BookMarkedTaskQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -73,6 +82,7 @@ builder.Services
 .AddType<ReactMutation>()
 .AddType<PostMutation>()
 .AddType<WorkSpaceMutation>()
+.AddType<BookMarkedTaskMutation>()
 .AddFluentValidation();
 #endregion
 
@@ -103,6 +113,14 @@ app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
+
+// Hangfire
+app.UseHangfireDashboard("/hangfire");
+using (var scope = app.Services.CreateScope())
+{
+	var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpJob>();
+	userCleanUpScheduler.UserCleanUp();
+}
 
 app.MapHub<ChatHub>("/ChatHub");
 app.MapHub<NotificationHub>("/NotificationHub");
