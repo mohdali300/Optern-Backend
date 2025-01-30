@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Sprint;
-using Optern.Application.Interfaces.ISprintService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.Sprint.Mutation
-{
+﻿
     [ExtendObjectType("Mutation")]
     public class SprintMutation
     {
@@ -20,4 +15,4 @@ namespace Optern.Presentation.GraphQlApi.Sprint.Mutation
         public async Task<Response<bool>> DeleteSprint([Service] ISprintService _sprintService, int id) =>
           await _sprintService.DeleteSprint(id);
     }
-}
+

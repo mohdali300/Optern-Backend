@@ -1,13 +1,5 @@
-﻿using Optern.Application.DTOs.Comment;
-using Optern.Application.DTOs.FavoritePosts;
-using Optern.Application.DTOs.Room;
-using Optern.Application.Interfaces.ICommentService;
-using Optern.Application.Interfaces.IFavoritePostsService;
-using Optern.Application.Interfaces.IRoomService;
-using Optern.Infrastructure.Response;
+﻿
 
-namespace Optern.Presentation.GraphQlApi.FavouritePost.Mutation
-{
     [ExtendObjectType("Mutation")]
 
     public class FavouritePostsMutation
@@ -27,4 +19,3 @@ namespace Optern.Presentation.GraphQlApi.FavouritePost.Mutation
             return await favoritePostsService.DeleteFavoritePostAsync(userId, postId);
         }
     }
-}

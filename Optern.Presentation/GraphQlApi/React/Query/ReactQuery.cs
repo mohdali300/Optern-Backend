@@ -1,10 +1,4 @@
-﻿using Optern.Application.DTOs.React;
-using Optern.Application.Interfaces.IReactService;
-using Optern.Domain.Enums;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.React.Query
-{
+﻿
     [ExtendObjectType("Query")]
     public class ReactQuery
     {
@@ -16,4 +10,4 @@ namespace Optern.Presentation.GraphQlApi.React.Query
         public async Task<Response<List<CommentReactDTO>>> GetCommentReactsAsync([Service] IReactService _reactService, int commentId, ReactType? reactType = null)
             => await _reactService.GetCommentReactsAsync(commentId, reactType);
     }
-}
+

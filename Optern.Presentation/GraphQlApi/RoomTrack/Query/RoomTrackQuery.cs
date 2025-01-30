@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Room;
-using Optern.Application.Interfaces.IRoomTrackService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.RoomTrack.Query
-{
+﻿
     [ExtendObjectType("Query")]
     public class RoomTrackQuery
     {
@@ -12,4 +7,4 @@ namespace Optern.Presentation.GraphQlApi.RoomTrack.Query
             =>await _roomTrackService.GetSubTrackRooms(subTrackId);
 
     }
-}
+
