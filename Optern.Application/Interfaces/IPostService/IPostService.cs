@@ -22,7 +22,8 @@ namespace Optern.Application.Interfaces.IPostService
         public Task<Response<IEnumerable<SearchPostDTO>>> SearchPostsAsync(
             string? tagName = null,
             string? username = null,
-            string? keyword = null);
+            string? keyword = null,
+            int lastIdx = 0, int limit = 10);
 
 
         public Task<Response<PostDTO>> CreatePostAsync(string userId, ManagePostDTO model);
