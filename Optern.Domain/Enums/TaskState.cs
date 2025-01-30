@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Optern.Domain.Enums
 {
-    public enum TaskStatus
+    public enum TaskState
     {
         ToDo,
         InProgress,

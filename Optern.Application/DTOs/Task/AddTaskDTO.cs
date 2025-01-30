@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using T = Optern.Domain.Enums;
+using Optern.Domain.Enums;
 
 namespace Optern.Application.DTOs.Task
 {
@@ -27,7 +27,7 @@ namespace Optern.Application.DTOs.Task
         public string RoomId {  get; set; }
 
         [Required]
-        public T.TaskStatus Status { get; set; }
+        public TaskState Status { get; set; }
 
         [Required]
         public List<string> AssignedUserIds { get; set; } = new();
