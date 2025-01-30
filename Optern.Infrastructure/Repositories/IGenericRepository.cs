@@ -32,5 +32,6 @@ namespace Optern.Infrastructure.Repositories
         IDbContextTransaction BeginTransaction();
         void Commit();
         void RollBack();
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }
