@@ -19,6 +19,8 @@ using Optern.Presentation.GraphQlApi.React.Query;
 using Optern.Presentation.GraphQlApi.Rooms.Mutation;
 using Optern.Presentation.GraphQlApi.Rooms.Query;
 using Optern.Presentation.GraphQlApi.RoomTrack.Query;
+using Optern.Presentation.GraphQlApi.RoomUser.Mutation;
+using Optern.Presentation.GraphQlApi.RoomUser.Query;
 using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
 using Optern.Presentation.GraphQlApi.SubTrack.Query;
 using Optern.Presentation.GraphQlApi.Tag;
@@ -63,6 +65,7 @@ builder.Services
 .AddType<FavouritePostsQuery>()
 .AddType<CommentQuery>()
 .AddType<ReactQuery>()
+.AddType<RoomUserQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -75,6 +78,7 @@ builder.Services
 .AddType<PostMutation>()
 .AddType<WorkSpaceMutation>()
 .AddType<TaskMutation>()
+.AddType<RoomUserMutation>()
 .AddFluentValidation();
 #endregion
 
