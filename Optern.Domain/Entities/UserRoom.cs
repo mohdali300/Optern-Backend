@@ -13,6 +13,7 @@ namespace Optern.Domain.Entities
         public string RoomId { get; set; }
         public string UserId { get; set; }
 
+        public bool IsAdmin { get; set; }   
         // Navigation Property
 
         public virtual Room Room { get; set; }

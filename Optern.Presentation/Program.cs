@@ -22,6 +22,7 @@ using Optern.Presentation.GraphQlApi.RoomTrack.Query;
 using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
 using Optern.Presentation.GraphQlApi.SubTrack.Query;
 using Optern.Presentation.GraphQlApi.Tag;
+using Optern.Presentation.GraphQlApi.Task.Mutation;
 using Optern.Presentation.GraphQlApi.Track.Mutation;
 using Optern.Presentation.GraphQlApi.Track.Query;
 using Optern.Presentation.GraphQlApi.WorkSpace.Mutation;
@@ -73,6 +74,7 @@ builder.Services
 .AddType<ReactMutation>()
 .AddType<PostMutation>()
 .AddType<WorkSpaceMutation>()
+.AddType<TaskMutation>()
 .AddFluentValidation();
 #endregion
 

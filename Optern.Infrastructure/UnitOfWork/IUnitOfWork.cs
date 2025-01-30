@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Repositories;
+using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.UnitOfWork
 {
@@ -25,6 +26,10 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Comment> Comments { get; }
         IGenericRepository<Reacts> Reacts { get; }
         IGenericRepository<WorkSpace> WorkSpace { get; }
+
+        IGenericRepository<Task> Tasks { get; }
+
+        IGenericRepository<Sprint> Sprints { get; }
         Task<int> SaveAsync();
     }
 }
