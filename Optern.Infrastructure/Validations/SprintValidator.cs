@@ -26,9 +26,19 @@ namespace Optern.Infrastructure.Validations
 
             RuleFor(x => x.EndDate)
                 .NotEmpty()
-                .WithMessage("EndDate is required.");
+                .WithMessage("EndDate is required.")
+                .GreaterThan(x => x.StartDate)
+                .WithMessage("EndDate must be Greater than StartDate");
 
-          
+            RuleFor(x => x.WorkSpaceId)
+                .NotNull()
+                .NotEmpty()
+                 .WithMessage("WorkSpace Filed is required.")
+                .NotEqual(0)
+                .WithMessage("Invalid WorkSpace");
+
+
+
         }
     }
 }

@@ -45,7 +45,6 @@ namespace Optern.Infrastructure.Repositories
         public virtual async Task DeleteAsync(T entity)
         {
             _dbSet.Remove(entity);
-            await _dbContext.SaveChangesAsync();
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()

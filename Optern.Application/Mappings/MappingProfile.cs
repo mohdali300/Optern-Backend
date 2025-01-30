@@ -11,6 +11,7 @@ using Optern.Application.DTOs.WorkSpace;
 using Optern.Application.DTOs.RoomUset;
 using Optern.Application.DTOs.Task;
 using Task = Optern.Domain.Entities.Task;
+using Optern.Application.DTOs.Sprint;
 
 namespace Optern.Application.Mappings
 {
@@ -65,6 +66,8 @@ namespace Optern.Application.Mappings
 
 			CreateMap<WorkSpace, WorkSpaceDTO>();
 
+			CreateMap<Sprint, SprintResponseDTO>();
+
             CreateMap<AddTaskDTO, Task>()
            .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
 
@@ -75,6 +78,7 @@ namespace Optern.Application.Mappings
                     FullName = $"{a.User.FirstName} {a.User.LastName}",
                     ProfilePicture = a.User.ProfilePicture
                 }).ToList()));
+
 
             #endregion
 
