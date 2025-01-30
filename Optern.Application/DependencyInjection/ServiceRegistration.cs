@@ -11,6 +11,7 @@ using Optern.Application.Interfaces.IReactService;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Application.Interfaces.ISprintService;
+using Optern.Application.Interfaces.IRoomUserService;
 using Optern.Application.Interfaces.ISubTrackService;
 using Optern.Application.Interfaces.ITagService;
 using Optern.Application.Interfaces.ITrackService;
@@ -25,6 +26,7 @@ using Optern.Application.Services.ReactService;
 using Optern.Application.Services.RoomService;
 using Optern.Application.Services.RoomTrackService;
 using Optern.Application.Services.SprintService;
+using Optern.Application.Services.RoomUserService;
 using Optern.Application.Services.SubTrackService;
 using Optern.Application.Services.TagService;
 using Optern.Application.Services.TrackService;
@@ -99,6 +101,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IReactService, ReactService>();
             services.AddScoped<IWorkSpaceService, WorkSpaceService>();
             services.AddScoped<ISprintService, SprintService>();
+            services.AddScoped<IRoomUserService, RoomUserService>();
 
 
             return services;

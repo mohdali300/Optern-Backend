@@ -36,6 +36,7 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Task> Tasks { get; private set; }
 
         public IGenericRepository<Sprint> Sprints { get; private set; }
+        public IGenericRepository<UserRoom> RoomUsers { get; private set; }
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -56,7 +57,9 @@ namespace Optern.Infrastructure.UnitOfWork
             WorkSpace= new GenericRepository<WorkSpace>(context);
             Tasks= new GenericRepository<Task>(context);
             Sprints= new GenericRepository<Sprint>(context);
-                
+            RoomUsers= new GenericRepository<UserRoom>(context);
+
+
         }
 
         public async Task<int> SaveAsync()
