@@ -8,6 +8,7 @@ using Optern.Application.DTOs.React;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.FavoritePosts;
 using Optern.Application.DTOs.WorkSpace;
+using Optern.Application.DTOs.RoomUset;
 
 namespace Optern.Application.Mappings
 {
@@ -60,7 +61,15 @@ namespace Optern.Application.Mappings
                opt => opt.MapFrom(src => src.UserRooms.Count));
 
 			CreateMap<WorkSpace, WorkSpaceDTO>();
-       
+
+            //RoomUser
+            CreateMap<UserRoom, RoomUserDTO>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+            .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.IsAdmin ? "Leader" : "Collaborator"));
+
+
         }
 	}
 }
