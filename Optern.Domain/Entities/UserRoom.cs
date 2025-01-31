@@ -20,5 +20,7 @@ namespace Optern.Domain.Entities
 
         public virtual Room Room { get; set; }
         public virtual ApplicationUser User { get; set; }
+        public virtual ICollection<BookMarkedTask> BookMarkedTasks { get; set; }
+
     }
 }

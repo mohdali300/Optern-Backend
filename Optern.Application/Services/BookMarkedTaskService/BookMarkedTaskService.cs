@@ -26,12 +26,12 @@ namespace Optern.Application.Services.BookMarkedTaskService
         }
 
         #region Add
-        public async Task<Response<string>> Add(string userId, int taskId)
+        public async Task<Response<string>> Add(int roomUserId, int taskId)
         {
             try
             {
                 var bookMarkedTask = await _context.BookMarkedTasks
-                    .Where(b => b.UserId == userId && b.TaskId == taskId).FirstOrDefaultAsync();
+                    .Where(b => b.UserRoomId == roomUserId && b.TaskId == taskId).FirstOrDefaultAsync();
                 if (bookMarkedTask != null)
                 {
                     return Response<string>.Failure("Task is already in your BookMarks.", 400);
@@ -39,7 +39,7 @@ namespace Optern.Application.Services.BookMarkedTaskService
 
                 var bookmark = new BookMarkedTask
                 {
-                    UserId = userId,
+                    UserRoomId = roomUserId,
                     TaskId = taskId
                 };
 
@@ -80,7 +80,8 @@ namespace Optern.Application.Services.BookMarkedTaskService
             try
             {
                 var bookMarks = await _context.BookMarkedTasks.Include(b => b.Task)
-                    .Where(b => b.UserId == userId).ToListAsync();
+                    .Include(b => b.UserRoom)
+                    .Where(b => b.UserRoom.UserId == userId).ToListAsync();
                 if (bookMarks != null && bookMarks.Any())
                 {
                     var dto = bookMarks.Select(b => new BookMarkedTaskDTO

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131162349_editBookMarks")]
+    partial class editBookMarks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -937,6 +940,10 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
+
+                    b.Property<int>("Capacity")
+                        .HasMaxLength(150)
+                        .HasColumnType("integer");
 
                     b.Property<string>("CoverPicture")
                         .IsRequired()

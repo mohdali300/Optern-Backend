@@ -49,6 +49,12 @@ namespace Optern.Infrastructure.Configurations
                    .WithMany(u => u.UserRooms)
                    .HasForeignKey(ur => ur.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+
+            builder.HasMany(u => u.BookMarkedTasks)
+              .WithOne(b => b.UserRoom)
+              .HasForeignKey(b => b.UserRoomId)
+              .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
     }

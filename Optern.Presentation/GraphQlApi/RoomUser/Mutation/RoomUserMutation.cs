@@ -1,5 +1,5 @@
 ﻿
-    [ExtendObjectType("Mutation")]
+[ExtendObjectType("Mutation")]
     public class RoomUserMutation
     {
         [GraphQLDescription("Delete Room's Collaborator")]
