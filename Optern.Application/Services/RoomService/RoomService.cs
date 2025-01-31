@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Optern.Application.DTOs.Room;
+using Optern.Application.DTOs.Skills;
+using Optern.Application.DTOs.SubTrack;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IUserService;
@@ -104,6 +106,7 @@ namespace Optern.Application.Services.RoomService
 					.Where(r => r.CreatorId == id)
 					.Select(r => new CreateRoomDTO
 					{
+						Id=r.Id,
 						Name = r.Name,
 						Description = r.Description,
 						Capacity = r.Capacity,
@@ -135,6 +138,7 @@ namespace Optern.Application.Services.RoomService
 					 .Where(r => r.UserRooms.Any(r => r.UserId == id))
 					 .Select(r => new CreateRoomDTO
 					 {
+						 Id= r.Id,
 						 Name = r.Name,
 						 Description = r.Description,
 						 Capacity = r.Capacity,
@@ -290,7 +294,20 @@ namespace Optern.Application.Services.RoomService
 						CreatedAt = room.CreatedAt,
 						Members = room.UserRooms.Count,
 						Skills = room.RoomSkills
-						.Select(rs => rs.Skill.Name).ToList()
+						.Select(rs => new SkillsDTO {
+							Id=rs.Skill.Id,
+							Name=rs.Skill.Name
+						}).Distinct().ToList(),
+						Tracks=room.RoomTracks
+						.Select( track=> new TrackDTO {
+							Id=   track.SubTrack.Track.Id,
+							Name= track.SubTrack.Track.Name 
+						}).Distinct().ToList(),
+						SubTrack=room.RoomTracks
+						.Select(subTrack=> new SubTrackDTO 
+						{ Id=subTrack.SubTrack.Id,
+							Name=subTrack.SubTrack.Name
+						}).Distinct().ToList()
 					}).FirstOrDefaultAsync();
 
 
