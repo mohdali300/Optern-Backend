@@ -10,15 +10,14 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.DTOs.Room
 {
-    public class RoomDetailsDTO :BaseRoomDTO
+    public class ResponseRoomDTO :BaseRoomDTO
     {
-        public string Id { get; set; }
-        public string CreatorName { get; set; }
-        public int Members { get; set; } 
-        public List<SkillsDTO> Skills { get; set; } 
-        public List<TrackDTO> Tracks { get; set; }
-        public List<SubTrackDTO> SubTrack { get; set; }
-        public RoomDetailsDTO()
+        public string? CreatorName { get; set; }
+        public int? Members { get; set; } 
+        public List<SkillsDTO>? Skills { get; set; } 
+        public List<TrackDTO>? Tracks { get; set; }
+        public List<SubTrackDTO>? SubTrack { get; set; }
+        public ResponseRoomDTO()
         {
             Id = string.Empty;
             CreatorName = string.Empty;

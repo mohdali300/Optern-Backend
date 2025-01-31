@@ -9,20 +9,23 @@ namespace Optern.Application.DTOs.Room
 {
 	public class BaseRoomDTO
 	{
-		public string Id { get; set; }
+		public string? Id { get; set; }
 		public string Name { get; set; } 
 		public string Description { get; set; }
 		public RoomType RoomType { get; set; } 
-		public string CoverPicture { get; set; } 
-		public DateTime CreatedAt { get; set; } 
+		public string? CoverPicture { get; set; } 
+		public DateTime? CreatedAt { get; set; }
+        public int Capacity { get; set; }
 
-		public BaseRoomDTO()
+
+        public BaseRoomDTO()
 		{
 			Name= string.Empty;
 			Description= string.Empty;
 			RoomType= RoomType.Public;
 			CoverPicture= string.Empty;
 			CreatedAt= DateTime.MinValue;
+			Capacity = 0;
 
 		}
 	}
