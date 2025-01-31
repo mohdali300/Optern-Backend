@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.RoomUset;
+using Optern.Application.DTOs.RoomUser;
 using Optern.Application.Interfaces.IRoomUserService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
