@@ -64,7 +64,9 @@ namespace Optern.Application.Mappings
               .ForMember(dest => dest.NumberOfParticipants,
                opt => opt.MapFrom(src => src.UserRooms.Count));
 
-			CreateMap<WorkSpace, WorkSpaceDTO>();
+			CreateMap<Room, ResponseRoomDTO>();
+
+            CreateMap<WorkSpace, WorkSpaceDTO>();
 
 			CreateMap<Sprint, SprintResponseDTO>();
 

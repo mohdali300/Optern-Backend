@@ -8,7 +8,7 @@
             await _roomService.JoinToRoom(model);
 
         [GraphQLDescription("Create Room")]
-        public async Task<Response<CreateRoomDTO>> CreateRoom([Service] IRoomService _roomService, CreateRoomDTO model ,IFile CoverPicture) =>
+        public async Task<Response<ResponseRoomDTO>> CreateRoom([Service] IRoomService _roomService, CreateRoomDTO model ,IFile CoverPicture) =>
           await _roomService.CreateRoom(model, CoverPicture);
 
     }

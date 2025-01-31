@@ -50,6 +50,8 @@ using Optern.Infrastructure.ExternalServices.JWTService;
 using Optern.Infrastructure.ExternalServices.MailService;
 using Optern.Infrastructure.ExternalServices.UserCleanUp;
 using Optern.Infrastructure.UnitOfWork;
+using Optern.Application.Interfaces.ITaskService;
+using Optern.Application.Services.TaskService;
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -114,6 +116,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<ISprintService, SprintService>();
             services.AddScoped<IRoomUserService, RoomUserService>();
             services.AddScoped<IBookMarkedTaskService, BookMarkedTaskService>();
+            services.AddScoped<ITaskService, TaskService>();
 
 
             return services;
