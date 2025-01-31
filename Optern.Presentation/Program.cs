@@ -37,6 +37,7 @@ builder.Services
 .AddType<ReactQuery>()
 .AddType<RoomUserQuery>()
 .AddType<SprintQuery>()
+.AddType<BookMarkedTaskQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -51,6 +52,7 @@ builder.Services
 .AddType<TaskMutation>()
 .AddType<RoomUserMutation>()
 .AddType<SprintMutation>()
+.AddType<BookMarkedTaskMutation>()
 .AddFluentValidation();
 #endregion
 
@@ -81,6 +83,14 @@ app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
+
+// Hangfire
+app.UseHangfireDashboard("/hangfire");
+using (var scope = app.Services.CreateScope())
+{
+	var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpJob>();
+	userCleanUpScheduler.UserCleanUp();
+}
 
 app.MapHub<ChatHub>("/ChatHub");
 app.MapHub<NotificationHub>("/NotificationHub");

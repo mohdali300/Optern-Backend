@@ -5,6 +5,8 @@ global using FluentValidation;
 global using Optern.Infrastructure.DependencyInjection;
 global using Optern.Infrastructure.Hubs;
 global using Optern.Infrastructure.Validations;
+global using Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation;
+global using Optern.Presentation.GraphQlApi.BookMarkedTask.Query;
 // GraphQlAPI/Auth/
 global using Optern.Application.DTOs.Login;
 global using Optern.Application.DTOs.ResetPassword;
@@ -15,6 +17,8 @@ global using Optern.Domain.Enums;
 global using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
 global using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
 global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
+global using Optern.Infrastructure.ExternalServices.BackgroundJobs;
+global using Optern.Infrastructure.ExternalServices.UserCleanUp;
 global using Optern.Infrastructure.Response;
 global using Org.BouncyCastle.Asn1.Ocsp;
 global using Optern.Application.Interfaces.IRoomService;
@@ -62,6 +66,13 @@ global using Optern.Application.Interfaces.ITrackService;
 // GraphQlAPi/WorkSpace
 global using Optern.Application.DTOs.WorkSpace;
 global using Optern.Application.Interfaces.IWorkSpaceService;
+
+// GraphQlAPi/BookMarkedTask
+global using Optern.Application.DTOs.BookMarkedTask;
+global using Optern.Application.Interfaces.IBookMarkedTaskService;
+
+// Hangfire
+global using Hangfire;
 
 
 
