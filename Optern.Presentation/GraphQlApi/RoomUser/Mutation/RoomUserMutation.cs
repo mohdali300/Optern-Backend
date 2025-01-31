@@ -1,4 +1,5 @@
 ﻿using Optern.Application.DTOs.Room;
+using Optern.Application.DTOs.RoomUser;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IRoomUserService;
 using Optern.Infrastructure.Response;
@@ -22,9 +23,11 @@ using Optern.Infrastructure.Response;
         public async Task<Response<List<RoomUserDTO>>> AcceptRequestsAsync([Service] IRoomUserService _roomUserService,string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null)
             =>await _roomUserService.AcceptRequestsAsync(roomId, leaderId, userRoomId, approveAll);
 
-        //[GraphQLDescription("Reject Joined Requests")]
-        //public async Task<Response<List<RoomUserDTO>>> RejectRequestsAsync([Service] IRoomUserService _roomUserService,string roomId, string leaderId, int? userRoomId = null, bool? rejectAll = null)
-        //    =>await _roomUserService.RejectRequestsAsync(roomId,leaderId, userRoomId, rejectAll);
+
+        [GraphQLDescription("Reject Joined Requests")]
+        public async Task<Response<string>> RejectRequestsAsync([Service] IRoomUserService _roomUserService,string roomId, string leaderId, int? userRoomId = null, bool? rejectAll = null)
+            =>await _roomUserService.RejectRequestsAsync(roomId,leaderId, userRoomId, rejectAll);
+
 
 
 

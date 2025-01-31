@@ -20,7 +20,6 @@ global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
 global using Optern.Infrastructure.ExternalServices.BackgroundJobs;
 global using Optern.Infrastructure.ExternalServices.UserCleanUp;
 global using Optern.Infrastructure.Response;
-global using Org.BouncyCastle.Asn1.Ocsp;
 global using Optern.Application.Interfaces.IRoomService;
 global using Optern.Domain.Entities;
 
