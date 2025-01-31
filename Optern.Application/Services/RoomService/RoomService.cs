@@ -78,7 +78,6 @@ namespace Optern.Application.Services.RoomService
 						 Id = r.Room.Id,
 						 Name = r.Room.Name,
 						 Description = r.Room.Description,
-						 Capacity = r.Room.Capacity,
 						 CoverPicture = r.Room.CoverPicture,
 						 Members = r.NumberOfUsers,
 						 CreatedAt = r.Room.CreatedAt,
@@ -108,7 +107,6 @@ namespace Optern.Application.Services.RoomService
 						Id=r.Id,
 						Name = r.Name,
 						Description = r.Description,
-						Capacity = r.Capacity,
 						CoverPicture = r.CoverPicture.ToString(),
 						Members = r.UserRooms.Count(),
 						CreatedAt = r.CreatedAt,
@@ -140,7 +138,6 @@ namespace Optern.Application.Services.RoomService
 						 Id= r.Id,
 						 Name = r.Name,
 						 Description = r.Description,
-						 Capacity = r.Capacity,
 						 CoverPicture = r.CoverPicture,
 						 Members = r.UserRooms.Count(),
 						 CreatedAt = r.CreatedAt,
@@ -222,7 +219,6 @@ namespace Optern.Application.Services.RoomService
 					RoomType = model.RoomType,
 					CoverPicture = CoverPicturePath,
 					CreatedAt = DateTime.UtcNow,
-					Capacity = model.Capacity,
 					CreatorId = model.CreatorId, // replace with ==> _userService.GetCurrentUserAsync()
 				};
 
