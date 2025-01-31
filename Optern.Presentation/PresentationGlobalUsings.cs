@@ -46,6 +46,7 @@ global using Optern.Application.Interfaces.IRoomTrackService;
 // GraphQLAPI/RoomUser
 global using Optern.Application.DTOs.RoomUset;
 global using Optern.Application.Interfaces.IRoomUserService;
+global using Optern.Application.Interfaces.IRoomSettingService;
 
 // GraphQlAPI/Sprint
 global using Optern.Application.DTOs.Sprint;

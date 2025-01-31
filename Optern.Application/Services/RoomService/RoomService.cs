@@ -222,7 +222,7 @@ namespace Optern.Application.Services.RoomService
 					RoomType = model.RoomType,
 					CoverPicture = CoverPicturePath,
 					CreatedAt = DateTime.UtcNow,
-					Capacity = model.Capacity,
+					Capacity = model.Capacity ?? 0,
 					CreatorId = model.CreatorId, // replace with ==> _userService.GetCurrentUserAsync()
 				};
 
@@ -247,7 +247,7 @@ namespace Optern.Application.Services.RoomService
 				}
 				if (model.Skills != null && model.Skills.Any())
 				{
-					var roomSkills = model.Skills.Select(skill => new RoomSkills
+					var roomSkills = model.Skills.Select(skill => new RoomSkillsDTO
 					{
 						RoomId = room.Id,
 						SkillId = skill,

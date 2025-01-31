@@ -21,7 +21,7 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Track> Tracks { get; }
         IGenericRepository<SubTrack> SubTracks { get; }
         IGenericRepository<ApplicationUser> Users { get; }
-        IGenericRepository<RoomSkills> RoomSkills { get; }
+        IGenericRepository<RoomSkillsDTO> RoomSkills { get; }
         IGenericRepository<RoomTrack> RoomTracks { get; }
         IGenericRepository<Comment> Comments { get; }
         IGenericRepository<Reacts> Reacts { get; }
