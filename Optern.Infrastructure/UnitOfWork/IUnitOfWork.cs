@@ -27,9 +27,9 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Reacts> Reacts { get; }
         IGenericRepository<WorkSpace> WorkSpace { get; }
         IGenericRepository<BookMarkedTask> BookMarkedTask { get; }
+        IGenericRepository<Skills> Skills { get; }
 
-
-        IGenericRepository<Task> Tasks { get; }
+            IGenericRepository<Task> Tasks { get; }
 
         IGenericRepository<Sprint> Sprints { get; }
         IGenericRepository<UserRoom> RoomUsers { get; }

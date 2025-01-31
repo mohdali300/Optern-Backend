@@ -8,8 +8,8 @@ namespace Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation
     {
 
         [GraphQLDescription("Add Task to Bookmarks")]
-        public async Task<Response<string>> AddBookMark([Service] IBookMarkedTaskService _bookMarkedTask, string userId, int taskId)
-            => await _bookMarkedTask.Add(userId, taskId);
+        public async Task<Response<string>> AddBookMark([Service] IBookMarkedTaskService _bookMarkedTask, int roomUserId, int taskId)
+            => await _bookMarkedTask.Add(roomUserId, taskId);
 
         [GraphQLDescription("Delete Bookmarked Task")]
         public async Task<Response<string>> DeleteBookMark([Service] IBookMarkedTaskService _bookMarkedTask, int bookMarkId)

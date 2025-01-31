@@ -15,10 +15,6 @@ namespace Optern.Infrastructure.Validations
                 .NotEmpty().WithMessage("Room description is required.")
                 .MaximumLength(800).WithMessage("Room description must not exceed 500 characters.");
 
-            RuleFor(r => r.Capacity)
-                .GreaterThan(0).WithMessage("Capacity must be greater than 0.")
-                .LessThanOrEqualTo(1000).WithMessage("Capacity must not exceed 1000 participants.");
-
             RuleFor(r => r.RoomType)
                 .IsInEnum().WithMessage("Room type must be a valid enum value.");
 

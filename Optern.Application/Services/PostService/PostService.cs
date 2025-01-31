@@ -1,28 +1,16 @@
 ﻿using AutoMapper;
-using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Optern.Application.DTOs.Comment;
 using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.React;
-using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.Tags;
-using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IPostService;
-using Optern.Application.Interfaces.ITrackService;
 using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
 using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Optern.Application.Services.PostService
 {
@@ -113,13 +101,15 @@ namespace Optern.Application.Services.PostService
 						Title = p.Title,
 						Content = p.Content,
 						CreatedDate = p.CreatedDate,
+						UserId=p.CreatorId,
 						UserName = $"{p.Creator.FirstName} {p.Creator.LastName}",
 						ProfilePicture = p.Creator.ProfilePicture,
-						Tags = p.PostTags.Select(pt => new TagDTO { Name = pt.Tag.Name }).ToList(),
+						Tags = p.PostTags.Select(pt => new TagDTO {Id=pt.Tag.Id, Name = pt.Tag.Name }).ToList(),
 						ReactCount = p.Reacts.Count,
 						CommentCount = _context.Comments.Count(c => c.PostId == p.Id),
-						UserReact = ReactType.NOTVOTEYET
-					})
+						UserReact = ReactType.NOTVOTEYET,
+                         IsFav = false
+                    })
 					.FirstOrDefaultAsync();
 
 				if (post == null)
@@ -143,12 +133,15 @@ namespace Optern.Application.Services.PostService
 					Id = parent.Id,
 					Content = parent.Content,
 					CommentDate = parent.CommentDate,
+					UserId = parent.UserId,
 					UserName = $"{parent.User?.FirstName} {parent.User?.LastName}",
 					ProfilePicture = parent.User?.ProfilePicture,
 					ReactCommentCount = parent.CommentReacts.Count(),
 					ReplyCommentCount = _context.Comments.Count(c => c.ParentId == parent.Id),
-					
-				}).ToList();
+                    UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
+
+
+                }).ToList();
 				
 				if(userId is not null)
 				{
@@ -158,7 +151,9 @@ namespace Optern.Application.Services.PostService
 					{
 						post.UserReact = react[0];
 					}
-				}
+                    post.IsFav = await _context.FavoritePosts
+               .AnyAsync(fp => fp.UserId == userId && fp.PostId == postId);
+                }
 
 				return Response<PostWithDetailsDTO>.Success(
 					post,

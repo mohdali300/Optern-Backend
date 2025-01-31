@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131211050_deleteCapacityFromRoom")]
+    partial class deleteCapacityFromRoom
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -979,7 +982,7 @@ namespace Optern.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Optern.Domain.Entities.RoomSkillsDTO", b =>
+            modelBuilder.Entity("Optern.Domain.Entities.RoomSkills", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1038,6 +1041,7 @@ namespace Optern.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -1229,9 +1233,6 @@ namespace Optern.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsAccepted")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
@@ -1865,7 +1866,7 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("Optern.Domain.Entities.RoomSkillsDTO", b =>
+            modelBuilder.Entity("Optern.Domain.Entities.RoomSkills", b =>
                 {
                     b.HasOne("Optern.Domain.Entities.Room", "Room")
                         .WithMany("RoomSkills")

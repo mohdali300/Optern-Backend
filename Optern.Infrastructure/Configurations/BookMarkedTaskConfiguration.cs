@@ -23,9 +23,9 @@ namespace Optern.Infrastructure.Configurations
             #endregion
 
             #region Relations
-            builder.HasOne(b => b.User)
+            builder.HasOne(b => b.UserRoom)
                     .WithMany(u => u.BookMarkedTasks)
-                    .HasForeignKey(b => b.UserId)
+                    .HasForeignKey(b => b.UserRoomId)
                     .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(b => b.Task)

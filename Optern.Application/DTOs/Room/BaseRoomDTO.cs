@@ -15,7 +15,6 @@ namespace Optern.Application.DTOs.Room
 		public RoomType RoomType { get; set; } 
 		public string? CoverPicture { get; set; } 
 		public DateTime? CreatedAt { get; set; }
-        public int? Capacity { get; set; }
 
 
         public BaseRoomDTO()
@@ -25,7 +24,6 @@ namespace Optern.Application.DTOs.Room
 			RoomType=Domain.Enums.RoomType.Private;
 			CoverPicture= string.Empty;
 			CreatedAt= DateTime.MinValue;
-			Capacity = 0;
 
 		}
 	}

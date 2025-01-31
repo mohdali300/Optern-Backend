@@ -11,7 +11,7 @@ namespace Optern.Application.Interfaces.IBookMarkedTaskService
     public interface IBookMarkedTaskService
     {
         public Task<Response<List<BookMarkedTaskDTO>>> GetAll(string userId);
-        public Task<Response<string>> Add(string userId, int taskId);
+        public Task<Response<string>> Add(int roomUserId, int taskId);
         public Task<Response<string>> Delete(int bookMarkId);
     }
 }
