@@ -52,6 +52,8 @@ using Optern.Infrastructure.ExternalServices.UserCleanUp;
 using Optern.Infrastructure.UnitOfWork;
 using Optern.Application.Interfaces.ITaskService;
 using Optern.Application.Services.TaskService;
+using Optern.Application.Interfaces.IRoomSettingService;
+using Optern.Application.Services.RoomSettings;
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -117,6 +119,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IRoomUserService, RoomUserService>();
             services.AddScoped<IBookMarkedTaskService, BookMarkedTaskService>();
             services.AddScoped<ITaskService, TaskService>();
+           // services.AddScoped<IRoomSettingService, RoomSettingService>();
 
 
             return services;
