@@ -196,6 +196,8 @@ namespace Optern.Application.Services.RoomService
         }
         #endregion
 
+
+
         #region Create Room
         public async Task<Response<CreateRoomDTO>> CreateRoom(CreateRoomDTO model, IFile CoverPicture)
         {

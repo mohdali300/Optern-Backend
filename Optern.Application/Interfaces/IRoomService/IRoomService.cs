@@ -17,6 +17,7 @@ namespace Optern.Application.Interfaces.IRoomService
         public Task<Response<IEnumerable<CreateRoomDTO>>> GetPopularRooms();
         public Task<Response<IEnumerable<CreateRoomDTO>>> GetJoinedRooms(string id);
         public Task<Response<string>> JoinToRoom(JoinRoomDTO model);
+        
 
         public Task<Response<CreateRoomDTO>> CreateRoom(CreateRoomDTO model , IFile CoverPicture);
         public Task<Response<RoomDetailsDTO>> GetRoomById(string id);
