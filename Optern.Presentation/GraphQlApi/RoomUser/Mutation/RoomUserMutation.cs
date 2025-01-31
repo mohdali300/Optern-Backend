@@ -4,9 +4,7 @@ using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IRoomUserService;
 using Optern.Infrastructure.Response;
 
-namespace Optern.Presentation.GraphQlApi.RoomUser.Mutation
-{
-    [ExtendObjectType("Mutation")]
+[ExtendObjectType("Mutation")]
     public class RoomUserMutation
     {
         [GraphQLDescription("Request to Join To Room")]
@@ -33,4 +31,4 @@ namespace Optern.Presentation.GraphQlApi.RoomUser.Mutation
 
 
     }
-}
+

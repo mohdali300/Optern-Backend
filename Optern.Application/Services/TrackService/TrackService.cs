@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.SubTrack;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.ITrackService;
@@ -8,6 +9,7 @@ using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
+using Optern.Infrastructure.Validations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +46,7 @@ namespace Optern.Application.Services.TrackService
                     return Response<List<TrackDTO>>.Success(trackDtos);
                 }
 
-                return Response<List<TrackDTO>>.Failure("No tracks found!", 204);
+                return Response<List<TrackDTO>>.Success(new List<TrackDTO>(),"No tracks found!", 204);
             }
             catch (Exception ex)
             {
@@ -58,23 +60,20 @@ namespace Optern.Application.Services.TrackService
         {
             try
             {
-                if (!string.IsNullOrEmpty(name))
+                var track = new Track
                 {
-                    var track = new Track
-                    {
-                        Name = name,
-                    };
+                    Name = name,
+                };
 
-                    await _unitOfWork.Tracks.AddAsync(track);
-                    if (track != null)
-                    {
-                        var dto = new TrackDTO { Id = track.Id, Name = track.Name };
-                        return Response<TrackDTO>.Success(dto, "Track added successfully.");
-                    }
-                    return Response<TrackDTO>.Failure("Failed to add the track, please try again later.", 400);
+                var validate = new TrackValidator().Validate(track);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<TrackDTO>.Failure(new TrackDTO(), $"Invalid Data Model: {errorMessages}", 400);
                 }
 
-                return Response<TrackDTO>.Failure("Please enter data to be added.", 400);
+                await _unitOfWork.Tracks.AddAsync(track);
+                return Response<TrackDTO>.Success(new TrackDTO { Id = track.Id, Name = track.Name }, "Track added successfully.", 200);
             }
             catch (Exception ex)
             {
@@ -106,7 +105,7 @@ namespace Optern.Application.Services.TrackService
 
                     return Response<List<TrackWithSubTracksDTO>>.Success(trackDtos);
                 }
-                return Response<List<TrackWithSubTracksDTO>>.Failure("No Tracks Found!", 204);
+                return Response<List<TrackWithSubTracksDTO>>.Success(new List<TrackWithSubTracksDTO>(),"No Tracks Found!", 204);
             }
             catch (Exception ex)
             {

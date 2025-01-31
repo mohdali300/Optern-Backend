@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.RoomUset;
-using Optern.Application.Interfaces.IRoomUserService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.RoomUser.Query
-{
+﻿
     [ExtendObjectType("Query")]
     public class RoomUserQuery
     {
@@ -15,4 +10,4 @@ namespace Optern.Presentation.GraphQlApi.RoomUser.Query
         public async Task<Response<List<RoomUserDTO>>> GetPendingRequestsAsync([Service] IRoomUserService _roomUserService, string roomId, string leaderId)
            => await _roomUserService.GetPendingRequestsAsync(roomId, leaderId);
     }
-}
+

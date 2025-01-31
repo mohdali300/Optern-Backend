@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Track;
-using Optern.Application.Interfaces.ITrackService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.Track.Query
-{
+﻿
 	[ExtendObjectType("Query")]
 
 	public class TrackQuery
@@ -17,4 +12,3 @@ namespace Optern.Presentation.GraphQlApi.Track.Query
 			=> await _trackService.GetAllWithSubTracks();
 
     }
-}

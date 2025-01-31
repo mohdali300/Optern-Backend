@@ -37,7 +37,6 @@ namespace Optern.Application.Services.RoomTrackService
                     {
                         Name = rt.Room.Name,
                         Description = rt.Room.Description,
-                        Capacity = rt.Room.Capacity,
                         CoverPicture = rt.Room.CoverPicture,
                         NumberOfParticipants = rt.Room.UserRooms.Count(),
                         RoomType = rt.Room.RoomType,
@@ -46,7 +45,7 @@ namespace Optern.Application.Services.RoomTrackService
                     .ToListAsync();
 
                 return (roomDtos != null && roomDtos.Any()) ? Response<IEnumerable<CreateRoomDTO>>.Success(roomDtos) :
-                    Response<IEnumerable<CreateRoomDTO>>.Failure(new List<CreateRoomDTO>(), "No rooms found in this stack!", 204);
+                    Response<IEnumerable<CreateRoomDTO>>.Success(new List<CreateRoomDTO>(), "No rooms found in this stack!", 204);
             }
             catch (Exception ex)
             {

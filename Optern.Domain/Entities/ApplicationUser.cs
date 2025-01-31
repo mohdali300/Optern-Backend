@@ -48,9 +48,8 @@ namespace Optern.Domain.Entities
         public virtual ICollection<Experience> Experiences { get; set; }
         public virtual ICollection<Education> Educations { get; set; }
 
+        #endregion
 
-		#endregion
 
-
-	}
+    }
 }

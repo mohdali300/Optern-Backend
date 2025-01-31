@@ -8,9 +8,10 @@ using Optern.Application.DTOs.React;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.FavoritePosts;
 using Optern.Application.DTOs.WorkSpace;
-using Optern.Application.DTOs.RoomUset;
 using Optern.Application.DTOs.Task;
 using Task = Optern.Domain.Entities.Task;
+using Optern.Application.DTOs.Sprint;
+using Optern.Application.DTOs.RoomUser;
 
 namespace Optern.Application.Mappings
 {
@@ -63,7 +64,11 @@ namespace Optern.Application.Mappings
               .ForMember(dest => dest.NumberOfParticipants,
                opt => opt.MapFrom(src => src.UserRooms.Count));
 
-			CreateMap<WorkSpace, WorkSpaceDTO>();
+			CreateMap<Room, ResponseRoomDTO>();
+
+            CreateMap<WorkSpace, WorkSpaceDTO>();
+
+			CreateMap<Sprint, SprintResponseDTO>();
 
             CreateMap<AddTaskDTO, Task>()
            .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
@@ -75,6 +80,7 @@ namespace Optern.Application.Mappings
                     FullName = $"{a.User.FirstName} {a.User.LastName}",
                     ProfilePicture = a.User.ProfilePicture
                 }).ToList()));
+
 
             #endregion
 

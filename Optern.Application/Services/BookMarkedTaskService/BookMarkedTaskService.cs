@@ -1,0 +1,107 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Optern.Application.DTOs.BookMarkedTask;
+using Optern.Application.DTOs.Track;
+using Optern.Application.Interfaces.IBookMarkedTaskService;
+using Optern.Domain.Entities;
+using Optern.Infrastructure.Data;
+using Optern.Infrastructure.Response;
+using Optern.Infrastructure.UnitOfWork;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Optern.Application.Services.BookMarkedTaskService
+{
+    public class BookMarkedTaskService : IBookMarkedTaskService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly OpternDbContext _context;
+
+        public BookMarkedTaskService(IUnitOfWork unitOfWork, OpternDbContext context)
+        {
+            _unitOfWork = unitOfWork;
+            _context = context;
+        }
+
+        #region Add
+        public async Task<Response<string>> Add(int roomUserId, int taskId)
+        {
+            try
+            {
+                var bookMarkedTask = await _context.BookMarkedTasks
+                    .Where(b => b.UserRoomId == roomUserId && b.TaskId == taskId).FirstOrDefaultAsync();
+                if (bookMarkedTask != null)
+                {
+                    return Response<string>.Failure("Task is already in your BookMarks.", 400);
+                }
+
+                var bookmark = new BookMarkedTask
+                {
+                    UserRoomId = roomUserId,
+                    TaskId = taskId
+                };
+
+                await _unitOfWork.BookMarkedTask.AddAsync(bookmark);
+
+                return Response<string>.Success("Task Added to BookMarks successfully.");
+            }
+            catch (Exception ex)
+            {
+                return Response<string>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
+            }
+        }
+        #endregion
+
+        #region Delete
+        public async Task<Response<string>> Delete(int bookMarkId)
+        {
+            try
+            {
+                var bookmark = await _unitOfWork.BookMarkedTask.GetByIdAsync(bookMarkId);
+                if (bookmark != null)
+                {
+                    await _unitOfWork.BookMarkedTask.DeleteAsync(bookmark);
+                    return Response<string>.Success("Task Removed from BookMarks.");
+                }
+                return Response<string>.Failure(string.Empty, "This Task already is not in your BookMarks.", 400);
+            }
+            catch (Exception ex)
+            {
+                return Response<string>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
+            }
+        }
+        #endregion
+
+        #region Get All
+        public async Task<Response<List<BookMarkedTaskDTO>>> GetAll(string userId)
+        {
+            try
+            {
+                var bookMarks = await _context.BookMarkedTasks.Include(b => b.Task)
+                    .Include(b => b.UserRoom)
+                    .Where(b => b.UserRoom.UserId == userId).ToListAsync();
+                if (bookMarks != null && bookMarks.Any())
+                {
+                    var dto = bookMarks.Select(b => new BookMarkedTaskDTO
+                    {
+                        Id = b.Id,
+                        TaskId = b.TaskId,
+                        Title = b.Task.Title,
+                        Status = b.Task.Status,
+                        DueDate = b.Task.DueDate,
+                    }).ToList();
+
+                    return Response<List<BookMarkedTaskDTO>>.Success(dto);
+                }
+                return Response<List<BookMarkedTaskDTO>>.Success(new List<BookMarkedTaskDTO>(), "There is no BookMarked Tasks yet!", 204);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<BookMarkedTaskDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
+            }
+        } 
+        #endregion
+    }
+}

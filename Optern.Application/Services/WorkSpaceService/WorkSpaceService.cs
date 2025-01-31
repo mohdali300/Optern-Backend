@@ -78,7 +78,7 @@ namespace Optern.Application.Services.WorkSpaceService
                 {
                     return Response<WorkSpaceDTO>.Failure(new WorkSpaceDTO(), "WorkSpace Not Found!", 404);
                 }
-                workSpace.Title = title;
+                workSpace.Title = title??workSpace.Title;
                 await _unitOfWork.WorkSpace.UpdateAsync(workSpace);
                 await _unitOfWork.SaveAsync();
 
@@ -106,6 +106,7 @@ namespace Optern.Application.Services.WorkSpaceService
                     return Response<bool>.Failure(false, "WorkSpace Not Found!", 404);
                 }
                 await _unitOfWork.WorkSpace.DeleteAsync(workSpace);
+                await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
                 return Response<bool>.Success(true, "Workspace Deleted Successfully", 200);
             }

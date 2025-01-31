@@ -1,11 +1,6 @@
-﻿using Optern.Application.DTOs.FavoritePosts;
-using Optern.Application.DTOs.Post;
-using Optern.Application.Interfaces.IFavoritePostsService;
-using Optern.Application.Interfaces.IPostService;
-using Optern.Infrastructure.Response;
+﻿
 
-namespace Optern.Presentation.GraphQlApi.FavouritePost.Query
-{
+
     [ExtendObjectType("Query")]
     public class FavouritePostsQuery
     {
@@ -17,4 +12,4 @@ namespace Optern.Presentation.GraphQlApi.FavouritePost.Query
             return await favoritePosts.GetFavoritePostsByUserAsync(userId, lastIdx, limit);
         }
     }
-}
+

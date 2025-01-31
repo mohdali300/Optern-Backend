@@ -1,5 +1,6 @@
 ﻿using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.RoomUset;
+using Optern.Application.DTOs.RoomUser;
 using Optern.Infrastructure.Response;
 using System;
 using System.Collections.Generic;

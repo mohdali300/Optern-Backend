@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Tags;
-using Optern.Application.Interfaces.ITagService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.Tag
-{
+﻿
     [ExtendObjectType("Query")]
     public class TagQuery
     {
@@ -14,4 +9,4 @@ namespace Optern.Presentation.GraphQlApi.Tag
         )
             => await _tagsService.GetTopTagsAsync(topN);
     }
-}
+

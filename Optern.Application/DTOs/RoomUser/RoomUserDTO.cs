@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Optern.Application.DTOs.RoomUset
+namespace Optern.Application.DTOs.RoomUser
 {
     public class RoomUserDTO
     {
