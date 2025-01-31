@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using GreenDonut;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.RoomUset;
 using Optern.Application.Interfaces.IRoomUserService;
 using Optern.Domain.Entities;
@@ -72,7 +74,106 @@ namespace Optern.Application.Services.RoomUserService
                 );
             }
         }
-        public async Task<Response<RoomUserDTO>> DeleteCollaboratorAsync(string RoomId, string TargetUserId, string currentUserId)
+
+        public async Task<Response<List<RoomUserDTO>>> GetPendingRequestsAsync(string roomId, string leaderId)
+        {
+            try
+            {
+                var room = await _context.Rooms.FindAsync(roomId);
+                if (room == null)
+                {
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"Room not found",404);
+                }
+
+                var isLeader = await _context.UserRooms
+                    .AnyAsync(ur => ur.RoomId == roomId &&
+                                  ur.UserId == leaderId &&
+                                  ur.IsAdmin);
+
+                if (!isLeader)
+                {
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"Unauthorized access",403);
+                }
+
+                var pendingRequests = await _context.UserRooms
+                    .Include(ur => ur.User)
+                    .Where(ur => ur.RoomId == roomId && !ur.IsAccepted)
+                    .OrderBy(ur => ur.JoinedAt)
+                    .Select(ur => new RoomUserDTO
+                    {
+                        Id=ur.Id,
+                        RoomId = ur.RoomId,
+                        UserId = ur.UserId,
+                        UserName = ur.User.UserName,
+                        ProfilePicture = ur.User.ProfilePicture,
+                        JoinedAt = ur.JoinedAt,
+                        IsAccepted=ur.IsAccepted,
+                        IsAdmin=ur.IsAdmin,
+                    })
+                    .ToListAsync();
+
+                return Response<List<RoomUserDTO>>.Success(pendingRequests,pendingRequests.Any()? $"Found {pendingRequests.Count} pending requests": "No pending requests found",200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"An error occurred while retrieving requests",500);
+            }
+        }
+
+        public async Task<Response<string>> RequestToRoom(JoinRoomDTO model)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.RoomId))
+                {
+                    return Response<string>.Failure("Invalid Data Model", 400);
+                }
+
+                var roomExist = await _context.Rooms.FindAsync(model.RoomId);
+                if (roomExist == null)
+                {
+                    return Response<string>.Failure("Room not found", 404);
+                }
+
+                var userExist = await _context.Users.FindAsync(model.UserId);
+                if (userExist == null)
+                {
+                    return Response<string>.Failure("User not found", 404);
+                }
+
+                var isUserInRoom = await _context.UserRooms
+                    .AnyAsync(u => u.UserId == model.UserId && u.RoomId == model.RoomId);
+
+                if (isUserInRoom)
+                {
+                    return Response<string>.Failure("You have already requested to join this room!", 400);
+                }
+
+                var joinRequest = new UserRoom
+                {
+                    RoomId = model.RoomId,
+                    UserId = model.UserId,
+                    JoinedAt = DateTime.UtcNow,
+                    IsAdmin = false,
+                    IsAccepted = false
+                };
+
+                await _context.UserRooms.AddAsync(joinRequest);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Response<string>.Success("Your request to join has been sent successfully", "Waiting for approval", 201);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure($"Server error. Please try again later. Error: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<RoomUserDTO>> DeleteCollaboratorAsync(string RoomId, string TargetUserId, string leaderId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -84,7 +185,7 @@ namespace Optern.Application.Services.RoomUserService
                 }
 
                 var currentUserRoom = await _context.UserRooms
-                    .FirstOrDefaultAsync(ur => ur.RoomId == RoomId && ur.UserId == currentUserId);
+                    .FirstOrDefaultAsync(ur => ur.RoomId == RoomId && ur.UserId == leaderId);
 
                 if (currentUserRoom == null || !currentUserRoom.IsAdmin)
                 {
@@ -111,10 +212,10 @@ namespace Optern.Application.Services.RoomUserService
                     }
                 }
 
-                if (TargetUserId == currentUserId && targetUserRoom.IsAdmin)
+                if (TargetUserId == leaderId && targetUserRoom.IsAdmin)
                 {
                     var otherLeaders = await _context.UserRooms
-                        .CountAsync(ur => ur.RoomId == RoomId && ur.IsAdmin && ur.UserId != currentUserId);
+                        .CountAsync(ur => ur.RoomId == RoomId && ur.IsAdmin && ur.UserId != leaderId);
 
                     if (otherLeaders < 1)
                     {
@@ -137,7 +238,7 @@ namespace Optern.Application.Services.RoomUserService
             }
         }
 
-        public async Task<Response<RoomUserDTO>> ToggleLeadershipAsync(string roomId, string targetUserId, string currentUserId)
+        public async Task<Response<RoomUserDTO>> ToggleLeadershipAsync(string roomId, string targetUserId, string leaderId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -149,7 +250,7 @@ namespace Optern.Application.Services.RoomUserService
                 }
 
                 var currentUserRoom = await _context.UserRooms
-                    .FirstOrDefaultAsync(ur => ur.RoomId == roomId && ur.UserId == currentUserId);
+                    .FirstOrDefaultAsync(ur => ur.RoomId == roomId && ur.UserId == leaderId);
 
                 if (currentUserRoom == null || !currentUserRoom.IsAdmin)
                 {
@@ -178,7 +279,7 @@ namespace Optern.Application.Services.RoomUserService
                         return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove the last leader", 400);
                     }
 
-                    if (targetUserId == currentUserId && remainingLeaders == 0)
+                    if (targetUserId == leaderId && remainingLeaders == 0)
                     {
                         return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove yourself as the last leader", 400);
                     }
@@ -198,6 +299,119 @@ namespace Optern.Application.Services.RoomUserService
                 return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "An error occurred while updating leadership status", 500);
             }
         }
+
+        public async Task<Response<List<RoomUserDTO>>> AcceptRequestsAsync(string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (!userRoomId.HasValue && approveAll != true)
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Specify either UserRoomId or set ApproveAll to true", 400);
+
+                if (!await _context.UserRooms.AnyAsync(ur => ur.RoomId == roomId && ur.UserId == leaderId && ur.IsAdmin && ur.IsAccepted))
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Unauthorized: Only room leaders can process requests", 403);
+
+                List<UserRoom> requestsToApprove = new();
+
+                if (userRoomId.HasValue)
+                {
+                    var userRoom = await _context.UserRooms.Include(ur => ur.User).FirstOrDefaultAsync(ur => ur.Id == userRoomId.Value);
+                    if (userRoom == null)
+                        return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Request not found", 404);
+
+                    userRoom.IsAccepted = true;
+                    userRoom.JoinedAt = DateTime.UtcNow;
+                    userRoom.IsAdmin = false;
+                    requestsToApprove.Add(userRoom);
+                }
+                else
+                {
+                    requestsToApprove = await _context.UserRooms.Where(ur => ur.RoomId == roomId && !ur.IsAccepted).Include(ur => ur.User).ToListAsync();
+                    if (!requestsToApprove.Any())
+                        return Response<List<RoomUserDTO>>.Success(new List<RoomUserDTO>(), "No pending requests to approve.");
+
+                    requestsToApprove.ForEach(ur =>
+                    {
+                        ur.IsAccepted = true;
+                        ur.JoinedAt = DateTime.UtcNow;
+                        ur.IsAdmin = false;
+                    });
+                }
+
+                _context.UserRooms.UpdateRange(requestsToApprove);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                var updatedUsers = requestsToApprove.Select(ur => new RoomUserDTO
+                {
+                    UserId = ur.UserId,
+                    UserName = $"{ur.User.FirstName} {ur.User.LastName}",
+                    ProfilePicture = ur.User.ProfilePicture,
+                    RoomId = ur.RoomId,
+                    IsAdmin = ur.IsAdmin,
+                    AcceptedAt = ur.JoinedAt
+                }).ToList();
+
+                return Response<List<RoomUserDTO>>.Success(updatedUsers, "Requests approved successfully.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<List<RoomUserDTO>>.Failure($"An error occurred processing the request: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<string>> RejectRequestsAsync(string roomId, string leaderId, int? userRoomId = null, bool? rejectAll = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (!userRoomId.HasValue && rejectAll != true)
+                    return Response<string>.Failure("Specify either UserRoomId or set RejectAll to true", 400);
+
+                if (!await _context.UserRooms.AnyAsync(ur => ur.RoomId == roomId && ur.UserId == leaderId && ur.IsAdmin && ur.IsAccepted))
+                    return Response<string>.Failure("Unauthorized: Only room leaders can process requests", 403);
+
+                List<UserRoom> requestsToReject = new();
+
+                if (userRoomId.HasValue)
+                {
+                    var userRoom = await _context.UserRooms.FirstOrDefaultAsync(ur => ur.Id == userRoomId.Value);
+                    if (userRoom == null)
+                        return Response<string>.Failure("Request not found", 404);
+
+                    requestsToReject.Add(userRoom);
+                }
+                else
+                {
+                    requestsToReject = await _context.UserRooms.Where(ur => ur.RoomId == roomId && !ur.IsAccepted).ToListAsync();
+                    if (!requestsToReject.Any())
+                        return Response<string>.Success("No pending requests to reject.");
+                }
+
+                _context.UserRooms.RemoveRange(requestsToReject);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Response<string>.Success("Requests rejected successfully.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure($"An error occurred processing the request: {ex.Message}", 500);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

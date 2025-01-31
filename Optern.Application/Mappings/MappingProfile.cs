@@ -8,10 +8,10 @@ using Optern.Application.DTOs.React;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.FavoritePosts;
 using Optern.Application.DTOs.WorkSpace;
-using Optern.Application.DTOs.RoomUset;
 using Optern.Application.DTOs.Task;
 using Task = Optern.Domain.Entities.Task;
 using Optern.Application.DTOs.Sprint;
+using Optern.Application.DTOs.RoomUser;
 
 namespace Optern.Application.Mappings
 {
