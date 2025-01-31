@@ -7,6 +7,7 @@ using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
+using Optern.Infrastructure.Validations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,24 +32,21 @@ namespace Optern.Application.Services.SubTrackService
         {
             try
             {
-                if (!string.IsNullOrEmpty(name))
+                var subTrack = new SubTrack
                 {
-                    var subTrack = new SubTrack
-                    {
-                        Name = name,
-                        TrackId = trackId
-                    };
+                    Name = name,
+                    TrackId = trackId
+                };
 
-                    await _unitOfWork.SubTracks.AddAsync(subTrack);
-                    if (subTrack != null)
-                    {
-                        var dto = new SubTrackDTO { Id = subTrack.Id, Name = subTrack.Name };
-                        return Response<SubTrackDTO>.Success(dto, "SubTrack added successfully.");
-                    }
-                    return Response<SubTrackDTO>.Failure("Failed to add the track, please try again later.", 400);
+                var validate = new SubTrackValidator().Validate(subTrack);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<SubTrackDTO>.Failure(new SubTrackDTO(), $"Invalid Data Model: {errorMessages}", 400);
                 }
 
-                return Response<SubTrackDTO>.Failure("Please enter data to be added.", 400);
+                await _unitOfWork.SubTracks.AddAsync(subTrack);
+                return Response<SubTrackDTO>.Success(new SubTrackDTO { Id = subTrack.Id, Name = subTrack.Name }, "SubTrack added successfully.", 200);
             }
             catch (Exception ex)
             {

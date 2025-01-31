@@ -26,10 +26,13 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Comment> Comments { get; }
         IGenericRepository<Reacts> Reacts { get; }
         IGenericRepository<WorkSpace> WorkSpace { get; }
+        IGenericRepository<BookMarkedTask> BookMarkedTask { get; }
+
 
         IGenericRepository<Task> Tasks { get; }
 
         IGenericRepository<Sprint> Sprints { get; }
+        IGenericRepository<UserRoom> RoomUsers { get; }
         Task<int> SaveAsync();
     }
 }

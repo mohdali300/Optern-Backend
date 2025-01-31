@@ -261,6 +261,30 @@ namespace Optern.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Optern.Domain.Entities.BookMarkedTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BookMarkedTasks", (string)null);
+                });
+
             modelBuilder.Entity("Optern.Domain.Entities.CV", b =>
                 {
                     b.Property<int>("Id")
@@ -1048,6 +1072,10 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Goal")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -1210,6 +1238,9 @@ namespace Optern.Infrastructure.Migrations
 
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RoomId")
                         .IsRequired()
@@ -1489,7 +1520,7 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("Optern.Domain.Entities.ApplicationUser.RefreshTokens#Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Optern.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
                                 .HasColumnType("text");
@@ -1515,13 +1546,32 @@ namespace Optern.Infrastructure.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken", (string)null);
+                            b1.ToTable("RefreshToken");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
                         });
 
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.BookMarkedTask", b =>
+                {
+                    b.HasOne("Optern.Domain.Entities.Task", "Task")
+                        .WithMany("BookMarkedTasks")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Optern.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("BookMarkedTasks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.CV", b =>
@@ -2029,6 +2079,8 @@ namespace Optern.Infrastructure.Migrations
                 {
                     b.Navigation("AssignedTasks");
 
+                    b.Navigation("BookMarkedTasks");
+
                     b.Navigation("CVs");
 
                     b.Navigation("CommentReacts");
@@ -2155,6 +2207,8 @@ namespace Optern.Infrastructure.Migrations
             modelBuilder.Entity("Optern.Domain.Entities.Task", b =>
                 {
                     b.Navigation("AssignedTasks");
+
+                    b.Navigation("BookMarkedTasks");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.Track", b =>

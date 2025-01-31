@@ -135,6 +135,11 @@ namespace Optern.Infrastructure.Configurations
               .HasForeignKey(ut => ut.UserId) 
               .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasMany(u => u.BookMarkedTasks)
+              .WithOne(b => b.User)
+              .HasForeignKey(b => b.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
+
             // here cuz in this type of interview has Two Persons don't force delete PTP for another User
             builder.HasMany(u => u.PeerToPeerInterviewUsers)
            .WithOne(ptp => ptp.User) 

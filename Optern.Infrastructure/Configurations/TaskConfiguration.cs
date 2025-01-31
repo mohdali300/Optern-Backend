@@ -52,6 +52,11 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
                .HasForeignKey(ut => ut.TaskId) 
                .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(t => t.BookMarkedTasks)
+               .WithOne(b => b.Task)
+               .HasForeignKey(b => b.TaskId)
+               .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne(task => task.Sprint)
               .WithMany(sprint => sprint.Tasks)
               .HasForeignKey(task => task.SprintId)

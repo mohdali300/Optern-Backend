@@ -1,0 +1,155 @@
+﻿using AutoMapper;
+using Optern.Application.DTOs.Room;
+using Optern.Application.DTOs.Sprint;
+using Optern.Application.DTOs.WorkSpace;
+using Optern.Application.Interfaces.ISprintService;
+using Optern.Domain.Entities;
+using Optern.Infrastructure.Data;
+using Optern.Infrastructure.Response;
+using Optern.Infrastructure.UnitOfWork;
+using Optern.Infrastructure.Validations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Optern.Application.Services.SprintService
+{
+    public class SprintService(IUnitOfWork unitOfWork,OpternDbContext context,IMapper mapper):ISprintService
+    {
+        private readonly IUnitOfWork _unitOfWork=unitOfWork;
+        private readonly OpternDbContext _context= context;
+        private readonly IMapper _mapper=mapper;
+
+
+        public async Task<Response<IEnumerable<SprintResponseDTO>>> GetWorkSpaceSprints(int workSpaceId)
+        {
+            try
+            {
+                var sprints= await _unitOfWork.Sprints.GetAllByExpressionAsync(s=>s.WorkSpaceId==workSpaceId);
+                if (sprints == null || !sprints.Any())
+                {
+                    return Response<IEnumerable<SprintResponseDTO>>.Failure("No Sprints Found", 404);
+                }
+                var orderSprints=sprints    // order by Sprints That Finished First
+                   .OrderBy(s => s.EndDate)
+                    .ThenBy(s=>s.StartDate)
+                    .ToList();
+                var sprintsDTO=_mapper.Map<IEnumerable<SprintResponseDTO>>(orderSprints);
+                return Response<IEnumerable<SprintResponseDTO>>.Success(sprintsDTO, "WorkSpace Fetched Successfully!", 200);
+            }
+            catch (Exception ex) {
+
+                return Response<IEnumerable<SprintResponseDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
+            }
+        }
+        public async Task<Response<SprintResponseDTO>> AddSprint(AddSprintDTO model)
+        {
+            if (model == null)
+            {
+                return Response<SprintResponseDTO>.Failure("Invalid Model Data", 400);
+            }
+
+            var workSpace = await _unitOfWork.WorkSpace.GetByIdAsync(model.WorkSpaceId);
+            if (workSpace == null)
+            {
+                return Response<SprintResponseDTO>.Failure("Workspace not Found!", 404);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var sprint = new Sprint
+                {
+                    Title = model.Title,
+                    Goal = model.Goal,
+                    StartDate = model.StartDate,
+                    EndDate = model.EndDate,
+                    WorkSpaceId = model.WorkSpaceId,
+                };
+
+                var validate = new SprintValidator().Validate(sprint);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<SprintResponseDTO>.Failure($"Invalid Data Model: {errorMessages}", 400);
+                }
+
+                await _unitOfWork.Sprints.AddAsync(sprint);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                var sprintDTO = _mapper.Map<SprintResponseDTO>(sprint);
+                return Response<SprintResponseDTO>.Success(sprintDTO, "Sprint Added Successfully", 201);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<SprintResponseDTO>.Failure($"Server error. Please try again later. {ex.Message}", 500);
+            }
+        }
+
+
+        public async Task<Response<SprintResponseDTO>> EditSprint(int id, EditSprintDTO model)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var sprint = await _unitOfWork.Sprints.GetByIdAsync(id);
+                if (sprint == null)
+                {
+                    return Response<SprintResponseDTO>.Failure("Sprint not Found!", 404);
+                }
+                sprint.Title = model.Title ?? sprint.Title;
+                sprint.Goal = model.Goal ?? sprint.Goal;
+                sprint.StartDate = model.StartDate ?? sprint.StartDate;
+                sprint.EndDate = model.EndDate ?? sprint.EndDate;
+
+                var validate = new SprintValidator().Validate(sprint);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<SprintResponseDTO>.Failure($"Invalid Data Model: {errorMessages}", 400);
+                }
+
+                await _unitOfWork.Sprints.UpdateAsync(sprint);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                var sprintDTO = _mapper.Map<SprintResponseDTO>(sprint);
+                return Response<SprintResponseDTO>.Success(sprintDTO, "Sprint Updated Successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<SprintResponseDTO>.Failure($"Server error. Please try again later. {ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<bool>> DeleteSprint(int id)
+         {
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var sprint = await _unitOfWork.Sprints.GetByIdAsync(id);
+                if (sprint == null) {
+                    return Response<bool>.Failure(false, "Sprint not Found !", 404);
+                }
+                await _unitOfWork.Sprints.DeleteAsync(sprint);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                return Response<bool>.Success(true, "Sprint Deleted Successfully", 200);
+
+            }
+            catch (Exception ex) 
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+
+         }  
+
+    }
+}

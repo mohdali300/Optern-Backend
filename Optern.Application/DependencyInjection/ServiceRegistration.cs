@@ -1,15 +1,20 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Optern.Application.Helpers;
 using Optern.Application.Interfaces.IAuthService;
+using Optern.Application.Interfaces.IBookMarkedTaskService;
 using Optern.Application.Interfaces.ICommentService;
 using Optern.Application.Interfaces.IFavoritePostsService;
 using Optern.Application.Interfaces.IPostService;
 using Optern.Application.Interfaces.IReactService;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IRoomTrackService;
+using Optern.Application.Interfaces.ISprintService;
+using Optern.Application.Interfaces.IRoomUserService;
 using Optern.Application.Interfaces.ISubTrackService;
 using Optern.Application.Interfaces.ITagService;
 using Optern.Application.Interfaces.ITrackService;
@@ -17,12 +22,15 @@ using Optern.Application.Interfaces.IUserService;
 using Optern.Application.Interfaces.IWorkSpaceService;
 using Optern.Application.Mappings;
 using Optern.Application.Services.AuthService;
+using Optern.Application.Services.BookMarkedTaskService;
 using Optern.Application.Services.CommentService;
 using Optern.Application.Services.FavoritePostsService;
 using Optern.Application.Services.PostService;
 using Optern.Application.Services.ReactService;
 using Optern.Application.Services.RoomService;
 using Optern.Application.Services.RoomTrackService;
+using Optern.Application.Services.SprintService;
+using Optern.Application.Services.RoomUserService;
 using Optern.Application.Services.SubTrackService;
 using Optern.Application.Services.TagService;
 using Optern.Application.Services.TrackService;
@@ -35,10 +43,12 @@ using Optern.Infrastructure.ExternalInterfaces.ICacheService;
 using Optern.Infrastructure.ExternalInterfaces.IFileService;
 using Optern.Infrastructure.ExternalInterfaces.IJWTService;
 using Optern.Infrastructure.ExternalInterfaces.IMail;
+using Optern.Infrastructure.ExternalServices.BackgroundJobs;
 using Optern.Infrastructure.ExternalServices.CacheService;
 using Optern.Infrastructure.ExternalServices.FileService;
 using Optern.Infrastructure.ExternalServices.JWTService;
 using Optern.Infrastructure.ExternalServices.MailService;
+using Optern.Infrastructure.ExternalServices.UserCleanUp;
 using Optern.Infrastructure.UnitOfWork;
 
 namespace Optern.Infrastructure.DependencyInjection
@@ -53,6 +63,11 @@ namespace Optern.Infrastructure.DependencyInjection
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
             );
 
+            // Add Hangifire
+            services.AddHangfire(h => h.UsePostgreSqlStorage(configuration.GetConnectionString("DefaultConnection")));
+            services.AddHangfireServer();
+            services.AddScoped<UserCleanUpService>();
+            services.AddTransient<UserCleanUpJob>();
 
             // Add Redis Cache
             services.AddStackExchangeRedisCache(option =>
@@ -96,6 +111,9 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IReactService, ReactService>();
             services.AddScoped<IWorkSpaceService, WorkSpaceService>();
+            services.AddScoped<ISprintService, SprintService>();
+            services.AddScoped<IRoomUserService, RoomUserService>();
+            services.AddScoped<IBookMarkedTaskService, BookMarkedTaskService>();
 
 
             return services;
