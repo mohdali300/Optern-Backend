@@ -105,10 +105,10 @@ namespace Optern.Application.Services.PostService
 						UserName = $"{p.Creator.FirstName} {p.Creator.LastName}",
 						ProfilePicture = p.Creator.ProfilePicture,
 						Tags = p.PostTags.Select(pt => new TagDTO {Id=pt.Tag.Id, Name = pt.Tag.Name }).ToList(),
-						ReactCount = p.Reacts.Count,
+						ReactCount = p.Reacts.Count(r=>r.ReactType == ReactType.VOTEUP) - p.Reacts.Count(r=>r.ReactType == ReactType.VOTEDOWN),
 						CommentCount = _context.Comments.Count(c => c.PostId == p.Id),
 						UserReact = ReactType.NOTVOTEYET,
-                         IsFav = false
+                        IsFav = false
                     })
 					.FirstOrDefaultAsync();
 
@@ -136,9 +136,8 @@ namespace Optern.Application.Services.PostService
 					UserId = parent.UserId,
 					UserName = $"{parent.User?.FirstName} {parent.User?.LastName}",
 					ProfilePicture = parent.User?.ProfilePicture,
-					ReactCommentCount = parent.CommentReacts.Count(),
-					ReplyCommentCount = _context.Comments.Count(c => c.ParentId == parent.Id),
-                    UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
+					ReactCommentCount = parent.CommentReacts.Count(r=>r.ReactType == ReactType.VOTEUP) - parent.CommentReacts.Count(r=>r.ReactType == ReactType.VOTEDOWN) ,
+                    UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId && r.CommentId == parent.Id)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
 
 
                 }).ToList();
@@ -151,8 +150,7 @@ namespace Optern.Application.Services.PostService
 					{
 						post.UserReact = react[0];
 					}
-                    post.IsFav = await _context.FavoritePosts
-               .AnyAsync(fp => fp.UserId == userId && fp.PostId == postId);
+                    post.IsFav = await _context.FavoritePosts.AnyAsync(fp => fp.UserId == userId && fp.PostId == postId);
                 }
 
 				return Response<PostWithDetailsDTO>.Success(
