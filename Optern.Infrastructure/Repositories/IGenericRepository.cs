@@ -14,7 +14,10 @@ namespace Optern.Infrastructure.Repositories
         Task<T> GetByIdAsync(int id);
         Task<T> GetByIdAsync(string id);
         Task<T> GetByExpressionAsync(Expression<Func<T, bool>> predicate);
-        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null,string? includeProperties = null);
+        IQueryable<T> GetQueryable(
+           Expression<Func<T, bool>>? filter = null,
+           string? includeProperties = null,
+           Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
         Task<IEnumerable<T>> GetAllByExpressionAsync(Expression<Func<T, bool>> predicate);
 
         Task<IEnumerable<T>> GetAllAsync();
@@ -29,5 +32,6 @@ namespace Optern.Infrastructure.Repositories
         IDbContextTransaction BeginTransaction();
         void Commit();
         void RollBack();
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="GraphQlApi\Task\Query\" />
     <Folder Include="GraphQlApi\WorkSpace\Query\" />
   </ItemGroup>
 </Project>

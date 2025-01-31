@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Room;
-using Optern.Application.Interfaces.IRoomService;
-using Optern.Infrastructure.Response;
-
-namespace Optern.Presentation.GraphQlApi.Rooms.Mutation
-{
+﻿
     [ExtendObjectType("Mutation")]
     public class RoomMutation
     {
@@ -17,4 +12,4 @@ namespace Optern.Presentation.GraphQlApi.Rooms.Mutation
           await _roomService.CreateRoom(model, CoverPicture);
 
     }
-}
+

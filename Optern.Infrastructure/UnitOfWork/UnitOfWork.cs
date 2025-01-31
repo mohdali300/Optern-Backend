@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
+using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.UnitOfWork
 {
@@ -34,6 +35,11 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Reacts> Reacts { get; private set; }
         public IGenericRepository<WorkSpace> WorkSpace  { get; private set; }
 
+        public IGenericRepository<Task> Tasks { get; private set; }
+
+        public IGenericRepository<Sprint> Sprints { get; private set; }
+        public IGenericRepository<UserRoom> RoomUsers { get; private set; }
+
         public UnitOfWork(OpternDbContext context) 
         {
             _context = context;
@@ -51,6 +57,9 @@ namespace Optern.Infrastructure.UnitOfWork
             Comments= new GenericRepository<Comment>(context);
             Reacts= new GenericRepository<Reacts>(context);
             WorkSpace= new GenericRepository<WorkSpace>(context);
+            Tasks= new GenericRepository<Task>(context);
+            Sprints= new GenericRepository<Sprint>(context);
+            RoomUsers= new GenericRepository<UserRoom>(context);
             BookMarkedTask=new GenericRepository<BookMarkedTask>(context);
         }
 

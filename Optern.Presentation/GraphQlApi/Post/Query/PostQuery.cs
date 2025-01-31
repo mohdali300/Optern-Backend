@@ -1,13 +1,5 @@
-﻿using Optern.Application.DTOs.Comment;
-using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.React;
-using Optern.Application.DTOs.Track;
-using Optern.Application.Interfaces.IPostService;
-using Optern.Application.Interfaces.ITrackService;
-using Optern.Infrastructure.Response;
-namespace Optern.Presentation.GraphQlApi.Post.Query
-{
-    [ExtendObjectType("Query")]
+﻿
+ [ExtendObjectType("Query")]
     public class PostQuery
     {
        
@@ -21,15 +13,6 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
             =>await _postService.GetPostByIdAsync(postId,userId);
 
 
-       // public async Task<Response<IEnumerable<PostWithDetailsDTO>>> GetPostsByIdOrUserAsync(
-       //[Service] IPostService postService,
-       //int? postId = null,
-       //string? username = null)
-       // {
-       //     return await postService.GetPostsByIdOrUserAsync(postId, username);
-       // }
-
-
         [GraphQLDescription("Get Recommended Posts based on reactions count")]
         public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync([Service] IPostService postService,int topN
          ) => await postService.GetRecommendedPostsAsync(topN);
@@ -40,10 +23,9 @@ namespace Optern.Presentation.GraphQlApi.Post.Query
     [Service] IPostService postService,
     string? tagName = null,
     string? username = null,
-    string? keyword = null
-       ) => await postService.SearchPostsAsync(tagName, username, keyword);
+    string? keyword = null,
+    int lastIdx = 0, int limit = 10) => await postService.SearchPostsAsync(tagName, username, keyword,lastIdx,limit);
 
 
 
     }
-}

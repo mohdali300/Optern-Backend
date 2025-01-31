@@ -1,39 +1,4 @@
-#region Usings
-using AppAny.HotChocolate.FluentValidation;
-using FluentValidation;
-using Hangfire;
-using Hangfire.PostgreSql;
-using Optern.Application.Mappings;
-using Optern.Infrastructure;
-using Optern.Infrastructure.DependencyInjection;
-using Optern.Infrastructure.ExternalServices.BackgroundJobs;
-using Optern.Infrastructure.ExternalServices.UserCleanUp;
-using Optern.Infrastructure.Hubs;
-using Optern.Infrastructure.Validations;
-using Optern.Presentation.GraphQlApi;
-using Optern.Presentation.GraphQlApi.Auth.Mutation;
-using Optern.Presentation.GraphQlApi.Auth.Query;
-using Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation;
-using Optern.Presentation.GraphQlApi.BookMarkedTask.Query;
-using Optern.Presentation.GraphQlApi.Comment.Mutation;
-using Optern.Presentation.GraphQlApi.Comment.Query;
-using Optern.Presentation.GraphQlApi.FavouritePost.Mutation;
-using Optern.Presentation.GraphQlApi.FavouritePost.Query;
-using Optern.Presentation.GraphQlApi.Post.Mutation;
-using Optern.Presentation.GraphQlApi.Post.Query;
-using Optern.Presentation.GraphQlApi.React.Mutation;
-using Optern.Presentation.GraphQlApi.React.Query;
-using Optern.Presentation.GraphQlApi.Rooms.Mutation;
-using Optern.Presentation.GraphQlApi.Rooms.Query;
-using Optern.Presentation.GraphQlApi.RoomTrack.Query;
-using Optern.Presentation.GraphQlApi.SubTrack.Mutation;
-using Optern.Presentation.GraphQlApi.SubTrack.Query;
-using Optern.Presentation.GraphQlApi.Tag;
-using Optern.Presentation.GraphQlApi.Track.Mutation;
-using Optern.Presentation.GraphQlApi.Track.Query;
-using Optern.Presentation.GraphQlApi.WorkSpace.Mutation; 
-#endregion
-
+// Initialize builder
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -70,6 +35,8 @@ builder.Services
 .AddType<FavouritePostsQuery>()
 .AddType<CommentQuery>()
 .AddType<ReactQuery>()
+.AddType<RoomUserQuery>()
+.AddType<SprintQuery>()
 .AddType<BookMarkedTaskQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
@@ -82,6 +49,9 @@ builder.Services
 .AddType<ReactMutation>()
 .AddType<PostMutation>()
 .AddType<WorkSpaceMutation>()
+.AddType<TaskMutation>()
+.AddType<RoomUserMutation>()
+.AddType<SprintMutation>()
 .AddType<BookMarkedTaskMutation>()
 .AddFluentValidation();
 #endregion

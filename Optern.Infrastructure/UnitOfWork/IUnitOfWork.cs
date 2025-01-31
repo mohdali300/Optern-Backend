@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Repositories;
+using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.UnitOfWork
 {
@@ -27,6 +28,11 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<WorkSpace> WorkSpace { get; }
         IGenericRepository<BookMarkedTask> BookMarkedTask { get; }
 
+
+        IGenericRepository<Task> Tasks { get; }
+
+        IGenericRepository<Sprint> Sprints { get; }
+        IGenericRepository<UserRoom> RoomUsers { get; }
         Task<int> SaveAsync();
     }
 }

@@ -8,6 +8,10 @@ using Optern.Application.DTOs.React;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.FavoritePosts;
 using Optern.Application.DTOs.WorkSpace;
+using Optern.Application.DTOs.RoomUset;
+using Optern.Application.DTOs.Task;
+using Task = Optern.Domain.Entities.Task;
+using Optern.Application.DTOs.Sprint;
 
 namespace Optern.Application.Mappings
 {
@@ -22,14 +26,6 @@ namespace Optern.Application.Mappings
 			CreateMap<PostTags, TagDTO>()
 				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
 				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
-
-			CreateMap<FavoritePosts, FavouritePostsDTO>()
-				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Post.Id))
-				.ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Post.Title))
-				.ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Post.Content))
-				.ForMember(dest => dest.CreatorId, opt => opt.MapFrom(src => src.Post.CreatorId))
-				.ForMember(dest => dest.CreatorUserName, opt => opt.MapFrom(src => src.Post.Creator.UserName))
-				.ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Post.PostTags));
 
 
 			CreateMap<AddToFavoriteDTO, FavoritePosts>();
@@ -59,8 +55,9 @@ namespace Optern.Application.Mappings
 			CreateMap<Reacts, ReactDTO>()
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName));
 
-			#endregion
+            #endregion
 
+            #region Room
 
             // Map Room To RoomDTO
             CreateMap<Room, CreateRoomDTO>()
@@ -68,7 +65,32 @@ namespace Optern.Application.Mappings
                opt => opt.MapFrom(src => src.UserRooms.Count));
 
 			CreateMap<WorkSpace, WorkSpaceDTO>();
-       
+
+			CreateMap<Sprint, SprintResponseDTO>();
+
+            CreateMap<AddTaskDTO, Task>()
+           .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
+
+            CreateMap<Task, TaskResponseDTO>()
+                .ForMember(dest => dest.AssignedUsers, opt => opt.MapFrom(src => src.AssignedTasks.Select(a => new AssignedUserDTO
+                {
+                    UserId = a.UserId,
+                    FullName = $"{a.User.FirstName} {a.User.LastName}",
+                    ProfilePicture = a.User.ProfilePicture
+                }).ToList()));
+
+
+            #endregion
+
+
+            //RoomUser
+            CreateMap<UserRoom, RoomUserDTO>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+            .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.IsAdmin ? "Leader" : "Collaborator"));
+
+
         }
-	}
+    }
 }

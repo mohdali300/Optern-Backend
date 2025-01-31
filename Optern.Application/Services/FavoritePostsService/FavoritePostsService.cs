@@ -15,6 +15,7 @@ using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Repositories;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Optern.Application.Services.FavoritePostsService
 {
@@ -75,41 +76,52 @@ namespace Optern.Application.Services.FavoritePostsService
 
 
         #region Get Favourite Posts 
-        public async Task<Response<IEnumerable<FavouritePostsDTO>>> GetFavoritePostsByUserAsync(string userId)
+        public async Task<Response<IEnumerable<PostDTO>>> GetFavoritePostsByUserAsync(string userId, int lastIdx = 0, int limit = 10)
         {
             try
             {
-                var userExists = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (userExists == null)
-                {
-                    return Response<IEnumerable<FavouritePostsDTO>>.Success(new List<FavouritePostsDTO>(), "User does not exist.", 404);
 
-                }
-
-                var favoritePosts = await _unitOfWork.FavoritePosts.GetAllAsync(
+                var favoritePosts =  _unitOfWork.FavoritePosts.GetQueryable(
                     filter: fp => fp.UserId == userId,
-                    includeProperties: "Post.Creator,Post.PostTags.Tag");
+                    includeProperties: "Post.Creator,Post.PostTags.Tag",
+                    orderBy: q => q.OrderByDescending(fp => fp.SavedAt)
+                    )
+                  .Skip(lastIdx)
+                  .Take(limit);
+
 
                 if (!favoritePosts.Any())
                 {
-                    return Response<IEnumerable<FavouritePostsDTO>>.Success(new List<FavouritePostsDTO>(), "No favorite posts found for the user.", 404);
-
+                    return Response<IEnumerable<PostDTO>>.Success(new List<PostDTO>(), "No favorite posts found for the user.", 404);
                 }
 
-                var favoritePostDtos = _mapper.Map<IEnumerable<FavouritePostsDTO>>(favoritePosts);
+                var favoritePostDtos = await favoritePosts.Select(f => new PostDTO
+                {
+                    Id = f.PostId,
+                    Title =f.Post.Title,
+                    Content = f.Post.Content,
+                    CreatorName = $"{f.Post.Creator.FirstName} {f.Post.Creator.LastName}",
+                    ProfilePicture = f.Post.Creator.ProfilePicture,
+                    Tags = f.Post.PostTags.Select(pt => pt.Tag.Name).ToList(),
+                    CreatedDate = f.Post.CreatedDate,
+                    EditedDate = f.Post.EditedDate,
+                    ReactsCount = f.Post.Reacts.Count,
+                    CommentsCount = f.Post.Comments.Count
+                }).ToListAsync();
 
-                return Response<IEnumerable<FavouritePostsDTO>>.Success(favoritePostDtos,"",200);
+                return Response<IEnumerable<PostDTO>>.Success(favoritePostDtos, "", 200);
             }
             catch (Exception ex)
             {
-                return Response<IEnumerable<FavouritePostsDTO>>.Failure($"An error occurred while fetching favorite posts: {ex.Message}");
+                return Response<IEnumerable<PostDTO>>.Failure($"An error occurred while fetching favorite posts: {ex.Message}");
             }
         }
+
         #endregion
 
         #region Delete Favorite Post
 
-public async Task<Response<string>> DeleteFavoritePostAsync(string userId, int? postId = null)
+        public async Task<Response<string>> DeleteFavoritePostAsync(string userId, int? postId = null)
 {
             await using var transaction = await _context.Database.BeginTransactionAsync();
 

@@ -46,7 +46,7 @@ namespace Optern.Application.Services.RoomTrackService
                     .ToListAsync();
 
                 return (roomDtos != null && roomDtos.Any()) ? Response<IEnumerable<CreateRoomDTO>>.Success(roomDtos) :
-                    Response<IEnumerable<CreateRoomDTO>>.Failure(new List<CreateRoomDTO>(), "No rooms found in this stack!", 204);
+                    Response<IEnumerable<CreateRoomDTO>>.Success(new List<CreateRoomDTO>(), "No rooms found in this stack!", 204);
             }
             catch (Exception ex)
             {
