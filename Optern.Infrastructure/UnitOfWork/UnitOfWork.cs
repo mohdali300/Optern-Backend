@@ -18,10 +18,10 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Room> Rooms { get; private set; }
         public IGenericRepository<UserRoom> UserRoom { get; private set; }
         public IGenericRepository<Track> Tracks { get; private set; }
-        public IGenericRepository<SubTrack> SubTracks { get; private set; }
+        public IGenericRepository<Position> Positions { get; private set; }
         public IGenericRepository<ApplicationUser> Users { get; private set; }
         public IGenericRepository<RoomSkillsDTO> RoomSkills { get; private set; }
-        public IGenericRepository<RoomTrack> RoomTracks { get; private set; }
+        public IGenericRepository<RoomPosition> RoomPositions { get; private set; }
         public IGenericRepository<FavoritePosts> FavoritePosts { get; private set; }
         public IGenericRepository<BookMarkedTask> BookMarkedTask { get; private set;  }
         public IGenericRepository<Skills>Skills { get; private set; }
@@ -50,10 +50,10 @@ namespace Optern.Infrastructure.UnitOfWork
             Rooms = new  GenericRepository<Room>(context);
             UserRoom= new GenericRepository<UserRoom>(context);
             Tracks = new GenericRepository<Track>(context);
-            SubTracks = new GenericRepository<SubTrack>(context);
+            Positions = new GenericRepository<Position>(context);
             Users= new GenericRepository<ApplicationUser>(context);
             RoomSkills= new GenericRepository<RoomSkillsDTO>(context);
-            RoomTracks= new GenericRepository<RoomTrack>(context);
+            RoomPositions= new GenericRepository<RoomPosition>(context);
             FavoritePosts= new GenericRepository<FavoritePosts>(context);
             Posts= new GenericRepository<Post>(context);  
             Tags= new GenericRepository<Tags>(context);

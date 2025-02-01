@@ -69,6 +69,10 @@ namespace Optern.Infrastructure.Configurations
 
             #region Relations
 
+            builder.HasOne(u => u.Position)
+                 .WithMany(p => p.Users)
+                 .HasForeignKey(u => u.PositionId)
+                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(r => r.Rooms)
                 .WithOne(r => r.Creator)

@@ -19,10 +19,10 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Room>Rooms { get; }
         IGenericRepository<UserRoom> UserRoom { get; }
         IGenericRepository<Track> Tracks { get; }
-        IGenericRepository<SubTrack> SubTracks { get; }
+        IGenericRepository<Position> Positions { get; }
         IGenericRepository<ApplicationUser> Users { get; }
         IGenericRepository<RoomSkillsDTO> RoomSkills { get; }
-        IGenericRepository<RoomTrack> RoomTracks { get; }
+        IGenericRepository<RoomPosition> RoomPositions { get; }
         IGenericRepository<Comment> Comments { get; }
         IGenericRepository<Reacts> Reacts { get; }
         IGenericRepository<WorkSpace> WorkSpace { get; }
