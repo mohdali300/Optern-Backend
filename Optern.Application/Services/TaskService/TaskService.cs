@@ -115,5 +115,65 @@ namespace Optern.Application.Services.TaskService
             }
         }
         #endregion
+
+        #region Recent Tasks
+        public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
+        {
+            try
+            {
+                var tasks = await GetRecentTasksForUserAsync(userId, roomId, isAdmin);
+
+                if (tasks.Any())
+                {
+                    var dto = tasks.Select(t => new RecentTaskDTO
+                    {
+                        Id = t.Id,
+                        Title = t.Title,
+                        Status = t.Status,
+                        DueDate = t.DueDate,
+                    });
+                    return Response<IEnumerable<RecentTaskDTO>>.Success(dto);
+                }
+
+                return Response<IEnumerable<RecentTaskDTO>>.Success(new List<RecentTaskDTO>(), "No Tasks found in this room.", 204);
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<RecentTaskDTO>>.Failure($"Server error: {ex.Message}", 500);
+            }
+        }
+        #endregion
+
+
+        #region Helper
+        private async Task<List<Task>> GetRecentTasksForUserAsync(string userId, string roomId, bool? isAdmin)
+        {
+            var query = _context.Tasks
+                .Include(t => t.Sprint)
+                .ThenInclude(s => s.WorkSpace)
+                .Where(t => t.Sprint.WorkSpace.RoomId == roomId);
+
+            if (isAdmin == true)
+            {
+                // If user is admin, retrieve the 8 most recent tasks
+                return await query
+                    .OrderByDescending(t => t.CreatedAt)
+                    .Take(8)
+                    .ToListAsync();
+            }
+
+            // If user is not admin, retrieve tasks assigned to the user
+            return await query
+                .Join(
+                    _context.UserTasks,
+                    task => task.Id,
+                    userTask => userTask.TaskId,
+                    (task, userTask) => new { Task = task, UserTask = userTask }
+                )
+                .Where(ut => ut.UserTask.UserId == userId)
+                .Select(ut => ut.Task).OrderByDescending(t => t.CreatedAt)
+                .Take(8).ToListAsync();
+        } 
+        #endregion
     }
 }

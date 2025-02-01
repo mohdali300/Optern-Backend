@@ -10,13 +10,13 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; } 
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
 
         // Navigation Properties
 
         public virtual ICollection<UserSkills> UserSkills { get; set; }
-        public virtual ICollection<RoomSkills> RoomSkills { get; set;}
+        public virtual ICollection<RoomSkillsDTO> RoomSkills { get; set;}
 
     }
 }

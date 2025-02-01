@@ -20,10 +20,11 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Track> Tracks { get; private set; }
         public IGenericRepository<SubTrack> SubTracks { get; private set; }
         public IGenericRepository<ApplicationUser> Users { get; private set; }
-        public IGenericRepository<RoomSkills> RoomSkills { get; private set; }
+        public IGenericRepository<RoomSkillsDTO> RoomSkills { get; private set; }
         public IGenericRepository<RoomTrack> RoomTracks { get; private set; }
         public IGenericRepository<FavoritePosts> FavoritePosts { get; private set; }
-        public IGenericRepository<BookMarkedTask> BookMarkedTask { get; }
+        public IGenericRepository<BookMarkedTask> BookMarkedTask { get; private set;  }
+        public IGenericRepository<Skills>Skills { get; private set; }
 
 
         public IGenericRepository<Post> Posts { get; private set; }
@@ -49,7 +50,7 @@ namespace Optern.Infrastructure.UnitOfWork
             Tracks = new GenericRepository<Track>(context);
             SubTracks = new GenericRepository<SubTrack>(context);
             Users= new GenericRepository<ApplicationUser>(context);
-            RoomSkills= new GenericRepository<RoomSkills>(context);
+            RoomSkills= new GenericRepository<RoomSkillsDTO>(context);
             RoomTracks= new GenericRepository<RoomTrack>(context);
             FavoritePosts= new GenericRepository<FavoritePosts>(context);
             Posts= new GenericRepository<Post>(context);  
@@ -61,6 +62,7 @@ namespace Optern.Infrastructure.UnitOfWork
             Sprints= new GenericRepository<Sprint>(context);
             RoomUsers= new GenericRepository<UserRoom>(context);
             BookMarkedTask=new GenericRepository<BookMarkedTask>(context);
+            Skills= new GenericRepository<Skills>(context);
         }
 
         public async Task<int> SaveAsync()
