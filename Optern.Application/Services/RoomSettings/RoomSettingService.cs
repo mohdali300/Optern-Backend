@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.SubTrack;
+using Optern.Application.DTOs.Position;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IRoomSettingService;
 using Optern.Application.Interfaces.IUserService;
@@ -41,7 +41,7 @@ namespace Optern.Application.Services.RoomSettings
             }
 
             var room = await _context.Rooms
-                .Include(r => r.RoomTracks)
+                .Include(r => r.RoomPositions)
                 .Include(r => r.RoomSkills)
                 .ThenInclude(s => s.Skill)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -66,9 +66,9 @@ namespace Optern.Application.Services.RoomSettings
                     }
                 }
                 await _unitOfWork.Rooms.UpdateAsync(room);
-                if (model.SubTracks != null)
+                if (model.Positions != null)
                 {
-                    await UpdateRoomSubTracks(room, model.SubTracks);
+                    await UpdateRoomPositions(room, model.Positions);
                 }
                 if (model.Skills != null)
                 {
@@ -167,27 +167,27 @@ namespace Optern.Application.Services.RoomSettings
 
         #endregion
 
-        #region Update SubTracks For Room
-        private async Task<bool> UpdateRoomSubTracks(Room room, List<int>? newSubTracks)
+        #region Update Positions For Room
+        private async Task<bool> UpdateRoomPositions(Room room, List<int>? newPositions)
         {
-            if (newSubTracks == null || !newSubTracks.Any()) 
+            if (newPositions == null || !newPositions.Any()) 
                 return false;
 
-            var existingSubTrackIds = room.RoomTracks.Select(rt => rt.SubTrackId).ToHashSet();
-            var newSubTrackIds = newSubTracks.ToHashSet();
+            var existingPositionIds = room.RoomPositions.Select(rt => rt.PositionId).ToHashSet();
+            var newPositionIds = newPositions.ToHashSet();
 
-            var notExistingSubTracks = room.RoomTracks.Where(rt => !newSubTrackIds.Contains(rt.SubTrackId)).ToList();
-            foreach (var subTrack in notExistingSubTracks)
+            var notExistingPositions = room.RoomPositions.Where(rt => !newPositionIds.Contains(rt.PositionId)).ToList();
+            foreach (var position in notExistingPositions)
             {
-                await _unitOfWork.RoomTracks.DeleteAsync(subTrack);
+                await _unitOfWork.RoomPositions.DeleteAsync(position);
             }
 
-            foreach (var item in newSubTrackIds)
+            foreach (var item in newPositionIds)
             {
-                if (!existingSubTrackIds.Contains(item))
+                if (!existingPositionIds.Contains(item))
                 {
-                    var newRoomTrack = new RoomTrack { SubTrackId = item, RoomId = room.Id };
-                    await _unitOfWork.RoomTracks.AddAsync(newRoomTrack);
+                    var newRoomTrack = new RoomPosition { PositionId = item, RoomId = room.Id };
+                    await _unitOfWork.RoomPositions.AddAsync(newRoomTrack);
                 }
             }
 

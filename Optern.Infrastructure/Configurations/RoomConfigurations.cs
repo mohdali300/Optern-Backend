@@ -70,6 +70,16 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .WithOne(r => r.Room)
                 .HasForeignKey(r => r.RoomId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.RoomTracks)
+                .WithOne(rt => rt.Room)
+                .HasForeignKey(rt => rt.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(r => r.RoomPositions)
+                .WithOne(rp => rp.Room)
+                .HasForeignKey(rp => rp.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
     }

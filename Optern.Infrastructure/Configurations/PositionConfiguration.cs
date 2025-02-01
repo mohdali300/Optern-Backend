@@ -4,15 +4,15 @@ using Optern.Domain.Entities;
 
 namespace Optern.Infrastructure.Persistence.Configurations
 {
-    public class SubTrackConfiguration : IEntityTypeConfiguration<SubTrack>
+    public class PositionConfiguration : IEntityTypeConfiguration<Position>
     {
-        public void Configure(EntityTypeBuilder<SubTrack> builder)
+        public void Configure(EntityTypeBuilder<Position> builder)
         {
             #region Attributes
 
             // Table Name
 
-            builder.ToTable("SubTracks");
+            builder.ToTable("Positions");
 
             // Primary Key
 
@@ -25,22 +25,19 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.Property(st => st.Name)
                    .IsRequired()
                    .HasMaxLength(100);
-
-            builder.Property(t => t.TrackId)
-                .IsRequired();
             #endregion
 
             #region Relations
 
-            builder.HasOne(st => st.Track)
-                .WithMany(t => t.SubTracks)
-                .HasForeignKey(st => st.TrackId)
+
+            builder.HasMany(p=> p.RoomPositions)
+                .WithOne(r=>r.Position)
+                .HasForeignKey(r => r.PositionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
-            builder.HasMany(rt=>rt.RoomTracks)
-                .WithOne(r=>r.SubTrack)
-                .HasForeignKey(r => r.SubTrackId)
+            builder.HasMany(p => p.Users)
+                .WithOne(u => u.Position)
+                .HasForeignKey(u => u.PositionId)
                 .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }

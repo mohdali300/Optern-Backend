@@ -1,5 +1,5 @@
 ﻿using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.SubTrack;
+using Optern.Application.DTOs.Position;
 using Optern.Application.DTOs.Track;
 using Optern.Domain.Enums;
 using System;
@@ -17,7 +17,7 @@ namespace Optern.Application.DTOs.Room
         public string? Description { get; set; }
         public RoomType? RoomType { get; set; }
         public int? Capacity { get; set; }
-        public List<int>? SubTracks { get; set; }=new List<int>(); 
+        public List<int>? Positions { get; set; }=new List<int>(); 
         public List<SkillsDTO>? Skills { get; set; }=new List<SkillsDTO>();
 
     }

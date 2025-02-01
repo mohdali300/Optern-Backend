@@ -1,4 +1,4 @@
-﻿using Optern.Application.DTOs.SubTrack;
+﻿using Optern.Application.DTOs.Position;
 using Optern.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.DTOs.Track
 {
-    public class TrackWithSubTracksDTO
+    public class TrackWithPositionsDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<SubTrackDTO> SubTracks { get; set; }
+        public List<PositionDTO> Positions { get; set; }
     }
 }

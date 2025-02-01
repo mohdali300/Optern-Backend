@@ -1,9 +1,9 @@
 ﻿
 	[ExtendObjectType("Query")]
-	public class SubTrackQuery
+	public class PositionQuery
 	{
-		[GraphQLDescription("Get All SubTracks For Track")]
-		public async Task<Response<List<SubTrackDTO>>> GetAllSubTracksByTrackId([Service] ISubTrackService _subTrackService, int trackId)
-			=> await _subTrackService.GetAllByTrackId(trackId);
+		[GraphQLDescription("Get All Positions")]
+		public async Task<Response<List<PositionDTO>>> GetAllPositions([Service] IPositionService _positionService)
+			=> await _positionService.GetAllAsync();
 	}
 

@@ -27,9 +27,9 @@ namespace Optern.Infrastructure.Persistence.Configurations
             #endregion
 
             #region Relations
-            builder.HasMany(t => t.SubTracks)
-                .WithOne(st => st.Track)
-                .HasForeignKey(st => st.TrackId)
+            builder.HasMany(t => t.RoomTracks)
+                .WithOne(rt => rt.Track)
+                .HasForeignKey(rt => rt.TrackId)
                 .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }

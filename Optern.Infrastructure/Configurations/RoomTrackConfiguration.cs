@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Optern.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Optern.Domain.Entities;
 
 namespace Optern.Infrastructure.Configurations
 {
@@ -14,36 +14,26 @@ namespace Optern.Infrastructure.Configurations
         public void Configure(EntityTypeBuilder<RoomTrack> builder)
         {
             #region Attributes
-
             // Table Name
             builder.ToTable("RoomTracks");
 
             // Primary Key
 
-            builder.HasKey(rt => rt.Id);
+            builder.HasKey(r => r.Id);
             builder.Property(r => r.Id)
-                 .ValueGeneratedOnAdd();
-
-            builder.Property(s => s.SubTrackId)
-                .IsRequired();
-
-            builder.Property(s=>s.RoomId)
-                .IsRequired();
-
+                   .ValueGeneratedOnAdd(); 
             #endregion
+
             #region Relations
-
-
             builder.HasOne(rt => rt.Room)
-             .WithMany(r => r.RoomTracks)
-             .HasForeignKey(rt => rt.RoomId)
-             .OnDelete(DeleteBehavior.Cascade);
+                 .WithMany(r => r.RoomTracks)
+                 .HasForeignKey(rt => rt.RoomId)
+                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(rt => rt.SubTrack)
-              .WithMany(st=>st.RoomTracks)
-              .HasForeignKey(rt => rt.SubTrackId)
-              .OnDelete(DeleteBehavior.Cascade);
-
+            builder.HasOne(rt => rt.Track)
+              .WithMany(st => st.RoomTracks)
+              .HasForeignKey(rt => rt.TrackId)
+              .OnDelete(DeleteBehavior.Cascade); 
             #endregion
         }
     }

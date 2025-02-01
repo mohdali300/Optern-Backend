@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Optern.Application.DTOs.SubTrack
+namespace Optern.Application.DTOs.Position
 {
-    public class SubTrackDTO
+    public class PositionDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }

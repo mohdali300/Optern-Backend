@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Interfaces.IRoomTrackService
 {
-    public interface IRoomTrackService
+    public interface IRoomPositionService
     {
-        public Task<Response<IEnumerable<CreateRoomDTO>>> GetSubTrackRooms(int subTrackId);
+        public Task<Response<IEnumerable<CreateRoomDTO>>> GetPositionRooms(int positionId);
 
     }
 }
