@@ -14,9 +14,10 @@ namespace Optern.Domain.Entities
         public string UserId {get; set;}
         public int TaskId {get; set;}
 
+        public DateTime Assignedat { get; set; } = DateTime.UtcNow;
+
         // Navigation Properties
         public virtual ApplicationUser User {get;set;}
         public virtual Task Task {get;set;}
-
     }
 }
