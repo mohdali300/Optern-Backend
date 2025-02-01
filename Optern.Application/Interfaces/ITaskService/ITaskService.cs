@@ -12,5 +12,6 @@ namespace Optern.Application.Interfaces.ITaskService
     {
         public Task<Response<TaskResponseDTO>> AddTaskAsync(AddTaskDTO taskDto, string userId);
         public Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId,string roomId,bool? isAdmin= false);
+        public Task<Response<TasksSummaryDTO>> GetTasksSummaryAsync(string filterBy, string? roomId = null, int? sprintId = null);
     }
 }
