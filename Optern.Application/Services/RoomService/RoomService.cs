@@ -81,6 +81,7 @@ namespace Optern.Application.Services.RoomService
 						 CoverPicture = r.Room.CoverPicture,
 						 Members = r.NumberOfUsers,
 						 CreatedAt = r.Room.CreatedAt,
+						 
 					 })
 					 .ToListAsync();
 
