@@ -10,7 +10,15 @@
 
         [GraphQLDescription("Create Room")]
         public async Task<Response<ResponseRoomDTO>> CreateRoom([Service] IRoomService _roomService, CreateRoomDTO model ,IFile CoverPicture) =>
-          await _roomService.CreateRoom(model, CoverPicture);
+          await _roomService.CreateRoom(model, CoverPicture);    
+    
+    [GraphQLDescription("Edit Room")]
+        public async Task<Response<string>> EditRoom([Service] IRoomSettingService _roomSetting, string id, EditRoomDTO? model ,IFile? CoverPicture) =>
+          await _roomSetting.EditRoom(id,model!, CoverPicture); 
+    
+    [GraphQLDescription("Delete Room")]
+        public async Task<Response<bool>> DeleteRoom([Service] IRoomSettingService _roomSetting, string id) =>
+          await _roomSetting.DeleteRoom(id);
 
 
 }
