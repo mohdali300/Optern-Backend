@@ -24,7 +24,7 @@ namespace Optern.Domain.Entities
 
 
         // Foreign Key
-        public int PositionId { get; set; }
+        public int? PositionId { get; set; }
 
         #region Navigation Property
 
