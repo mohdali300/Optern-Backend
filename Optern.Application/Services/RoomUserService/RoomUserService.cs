@@ -52,7 +52,7 @@ namespace Optern.Application.Services.RoomUserService
                 }
 
                 var collaborators = await query
-                    .OrderByDescending(ur => ur.IsAdmin)
+                    .OrderByDescending(ur => ur.JoinedAt)
                     .ThenBy(ur => ur.User.FirstName)
                     .ToListAsync();
 
