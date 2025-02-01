@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.SubTrack;
+using Optern.Application.DTOs.Position;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IRoomService;
 using Optern.Application.Interfaces.IUserService;
@@ -233,14 +233,14 @@ namespace Optern.Application.Services.RoomService
 				await _unitOfWork.Rooms.AddAsync(room);
 				await _unitOfWork.SaveAsync();
 
-				if (model.SubTracks != null && model.SubTracks.Any())
+				if (model.Positions != null && model.Positions.Any())
 				{
-					var roomSubTracks = model.SubTracks.Select(subTrack => new RoomTrack
+					var roomPositions = model.Positions.Select(position => new RoomPosition
 					{
 						RoomId = room.Id,
-						SubTrackId = subTrack,
+						PositionId = position,
 					});
-					await _unitOfWork.RoomTracks.AddRangeAsync(roomSubTracks);
+					await _unitOfWork.RoomPositions.AddRangeAsync(roomPositions);
 				}
 				if (model.Skills != null && model.Skills.Any())
 				{
@@ -326,14 +326,15 @@ namespace Optern.Application.Services.RoomService
 							Name=rs.Skill.Name
 						}).Distinct().ToList(),
 						Tracks=room.RoomTracks
-						.Select( track=> new TrackDTO {
-							Id=   track.SubTrack.Track.Id,
-							Name= track.SubTrack.Track.Name 
-						}).Distinct().ToList(),
-						SubTrack=room.RoomTracks
-						.Select(subTrack=> new SubTrackDTO 
-						{ Id=subTrack.SubTrack.Id,
-							Name=subTrack.SubTrack.Name
+						.Select(track => new TrackDTO
+                        {
+                            Id = track.Track.Id,
+                            Name = track.Track.Name
+                        }).Distinct().ToList(),
+						Position=room.RoomPositions
+						.Select(position=> new PositionDTO 
+						{ Id=position.Position.Id,
+							Name=position.Position.Name
 						}).Distinct().ToList()
 					}).FirstOrDefaultAsync();
 

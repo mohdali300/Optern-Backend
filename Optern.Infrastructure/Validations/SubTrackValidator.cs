@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Optern.Infrastructure.Validations
 {
-    public class SubTrackValidator : AbstractValidator<SubTrack>
+    public class PositionValidator : AbstractValidator<Position>
     {
-        public SubTrackValidator()
+        public PositionValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty()
