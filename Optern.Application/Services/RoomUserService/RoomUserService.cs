@@ -53,7 +53,7 @@ namespace Optern.Application.Services.RoomUserService
 
                 var collaborators = await query
                     .OrderByDescending(ur => ur.IsAdmin)
-                    .ThenBy(ur => ur.User.UserName)
+                    .ThenBy(ur => ur.User.FirstName)
                     .ToListAsync();
 
                 if (!collaborators.Any())
@@ -104,7 +104,7 @@ namespace Optern.Application.Services.RoomUserService
                         Id=ur.Id,
                         RoomId = ur.RoomId,
                         UserId = ur.UserId,
-                        UserName = ur.User.UserName,
+                        UserName = $"{ur.User.FirstName} {ur.User.LastName}",
                         ProfilePicture = ur.User.ProfilePicture,
                         JoinedAt = ur.JoinedAt,
                         IsAccepted=ur.IsAccepted,
