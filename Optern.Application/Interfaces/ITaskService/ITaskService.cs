@@ -10,6 +10,7 @@ namespace Optern.Application.Interfaces.ITaskService
 {
    public interface ITaskService
     {
-      public Task<Response<TaskResponseDTO>> AddTaskAsync(AddTaskDTO taskDto, string userId);
+        public Task<Response<TaskResponseDTO>> AddTaskAsync(AddTaskDTO taskDto, string userId);
+        public Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId,string roomId,bool? isAdmin= false);
     }
 }
