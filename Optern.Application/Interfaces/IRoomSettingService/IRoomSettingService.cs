@@ -10,6 +10,7 @@ namespace Optern.Application.Interfaces.IRoomSettingService
 {
     public interface IRoomSettingService
     {
-        
+        public Task<Response<string>> EditRoom(string id, EditRoomDTO model, IFile? CoverPicture);
+        public Task<Response<bool>> DeleteRoom(string roomId);
     }
 }
