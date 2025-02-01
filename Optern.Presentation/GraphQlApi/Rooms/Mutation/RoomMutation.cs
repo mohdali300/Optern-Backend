@@ -1,5 +1,6 @@
 ﻿
-    [ExtendObjectType("Mutation")]
+
+[ExtendObjectType("Mutation")]
     public class RoomMutation
     {
 
@@ -11,5 +12,6 @@
         public async Task<Response<ResponseRoomDTO>> CreateRoom([Service] IRoomService _roomService, CreateRoomDTO model ,IFile CoverPicture) =>
           await _roomService.CreateRoom(model, CoverPicture);
 
-    }
+
+}
 

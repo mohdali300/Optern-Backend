@@ -18,11 +18,11 @@ namespace Optern.Application.DTOs.Room
             NumberOfParticipants = 0;
             CreatorId = string.Empty;
             SubTracks= new HashSet<int>();
-            Skills = new List<int>();
+            Skills = new List<SkillsDTO>();
         }
         public int? NumberOfParticipants { get; set; }
         public string CreatorId { get; set; } 
         public ICollection<int>? SubTracks { get; set; }
-        public ICollection<int>? Skills { get; set; } 
+        public ICollection<SkillsDTO>? Skills { get; set; } 
     }
 }

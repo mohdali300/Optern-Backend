@@ -81,6 +81,7 @@ namespace Optern.Application.Services.RoomService
 						 CoverPicture = r.Room.CoverPicture,
 						 Members = r.NumberOfUsers,
 						 CreatedAt = r.Room.CreatedAt,
+						 
 					 })
 					 .ToListAsync();
 
@@ -243,10 +244,35 @@ namespace Optern.Application.Services.RoomService
 				}
 				if (model.Skills != null && model.Skills.Any())
 				{
-					var roomSkills = model.Skills.Select(skill => new RoomSkills
-					{
+					var existingSkills =await _context.Skills
+						.Select(s => new SkillsDTO { Id = s.Id,
+							Name = s.Name,
+							Description = s.Description 
+						})
+						.ToListAsync();
+
+                    var newSkills = model.Skills
+						  .Where(skill => !existingSkills.Any(es => es.Name.ToLower() == skill.Name.ToLower()))
+						  .Select(skill => new Skills
+						  {
+						      Name = skill.Name,
+						      Description = skill.Description!
+						  })
+						  .ToList();
+
+                    if (newSkills.Any())
+                    {
+                        await _context.Skills.AddRangeAsync(newSkills);
+                        await _context.SaveChangesAsync();
+                    }
+                    var allSkills = await _context.Skills
+							.Where(s => model.Skills.Select(ms => ms.Name).Contains(s.Name))
+							.ToListAsync();
+
+                    var roomSkills = allSkills.Select(skill => new RoomSkillsDTO
+                    {
 						RoomId = room.Id,
-						SkillId = skill,
+						SkillId = skill.Id,
 					});
 					await _unitOfWork.RoomSkills.AddRangeAsync(roomSkills);
 				}
@@ -255,7 +281,8 @@ namespace Optern.Application.Services.RoomService
 					UserId = room.CreatorId,  // replace with ==> _userService.GetCurrentUserAsync()
                     RoomId = room.Id,
 					IsAdmin = true ,
-					JoinedAt=DateTime.UtcNow
+					JoinedAt=DateTime.UtcNow,
+					IsAccepted=true
 				});
 				await _unitOfWork.SaveAsync();
 

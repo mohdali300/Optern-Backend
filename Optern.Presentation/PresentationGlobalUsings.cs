@@ -20,7 +20,6 @@ global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
 global using Optern.Infrastructure.ExternalServices.BackgroundJobs;
 global using Optern.Infrastructure.ExternalServices.UserCleanUp;
 global using Optern.Infrastructure.Response;
-global using Org.BouncyCastle.Asn1.Ocsp;
 global using Optern.Application.Interfaces.IRoomService;
 global using Optern.Domain.Entities;
 
@@ -46,6 +45,7 @@ global using Optern.Application.Interfaces.IRoomTrackService;
 // GraphQLAPI/RoomUser
 global using Optern.Application.DTOs.RoomUser;
 global using Optern.Application.Interfaces.IRoomUserService;
+global using Optern.Application.Interfaces.IRoomSettingService;
 
 // GraphQlAPI/Sprint
 global using Optern.Application.DTOs.Sprint;
