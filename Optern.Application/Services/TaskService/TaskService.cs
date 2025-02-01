@@ -11,6 +11,7 @@ using Optern.Application.DTOs.Post;
 using Optern.Application.DTOs.Task;
 using Optern.Application.Interfaces.ITaskService;
 using Optern.Domain.Entities;
+using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
@@ -144,8 +145,51 @@ namespace Optern.Application.Services.TaskService
         }
         #endregion
 
+        #region Tasks summary
+        public async Task<Response<TasksSummaryDTO>> GetTasksSummaryAsync(string filterBy, string? roomId = null, int? sprintId = null)
+        {
+            try
+            {
+                var query = _context.Tasks.Include(t=>t.Sprint)
+                    .ThenInclude(s=>s.WorkSpace).AsQueryable();
+                if (!string.IsNullOrEmpty(roomId))
+                {
+                    query = query.Where(t => t.Sprint.WorkSpace.RoomId == roomId);
+                }
 
-        #region Helper
+                if (sprintId.HasValue)
+                {
+                    query = query.Where(t => t.SprintId == sprintId);
+                }
+
+                var tasks = await GetTasksbyFilterAsync(query, filterBy);
+                if (tasks.Any())
+                {
+                    var dto = new TasksSummaryDTO
+                    {
+                        ToDoTasks = tasks.Where(t => t.Status == TaskState.ToDo).Count(),
+                        InProgressTasks = tasks.Where(t => t.Status == TaskState.InProgress).Count(),
+                        DoneTasks = tasks.Where(t => t.Status == TaskState.Completed).Count()
+                    };
+
+                    return Response<TasksSummaryDTO>.Success(dto);
+                }
+
+                return Response<TasksSummaryDTO>.Success(new TasksSummaryDTO
+                {
+                    ToDoTasks = 0,
+                    InProgressTasks = 0,
+                    DoneTasks = 0,
+                }, "There is no tasks yet.", 204);
+            }
+            catch (Exception ex)
+            {
+                return Response<TasksSummaryDTO>.Failure($"Server error: {ex.Message}", 500);
+            }
+        } 
+        #endregion
+
+        #region Helpers
         private async Task<List<Task>> GetRecentTasksForUserAsync(string userId, string roomId, bool? isAdmin)
         {
             var query = _context.Tasks
@@ -174,6 +218,20 @@ namespace Optern.Application.Services.TaskService
                 .Select(ut => ut.Task).OrderByDescending(t => t.CreatedAt)
                 .Take(8).ToListAsync();
         } 
+
+        private async Task<IQueryable<Task>> GetTasksbyFilterAsync(IQueryable<Task> query,string filterBy)
+        {
+            switch (filterBy)
+            {
+                case "week":
+                    return query.Where(t => t.CreatedAt >= DateTime.UtcNow.AddDays(-7) && t.CreatedAt <= DateTime.UtcNow);
+                case "month":
+                    return query.Where(t => t.CreatedAt >= DateTime.UtcNow.AddMonths(-1) && t.CreatedAt <= DateTime.UtcNow);
+                case "all":
+                default: 
+                    return query;
+            }
+        }
         #endregion
     }
 }
