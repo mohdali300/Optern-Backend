@@ -119,7 +119,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IRoomUserService, RoomUserService>();
             services.AddScoped<IBookMarkedTaskService, BookMarkedTaskService>();
             services.AddScoped<ITaskService, TaskService>();
-           // services.AddScoped<IRoomSettingService, RoomSettingService>();
+            services.AddScoped<IRoomSettingService, RoomSettingService>();
 
 
             return services;
