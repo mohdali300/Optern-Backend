@@ -10,4 +10,18 @@
         
             => await taskService.AddTaskAsync(taskDto, userId);
 
+    [GraphQLDescription("Edit task")]
+    public async Task<Response<TaskResponseDTO>> EditTaskAsync(
+    [Service] ITaskService taskService,
+    EditTaskDTO taskDto, string userId)
+
+           => await taskService.EditTaskAsync(taskDto, userId);
+
+    [GraphQLDescription("Delete task")]
+    public async Task<Response<string>> DeleteTaskAsync(
+   [Service] ITaskService taskService,
+   int taskId, string userId)
+
+          => await taskService.DeleteTaskAsync(taskId, userId);
+
 }

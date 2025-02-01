@@ -71,15 +71,28 @@ namespace Optern.Application.Mappings
 			CreateMap<Sprint, SprintResponseDTO>();
 
             CreateMap<AddTaskDTO, Task>()
-           .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
+             .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore()) 
+             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
+             .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.DueDate));
 
             CreateMap<Task, TaskResponseDTO>()
-                .ForMember(dest => dest.AssignedUsers, opt => opt.MapFrom(src => src.AssignedTasks.Select(a => new AssignedUserDTO
-                {
-                    UserId = a.UserId,
-                    FullName = $"{a.User.FirstName} {a.User.LastName}",
-                    ProfilePicture = a.User.ProfilePicture
-                }).ToList()));
+           .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title ?? string.Empty))
+           .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description ?? string.Empty))
+           .ForMember(dest => dest.AssignedUsers, opt => opt.MapFrom(src => src.AssignedTasks
+               .Where(at => at.User != null)
+               .Select(at => new AssignedUserDTO
+               {
+                   UserId = at.UserId,
+                   FullName = $"{at.User.FirstName} {at.User.LastName}".Trim(),
+                   ProfilePicture = at.User.ProfilePicture
+               }).ToList()));
+
+            CreateMap<EditTaskDTO, Task>()
+        .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TaskId))
+        .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title ?? string.Empty))
+        .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description ?? string.Empty))
+        .ForMember(dest => dest.EndDate, opt => opt.Ignore()) 
+        .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
 
 
             #endregion

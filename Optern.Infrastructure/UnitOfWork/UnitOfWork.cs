@@ -38,6 +38,8 @@ namespace Optern.Infrastructure.UnitOfWork
 
         public IGenericRepository<Task> Tasks { get; private set; }
 
+        public IGenericRepository<UserTasks> UserTasks { get; private set; }
+
         public IGenericRepository<Sprint> Sprints { get; private set; }
         public IGenericRepository<UserRoom> RoomUsers { get; private set; }
 
@@ -63,6 +65,7 @@ namespace Optern.Infrastructure.UnitOfWork
             RoomUsers= new GenericRepository<UserRoom>(context);
             BookMarkedTask=new GenericRepository<BookMarkedTask>(context);
             Skills= new GenericRepository<Skills>(context);
+            UserTasks= new GenericRepository<UserTasks>(context);
         }
 
         public async Task<int> SaveAsync()
