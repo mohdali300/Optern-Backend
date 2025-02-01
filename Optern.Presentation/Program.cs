@@ -38,6 +38,7 @@ builder.Services
 .AddType<RoomUserQuery>()
 .AddType<SprintQuery>()
 .AddType<BookMarkedTaskQuery>()
+.AddType<TaskQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()

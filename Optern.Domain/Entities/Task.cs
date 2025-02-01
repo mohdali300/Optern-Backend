@@ -17,6 +17,7 @@ namespace Optern.Domain.Entities
         public string DueDate { get; set; } 
         public string EndDate { get; set; } 
         public TaskState Status { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Foreign Keys
         public int SprintId { get; set; }
