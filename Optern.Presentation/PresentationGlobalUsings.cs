@@ -40,7 +40,7 @@ global using Optern.Application.DTOs.Track;
 //GraphQlAPI/React
 global using Optern.Application.Interfaces.IReactService;
 
-//GraphQLAPI/RoomTrack
+//GraphQLAPI/RoomPosition
 global using Optern.Application.Interfaces.IRoomTrackService;
 // GraphQLAPI/RoomUser
 global using Optern.Application.DTOs.RoomUser;
@@ -51,9 +51,9 @@ global using Optern.Application.Interfaces.IRoomSettingService;
 global using Optern.Application.DTOs.Sprint;
 global using Optern.Application.Interfaces.ISprintService;
 
-// GraphQLAPI/SubTrack
-global using Optern.Application.DTOs.SubTrack;
-global using Optern.Application.Interfaces.ISubTrackService;
+// GraphQLAPI/Position
+global using Optern.Application.DTOs.Position;
+global using Optern.Application.Interfaces.IPositionService;
 //GraphQlAPI/Tag
 global using Optern.Application.DTOs.Tags;
 global using Optern.Application.Interfaces.ITagService;

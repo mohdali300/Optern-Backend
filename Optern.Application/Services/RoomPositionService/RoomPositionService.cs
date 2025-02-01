@@ -15,24 +15,24 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.RoomTrackService
 {
-    public class RoomTrackService : IRoomTrackService
+    public class RoomPositionService : IRoomPositionService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly OpternDbContext _context;
 
-        public RoomTrackService(IUnitOfWork unitOfWork, OpternDbContext context)
+        public RoomPositionService(IUnitOfWork unitOfWork, OpternDbContext context)
         {
             _unitOfWork = unitOfWork;
             _context = context;
         }
 
-        #region SubTrackRooms
-        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetSubTrackRooms(int subTrackId)
+        #region PositionRooms
+        public async Task<Response<IEnumerable<CreateRoomDTO>>> GetPositionRooms(int positionId)
         {
             try
             {
-                var roomDtos = await _context.RoomTracks.Include(rt => rt.Room)
-                    .Where(rt => rt.SubTrackId == subTrackId)
+                var roomDtos = await _context.RoomPositions.Include(rt => rt.Room)
+                    .Where(rt => rt.PositionId == positionId)
                     .Select(rt => new CreateRoomDTO
                     {
                         Name = rt.Room.Name,

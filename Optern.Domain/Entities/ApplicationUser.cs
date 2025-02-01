@@ -24,11 +24,11 @@ namespace Optern.Domain.Entities
 
 
         // Foreign Key
+        public int PositionId { get; set; }
 
         #region Navigation Property
 
-
-        //user create many Rooms
+        public virtual Position Position { get; set; } 
         public virtual ICollection<Room> Rooms { get; set; } 
         public virtual ICollection<UserRoom> UserRooms { get; set; }
         public virtual ICollection<ChatParticipants> JoinedChats  { get; set; }

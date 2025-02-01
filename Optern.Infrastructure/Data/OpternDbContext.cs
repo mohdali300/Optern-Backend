@@ -47,12 +47,13 @@ namespace Optern.Infrastructure.Data
         public DbSet<Reacts> Reacts { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomSkillsDTO> RoomSkills { get; set; }
+        public DbSet<RoomPosition> RoomPositions { get; set; }
         public DbSet<RoomTrack> RoomTracks { get; set; }
 
         public DbSet<Skills> Skills { get; set; }
         public DbSet<Sprint> Sprints { get; set; }
 
-        public DbSet<SubTrack> SubTracks { get; set; }
+        public DbSet<Position> Positions { get; set; }
 
         public DbSet<Tags> Tags { get; set; }
         public DbSet<Task> Tasks { get; set; }

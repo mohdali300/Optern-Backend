@@ -1,8 +1,8 @@
 ﻿
     [ExtendObjectType("Mutation")]
-    public class SubTrackMutation
+    public class PositionMutation
     {
-        [GraphQLDescription("Add SubTrack For A Track")]
-        public async Task<Response<SubTrackDTO>> AddSubTrack([Service] ISubTrackService _subTrackService,string name, int trackId)
-            => await _subTrackService.Add(name, trackId);
+        [GraphQLDescription("Add Position For A Track")]
+        public async Task<Response<PositionDTO>> AddPosition([Service] IPositionService _positionService,string name)
+            => await _positionService.AddAsync(name);
     }

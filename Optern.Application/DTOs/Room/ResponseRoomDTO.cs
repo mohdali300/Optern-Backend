@@ -1,5 +1,5 @@
 ﻿using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.SubTrack;
+using Optern.Application.DTOs.Position;
 using Optern.Application.DTOs.Track;
 using Optern.Domain.Enums;
 using System;
@@ -16,7 +16,7 @@ namespace Optern.Application.DTOs.Room
         public int? Members { get; set; } 
         public List<SkillsDTO>? Skills { get; set; } 
         public List<TrackDTO>? Tracks { get; set; }
-        public List<SubTrackDTO>? SubTrack { get; set; }
+        public List<PositionDTO>? Position { get; set; }
         public ResponseRoomDTO()
         {
             Id = string.Empty;
@@ -24,7 +24,7 @@ namespace Optern.Application.DTOs.Room
             Members = 0;
             Skills = new List<SkillsDTO>();
             Tracks= new List<TrackDTO>();
-            SubTrack= new List<SubTrackDTO>();
+            Position= new List<PositionDTO>();
         }
     }
 }

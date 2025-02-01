@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Optern.Domain.Entities
 {
-	public class RoomTrack
-	{
-		public int Id { get; set; }
+    public class RoomTrack
+    {
+        public int Id { get; set; }
 
-		// Foreign Keys
-		public int SubTrackId { get; set; }
-		public string RoomId { get; set; }
+        // Foreign Keys
+        public int TrackId { get; set; }
+        public string RoomId { get; set; }
 
-		// Navigation Properties
-		public virtual SubTrack SubTrack { get; set; }
-		public virtual Room Room { get; set; } 
-	}
+        // Navigation Properties
+        public virtual Track Track { get; set; }
+        public virtual Room Room { get; set; }
+    }
 }
