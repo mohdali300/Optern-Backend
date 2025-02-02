@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Optern.Application.Interfaces.ISkillService;
+using Optern.Application.Interfaces.IRoomSkillService;
 
 namespace Optern.Application.Services.RoomSettings
 {
-    public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService, ICloudinaryService cloudinaryService, IRoomService roomService) : IRoomSettingService
+    public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
+        ICloudinaryService cloudinaryService, IRoomService roomService, ISkillService skillService, IRoomSkillService roomSkillService) : IRoomSettingService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
@@ -30,6 +33,8 @@ namespace Optern.Application.Services.RoomSettings
         private readonly IUserService _userService = userService;
         private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
         private readonly IRoomService _roomService = roomService;
+        private readonly ISkillService  _skillService = skillService;
+        private readonly IRoomSkillService _roomSkillService = roomSkillService;
 
 
         #region EditRoom Settings
@@ -42,6 +47,7 @@ namespace Optern.Application.Services.RoomSettings
 
             var room = await _context.Rooms
                 .Include(r => r.RoomPositions)
+                .Include(r=>r.RoomTracks)
                 .Include(r => r.RoomSkills)
                 .ThenInclude(s => s.Skill)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -73,6 +79,9 @@ namespace Optern.Application.Services.RoomSettings
                 if (model.Skills != null)
                 {
                     await UpdateRoomSkills(room, model.Skills);
+                }
+                if (model.Tracks != null) {
+                   await UpdateRoomTracks(room, model.Tracks);
                 }
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -195,6 +204,32 @@ namespace Optern.Application.Services.RoomSettings
             return true;
         } 
         #endregion
+
+        public async Task<bool> UpdateRoomTracks(Room room,IEnumerable<int> newTracks)
+        {
+            if(newTracks==null || !newTracks.Any())
+            {
+                return false;
+            }
+            var existingRoomsTracks= room.RoomTracks.Select(roomTrack=>roomTrack.TrackId).ToHashSet();
+            var newTracksIds= newTracks.ToHashSet(); 
+            var notExistedRoomsTracks = room.RoomTracks.Where(room => !newTracksIds.Contains(room.TrackId)).ToList(); 
+
+                foreach (var roomTrack in notExistedRoomsTracks)
+                {
+                    await _unitOfWork.RoomTracks.DeleteAsync(roomTrack);
+                }
+                
+                foreach(var roomTrack in newTracksIds) 
+                {
+                if (!existingRoomsTracks.Contains(roomTrack)) 
+                {
+                    await _unitOfWork.RoomTracks.AddAsync(new RoomTrack { RoomId = room.Id, TrackId = roomTrack });
+                }
+               }
+                await _unitOfWork.SaveAsync();
+            return true;
+        }
 
 
     }
