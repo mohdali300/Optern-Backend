@@ -89,7 +89,11 @@ namespace Optern.Application.Mappings
                    UserId = at.UserId,
                    FullName = $"{at.User.FirstName} {at.User.LastName}".Trim(),
                    ProfilePicture = at.User.ProfilePicture
-               }).ToList()));
+               }).ToList()))
+            .ForMember(dest => dest.WorkspaceId, opt => opt.MapFrom(src => src.Sprint != null && src.Sprint.WorkSpace != null ? src.Sprint.WorkSpace.Id : 0))
+            .ForMember(dest => dest.WorkspaceName, opt => opt.MapFrom(src => src.Sprint != null && src.Sprint.WorkSpace != null ? src.Sprint.WorkSpace.Title : string.Empty))
+            .ForMember(dest => dest.SprintId, opt => opt.MapFrom(src => src.Sprint != null ? src.Sprint.Id : 0))
+            .ForMember(dest => dest.SprintName, opt => opt.MapFrom(src => src.Sprint != null ? src.Sprint.Title : string.Empty));
 
             CreateMap<EditTaskDTO, Task>()
         .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TaskId))

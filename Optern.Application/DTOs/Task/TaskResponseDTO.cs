@@ -12,14 +12,16 @@ namespace Optern.Application.DTOs.Task
 
         public TaskResponseDTO()
         {
-            Id = 0;  
-            Title = string.Empty;  
-            Description = string.Empty;  
-            Status = TaskState.ToDo; 
-            StartDate = string.Empty;  
-            DueDate = string.Empty;  
-            CreatedAt = DateTime.UtcNow; 
-            AssignedUsers = new List<AssignedUserDTO>(); 
+            Id = 0;
+            Title = string.Empty;
+            Description = string.Empty;
+            Status = TaskState.ToDo;
+            StartDate = string.Empty;
+            DueDate = string.Empty;
+            CreatedAt = DateTime.UtcNow;
+            AssignedUsers = new List<AssignedUserDTO>();
+            WorkspaceName = string.Empty;
+            SprintName = string.Empty;
         }
         public int Id { get; set; }
         public string Title { get; set; }
@@ -30,5 +32,10 @@ namespace Optern.Application.DTOs.Task
 
         public DateTime CreatedAt { get; set; }
         public List<AssignedUserDTO> AssignedUsers { get; set; }
+
+        public int WorkspaceId { get; set; }
+        public string? WorkspaceName { get; set; }
+        public int SprintId { get; set; }
+        public string? SprintName { get; set; }
     }
 }

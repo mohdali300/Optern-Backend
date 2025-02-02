@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250201221811_addassignedat-UserTasks")]
+    partial class addassignedatUserTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1321,10 +1324,6 @@ namespace Optern.Infrastructure.Migrations
 
                     b.Property<DateTime>("Assignedat")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("AttachmentUrls")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("TaskId")
                         .HasColumnType("integer");
