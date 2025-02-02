@@ -123,8 +123,47 @@ namespace Optern.Application.Services.RoomSettings
         }
         #endregion
 
-        #region Update Skills For Room
-        private async Task<bool> UpdateRoomSkills(Room room, List<SkillDTO>? newSkills)
+        public async Task<Response<bool>> ResetRoom(string roomId)
+        {
+            var room = await _unitOfWork.Rooms.GetByIdWithIncludeAsync(roomId, r => r.RoomTracks, r => r.RoomSkills, r => r.RoomPositions);
+            if (room == null)
+            {
+                return Response<bool>.Failure(false, "Room not Found !", 404);
+            }
+           using var transaction= await _context.Database.BeginTransactionAsync();
+            try
+            {
+                room.CoverPicture = string.Empty;
+                room.Name = string.Empty;
+                room.Description = string.Empty;
+                if (room.RoomTracks.Any())
+                {
+                    await _unitOfWork.RoomTracks.DeleteRangeAsync(room.RoomTracks);
+                }
+                if (room.RoomSkills.Any())
+                {
+                    await _unitOfWork.RoomSkills.DeleteRangeAsync(room.RoomSkills);
+                }
+                if (room.RoomPositions.Any())
+                {
+                    await _unitOfWork.RoomPositions.DeleteRangeAsync(room.RoomPositions);
+                }
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                return Response<bool>.Success(true, "Room Rested Successfully", 200);
+
+            }
+            catch (Exception ex) 
+            {      
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+
+        }
+
+            // Helpers Functions
+            #region Update Skills For Room
+            private async Task<bool> UpdateRoomSkills(Room room, List<SkillDTO>? newSkills)
         {
             if (newSkills == null || !newSkills.Any())
             {
@@ -215,36 +254,40 @@ namespace Optern.Application.Services.RoomSettings
                 }
             }
             return true;
-        } 
+        }
         #endregion
 
-        public async Task<bool> UpdateRoomTracks(Room room,IEnumerable<int> newTracks)
+        #region Update Tracks For Room
+        public async Task<bool> UpdateRoomTracks(Room room, IEnumerable<int> newTracks)
         {
-            if(newTracks==null || !newTracks.Any())
+            if (newTracks == null || !newTracks.Any())
             {
                 return false;
             }
-            var existingRoomsTracks= room.RoomTracks.Select(roomTrack=>roomTrack.TrackId).ToHashSet();
-            var newTracksIds= newTracks.ToHashSet(); 
-            var notExistedRoomsTracks = room.RoomTracks.Where(room => !newTracksIds.Contains(room.TrackId)).ToList(); 
+            var existingRoomsTracks = room.RoomTracks.Select(roomTrack => roomTrack.TrackId).ToHashSet();
+            var newTracksIds = newTracks.ToHashSet();
+            var notExistedRoomsTracks = room.RoomTracks.Where(room => !newTracksIds.Contains(room.TrackId)).ToList();
 
-                foreach (var roomTrack in notExistedRoomsTracks)
-                {
-                await _roomTrackService.DeleteRoomTrack(roomTrack.RoomId,roomTrack.TrackId);
-                }
-                
-                foreach(var roomTrack in newTracksIds) 
-                {
-                if (!existingRoomsTracks.Contains(roomTrack)) 
+            foreach (var roomTrack in notExistedRoomsTracks)
+            {
+                await _roomTrackService.DeleteRoomTrack(roomTrack.RoomId, roomTrack.TrackId);
+            }
+
+            foreach (var roomTrack in newTracksIds)
+            {
+                if (!existingRoomsTracks.Contains(roomTrack))
                 {
                     var roomTrakcs = new List<RoomTrack> { new RoomTrack { TrackId = roomTrack } };
-                   var response= await _roomTrackService.AddRoomTrack(room.Id, roomTrakcs.Select(r => r.TrackId).ToList());
+                    var response = await _roomTrackService.AddRoomTrack(room.Id, roomTrakcs.Select(r => r.TrackId).ToList());
 
                 }
-               }
-                await _unitOfWork.SaveAsync();
+            }
+            await _unitOfWork.SaveAsync();
             return true;
-        }
+        } 
+        #endregion
+
+
 
 
     }

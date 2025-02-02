@@ -13,6 +13,7 @@ namespace Optern.Infrastructure.Repositories
     {
         Task<T> GetByIdAsync(int id);
         Task<T> GetByIdAsync(string id);
+         Task<T> GetByIdWithIncludeAsync(string id, params Expression<Func<T, object>>[] includeProperties);
         Task<T> GetByExpressionAsync(Expression<Func<T, bool>> predicate);
         IQueryable<T> GetQueryable(
            Expression<Func<T, bool>>? filter = null,
