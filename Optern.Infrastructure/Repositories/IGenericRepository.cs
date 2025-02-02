@@ -27,6 +27,7 @@ namespace Optern.Infrastructure.Repositories
         Task UpdateAsync(T entity);
         Task UpdateRangeAsync(ICollection<T> entities);
         Task DeleteAsync(T entity);
+        Task DeleteRangeAsync(IEnumerable<T> entities);
         Task<int> CountAsync(Expression<Func<T, bool>>? expression = default);
 
         IDbContextTransaction BeginTransaction();

@@ -1,4 +1,5 @@
-﻿using Optern.Application.DTOs.Room;
+﻿using Microsoft.EntityFrameworkCore;
+using Optern.Application.DTOs.Room;
 using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
@@ -35,9 +36,38 @@ namespace Optern.Application.Services.RoomTracksService
                 return Response<bool>.Success(true, "RoomTracks Added Successfully",201);
             }
             catch (Exception ex) {
-                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<bool>.Failure(false,$"There is a server error. Please try again later.{ex.Message}", 500);
 
             }
         }
+
+        public async Task<Response<bool>> DeleteRoomTrack(string roomID, int trackId)
+        {
+            if (string.IsNullOrEmpty(roomID) || trackId == 0)
+            {
+                return Response<bool>.Failure(false, "Invalid Data Model", 400);
+            }
+
+            try
+            {
+                var roomTrack = await _unitOfWork.RoomTracks
+                    .GetByExpressionAsync(rt => rt.RoomId == roomID && rt.TrackId == trackId);
+
+                if (roomTrack == null)
+                {
+                    return Response<bool>.Failure(false, "Room Track Not Found", 404);
+                }
+
+                await _unitOfWork.RoomTracks.DeleteAsync(roomTrack);
+                await _unitOfWork.SaveAsync();
+
+                return Response<bool>.Success(true, "Room Track Deleted Successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"There is a server error. Please try again later. {ex.Message}", 500);
+            }
+        }
+
     }
 }

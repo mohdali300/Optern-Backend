@@ -51,7 +51,7 @@ namespace Optern.Application.Services.SkillService
                     return Response<IEnumerable<SkillDTO>>.Failure($"Invalid Data Model: {string.Join(", ", validationErrors)}", 400);
                 }
 
-                await _unitOfWork.Skills.AddRangeAsync(skills); 
+                await _unitOfWork.Skills.AddRangeAsync(skills);
                 await _unitOfWork.SaveAsync();
 
                 var skillDTOs = _mapper.Map<IEnumerable<SkillDTO>>(skills);
@@ -63,5 +63,25 @@ namespace Optern.Application.Services.SkillService
             }
         }
 
+        public async Task<Response<bool>> DeleteSkill(int skillId)
+        {
+            try
+            {
+                var skill = await _unitOfWork.Skills.GetByIdAsync(skillId);
+                if (skill == null)
+                {
+                    return Response<bool>.Failure(false, "Skill not Found", 404);
+                }
+                await _unitOfWork.Skills.DeleteAsync(skill);
+                await _unitOfWork.SaveAsync();
+                return Response<bool>.Success(true, "Skill Deleted Successfully", 200);
+
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false,$"There is a server error. Please try again later. {ex.Message}", 500);
+            }
+
+        }
     }
 }

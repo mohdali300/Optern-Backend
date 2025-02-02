@@ -46,6 +46,11 @@ namespace Optern.Infrastructure.Repositories
         {
             _dbSet.Remove(entity);
         }
+        public virtual async Task DeleteRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+        }
+
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
