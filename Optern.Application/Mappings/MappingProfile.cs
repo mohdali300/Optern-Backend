@@ -13,6 +13,7 @@ using Task = Optern.Domain.Entities.Task;
 using Optern.Application.DTOs.Sprint;
 using Optern.Application.DTOs.RoomUser;
 using Optern.Application.DTOs.Skills;
+using Optern.Application.DTOs.TaskActivity;
 
 namespace Optern.Application.Mappings
 {
@@ -102,9 +103,9 @@ namespace Optern.Application.Mappings
         .ForMember(dest => dest.EndDate, opt => opt.Ignore()) 
         .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
 
-
-            #endregion
-
+            CreateMap<TaskActivity, TaskActivityDTO>()
+         .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FirstName + " " + src.Creator.LastName : string.Empty))
+         .ForMember(dest => dest.CreatorProfilePicture, opt => opt.MapFrom(src => src.Creator != null && src.Creator.ProfilePicture != null ? src.Creator.ProfilePicture : string.Empty)); 
 
             //RoomUser
             CreateMap<UserRoom, RoomUserDTO>()
@@ -112,6 +113,8 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
             .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture))
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.IsAdmin ? "Leader" : "Collaborator"));
+
+            #endregion
 
 
         }
