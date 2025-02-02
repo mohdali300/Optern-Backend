@@ -21,11 +21,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Optern.Application.Interfaces.ISkillService;
 using Optern.Application.Interfaces.IRoomSkillService;
+using Optern.Application.Interfaces.IRoomTrackService;
 
 namespace Optern.Application.Services.RoomSettings
 {
     public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
-        ICloudinaryService cloudinaryService, IRoomService roomService, ISkillService skillService, IRoomSkillService roomSkillService) : IRoomSettingService
+        ICloudinaryService cloudinaryService, IRoomService roomService, ISkillService skillService, IRoomSkillService roomSkillService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService) : IRoomSettingService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
@@ -35,6 +36,8 @@ namespace Optern.Application.Services.RoomSettings
         private readonly IRoomService _roomService = roomService;
         private readonly ISkillService  _skillService = skillService;
         private readonly IRoomSkillService _roomSkillService = roomSkillService;
+        private readonly IRoomPositionService _roomPositionService  = roomPositionService;
+        private readonly IRoomTrackService _roomTrackService = roomTrackService;
 
 
         #region EditRoom Settings
@@ -117,7 +120,7 @@ namespace Optern.Application.Services.RoomSettings
                 await transaction.RollbackAsync();
                 return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
-        } 
+        }
         #endregion
 
         #region Update Skills For Room
@@ -129,23 +132,27 @@ namespace Optern.Application.Services.RoomSettings
             }
 
             if (room.RoomSkills == null)
-             {
+            {
                 room.RoomSkills = new List<RoomSkills>();
-             }
+            }
 
             var roomSkillsIds = room.RoomSkills.Select(rs => rs.SkillId).ToHashSet();
-            var newSkillNames = newSkills.Select(s => s.Name).ToHashSet(); 
+            var newSkillNames = newSkills.Select(s => s.Name).ToHashSet();
 
             var existingSkills = await _context.Skills
                 .Where(s => newSkillNames.Contains(s.Name))
-                .ToListAsync(); 
+                .ToListAsync();
 
-            var existingSkillIdsInDb = existingSkills.Select(s => s.Id).ToHashSet(); 
+            var existingSkillIdsInDb = existingSkills.Select(s => s.Id).ToHashSet();
 
-            var notExistingSkills = room.RoomSkills.Where(rs => !newSkillNames.Contains(rs.Skill.Name)).ToList(); 
+            var notExistingSkills = room.RoomSkills
+                .Where(rs => !newSkillNames.Contains(rs.Skill.Name))
+                .ToList();
+
             foreach (var skill in notExistingSkills)
             {
-                await _unitOfWork.RoomSkills.DeleteAsync(skill); 
+                var roomSkills = new List<RoomSkills> { new RoomSkills { SkillId = skill.SkillId } };
+                await _roomSkillService.DeleteRoomSkills(room.Id, roomSkills.Select(s => s.SkillId).ToList());
             }
 
             foreach (var item in newSkills)
@@ -158,21 +165,29 @@ namespace Optern.Application.Services.RoomSettings
                 }
                 else
                 {
-                    skill = new Skills { Name = item.Name };
-                    await _unitOfWork.Skills.AddAsync(skill);
-                    await _unitOfWork.SaveAsync();
+                    var newSkillList = new List<SkillDTO> { new SkillDTO { Name = item.Name } };
+                    var skillResponse = await _skillService.AddSkills(newSkillList);
+
+                    if (skillResponse.Data != null && skillResponse.Data.Any())
+                    {
+                        skill = new Skills { Id = skillResponse.Data.First().Id, Name = skillResponse.Data.First().Name };
+                    }
+                    else
+                    {
+                        return false; 
+                    }
                 }
 
                 if (!roomSkillsIds.Contains(skill.Id))
                 {
-                    var newRoomSkill = new RoomSkills { SkillId = skill.Id, RoomId = room.Id };
-                    await _unitOfWork.RoomSkills.AddAsync(newRoomSkill);
+                    var newRoomSkill = new List<RoomSkills> { new RoomSkills { SkillId = skill.Id } };
+                    var roomSkillResponse = await _roomSkillService.AddRoomSkills(room.Id, newRoomSkill.Select(s => s.SkillId).ToList());
                 }
             }
 
-            await _unitOfWork.SaveAsync();
             return true;
         }
+
 
         #endregion
 
@@ -188,19 +203,17 @@ namespace Optern.Application.Services.RoomSettings
             var notExistingPositions = room.RoomPositions.Where(rt => !newPositionIds.Contains(rt.PositionId)).ToList();
             foreach (var position in notExistingPositions)
             {
-                await _unitOfWork.RoomPositions.DeleteAsync(position);
+                await _roomPositionService.DeleteRoomPosition(position.RoomId, position.PositionId);
             }
 
             foreach (var item in newPositionIds)
             {
                 if (!existingPositionIds.Contains(item))
                 {
-                    var newRoomTrack = new RoomPosition { PositionId = item, RoomId = room.Id };
-                    await _unitOfWork.RoomPositions.AddAsync(newRoomTrack);
+                    var newRoomTrack = new List<RoomPosition> { new RoomPosition { PositionId = item } };
+                    var response =await _roomPositionService.AddRoomPosition(room.Id,newRoomTrack.Select(r=>r.PositionId).ToList());
                 }
             }
-
-            await _unitOfWork.SaveAsync();
             return true;
         } 
         #endregion
@@ -217,14 +230,16 @@ namespace Optern.Application.Services.RoomSettings
 
                 foreach (var roomTrack in notExistedRoomsTracks)
                 {
-                    await _unitOfWork.RoomTracks.DeleteAsync(roomTrack);
+                await _roomTrackService.DeleteRoomTrack(roomTrack.RoomId,roomTrack.TrackId);
                 }
                 
                 foreach(var roomTrack in newTracksIds) 
                 {
                 if (!existingRoomsTracks.Contains(roomTrack)) 
                 {
-                    await _unitOfWork.RoomTracks.AddAsync(new RoomTrack { RoomId = room.Id, TrackId = roomTrack });
+                    var roomTrakcs = new List<RoomTrack> { new RoomTrack { TrackId = roomTrack } };
+                   var response= await _roomTrackService.AddRoomTrack(room.Id, roomTrakcs.Select(r => r.TrackId).ToList());
+
                 }
                }
                 await _unitOfWork.SaveAsync();
