@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Optern.Application.DTOs.Room;
+using Optern.Application.DTOs.RoomPosition;
 using Optern.Application.DTOs.Track;
 using Optern.Application.Interfaces.IRoomTrackService;
+using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Response;
@@ -51,7 +53,30 @@ namespace Optern.Application.Services.RoomTrackService
             {
                 return Response<IEnumerable<CreateRoomDTO>>.Failure("Unexpected error occured!", 500, new List<string> { ex.Message });
             }
-        } 
+        }
+        
+        public async Task<Response<bool>> AddRoomPosition(string roomID,IEnumerable<int> data)
+        {
+            if(data == null || !data.Any())
+            {
+                return Response<bool>.Failure(false, "Invalid Data Model", 400);
+            }
+            try
+            {
+                var roomPositions = data.Select(roomPosition => new RoomPosition
+                {
+                    PositionId = roomPosition,
+                    RoomId = roomID,
+                }).ToList();
+                await _unitOfWork.RoomPositions.AddRangeAsync(roomPositions);
+                await _unitOfWork.SaveAsync();
+                return Response<bool>.Success(true, "Room Position Added Successfully",201);
+            }
+            catch(Exception ex)
+            {
+                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+        }
         #endregion
     }
 }

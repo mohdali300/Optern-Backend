@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Optern.Domain.Entities
 {
-   public class RoomSkillsDTO
+   public class RoomSkills
     {
          public int Id { get; set; }
 

@@ -112,7 +112,7 @@ namespace Optern.Application.Services.RoomSettings
         #endregion
 
         #region Update Skills For Room
-        private async Task<bool> UpdateRoomSkills(Room room, List<SkillsDTO>? newSkills)
+        private async Task<bool> UpdateRoomSkills(Room room, List<SkillDTO>? newSkills)
         {
             if (newSkills == null || !newSkills.Any())
             {
@@ -121,7 +121,7 @@ namespace Optern.Application.Services.RoomSettings
 
             if (room.RoomSkills == null)
              {
-                room.RoomSkills = new List<RoomSkillsDTO>();
+                room.RoomSkills = new List<RoomSkills>();
              }
 
             var roomSkillsIds = room.RoomSkills.Select(rs => rs.SkillId).ToHashSet();
@@ -156,7 +156,7 @@ namespace Optern.Application.Services.RoomSettings
 
                 if (!roomSkillsIds.Contains(skill.Id))
                 {
-                    var newRoomSkill = new RoomSkillsDTO { SkillId = skill.Id, RoomId = room.Id };
+                    var newRoomSkill = new RoomSkills { SkillId = skill.Id, RoomId = room.Id };
                     await _unitOfWork.RoomSkills.AddAsync(newRoomSkill);
                 }
             }
