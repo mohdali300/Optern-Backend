@@ -32,7 +32,6 @@ namespace Optern.Application.Services.SkillService
                 var skills = models.Select(skill => new Skills
                 {
                     Name = skill.Name,
-                    Description = skill.Description,
                 }).ToList();
 
                 var validationErrors = new List<string>();
