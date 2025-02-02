@@ -54,6 +54,12 @@ using Optern.Application.Interfaces.ITaskService;
 using Optern.Application.Services.TaskService;
 using Optern.Application.Interfaces.IRoomSettingService;
 using Optern.Application.Services.RoomSettings;
+using Optern.Application.Services.RoomTracksService;
+using Optern.Application.Interfaces.ISkillService;
+using Optern.Application.Services.SkillService;
+using Optern.Application.Services.RoomSkillService;
+using Optern.Application.Interfaces.IRoomSkillService;
+
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -120,6 +126,9 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IBookMarkedTaskService, BookMarkedTaskService>();
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IRoomSettingService, RoomSettingService>();
+            services.AddScoped<IRoomTrackService, RoomTrackService>();
+            services.AddScoped<ISkillService, SkillService>();
+            services.AddScoped<IRoomSkillService, RoomSkillService>();
 
 
             return services;

@@ -18,7 +18,8 @@ namespace Optern.Application.DTOs.Room
         public RoomType? RoomType { get; set; }
         public int? Capacity { get; set; }
         public List<int>? Positions { get; set; }=new List<int>(); 
-        public List<SkillsDTO>? Skills { get; set; }=new List<SkillsDTO>();
+        public List<int>? Tracks { get; set; }=new List<int>(); 
+        public List<SkillDTO>? Skills { get; set; }=new List<SkillDTO>();
 
     }
 }

@@ -46,7 +46,7 @@ namespace Optern.Infrastructure.Data
         public DbSet<PTPUsers> PTPUsers { get; set; }
         public DbSet<Reacts> Reacts { get; set; }
         public DbSet<Room> Rooms { get; set; }
-        public DbSet<RoomSkillsDTO> RoomSkills { get; set; }
+        public DbSet<RoomSkills> RoomSkills { get; set; }
         public DbSet<RoomPosition> RoomPositions { get; set; }
         public DbSet<RoomTrack> RoomTracks { get; set; }
 
