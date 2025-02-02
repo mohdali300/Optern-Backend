@@ -37,8 +37,37 @@ namespace Optern.Application.Services.RoomSkillService
             }
             catch (Exception ex)
             {
-                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<bool>.Failure(false,$"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+         }
+
+        public async Task<Response<bool>> DeleteRoomSkills(string roomID, IEnumerable<int> skillIds)
+        {
+            if (string.IsNullOrEmpty(roomID) || skillIds == null || !skillIds.Any())
+            {
+                return Response<bool>.Failure(false, "Invalid Data Model", 400);
+            }
+
+            try
+            {
+                var roomSkills = await _unitOfWork.RoomSkills
+                    .GetAllByExpressionAsync(rs => rs.RoomId == roomID && skillIds.Contains(rs.SkillId));
+
+                if (!roomSkills.Any())
+                {
+                    return Response<bool>.Failure(false, "No matching Room Skills found to delete", 404);
+                }
+
+                await _unitOfWork.RoomSkills.DeleteRangeAsync(roomSkills);
+                await _unitOfWork.SaveAsync();
+
+                return Response<bool>.Success(true, "Room Skills Deleted Successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"There is a server error. Please try again later. {ex.Message}", 500);
             }
         }
+
     }
 }

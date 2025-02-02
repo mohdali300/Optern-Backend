@@ -69,8 +69,6 @@ namespace Optern.Application.Mappings
 			//CreateMap<Room, ResponseRoomDTO>();
 			CreateMap<Room, ResponseRoomDTO>();
 
-            CreateMap<SkillDTO, Skills>();
-
             CreateMap<WorkSpace, WorkSpaceDTO>();
 
 			CreateMap<Sprint, SprintResponseDTO>();
@@ -113,6 +111,8 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
             .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture))
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.IsAdmin ? "Leader" : "Collaborator"));
+
+            CreateMap<Skills, SkillDTO>();
 
             #endregion
 

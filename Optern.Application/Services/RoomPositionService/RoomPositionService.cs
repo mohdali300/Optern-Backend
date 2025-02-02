@@ -74,9 +74,38 @@ namespace Optern.Application.Services.RoomTrackService
             }
             catch(Exception ex)
             {
-                return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+                return Response<bool>.Failure(false,$"There is a server error. Please try again later.{ex.Message}", 500);
             }
         }
+
+        public async Task<Response<bool>> DeleteRoomPosition(string roomID, int positionId)
+        {
+            if (string.IsNullOrEmpty(roomID) || positionId == 0)
+            {
+                return Response<bool>.Failure(false, "Invalid Data Model", 400);
+            }
+
+            try
+            {
+                var roomPosition = await _unitOfWork.RoomPositions
+                       .GetByExpressionAsync(rp => rp.RoomId == roomID && rp.PositionId == positionId);
+
+                if (roomPosition == null)
+                {
+                    return Response<bool>.Failure(false, "Room Position Not Found", 404);
+                }
+
+                await _unitOfWork.RoomPositions.DeleteAsync(roomPosition);
+                await _unitOfWork.SaveAsync();
+
+                return Response<bool>.Success(true, "Room Position Deleted Successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"There is a server error. Please try again later. {ex.Message}", 500);
+            }
+        }
+
         #endregion
     }
 }
