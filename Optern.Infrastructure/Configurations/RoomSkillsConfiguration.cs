@@ -9,10 +9,10 @@ using Optern.Domain.Entities;
 
 namespace Optern.Infrastructure.Configurations
 {
-    public class RoomSkillsConfiguration : IEntityTypeConfiguration<RoomSkillsDTO>
+    public class RoomSkillsConfiguration : IEntityTypeConfiguration<RoomSkills>
     {
 
-        public void Configure(EntityTypeBuilder<RoomSkillsDTO> builder)
+        public void Configure(EntityTypeBuilder<RoomSkills> builder)
         {
             #region Attributes
 

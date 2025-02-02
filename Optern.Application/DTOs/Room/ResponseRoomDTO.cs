@@ -14,7 +14,7 @@ namespace Optern.Application.DTOs.Room
     {
         public string? CreatorName { get; set; }
         public int? Members { get; set; } 
-        public List<SkillsDTO>? Skills { get; set; } 
+        public List<SkillDTO>? Skills { get; set; } 
         public List<TrackDTO>? Tracks { get; set; }
         public List<PositionDTO>? Position { get; set; }
         public ResponseRoomDTO()
@@ -22,7 +22,7 @@ namespace Optern.Application.DTOs.Room
             Id = string.Empty;
             CreatorName = string.Empty;
             Members = 0;
-            Skills = new List<SkillsDTO>();
+            Skills = new List<SkillDTO>();
             Tracks= new List<TrackDTO>();
             Position= new List<PositionDTO>();
         }

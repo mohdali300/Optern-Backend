@@ -21,15 +21,15 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Track> Tracks { get; }
         IGenericRepository<Position> Positions { get; }
         IGenericRepository<ApplicationUser> Users { get; }
-        IGenericRepository<RoomSkillsDTO> RoomSkills { get; }
+        IGenericRepository<RoomSkills> RoomSkills { get; }
         IGenericRepository<RoomPosition> RoomPositions { get; }
         IGenericRepository<Comment> Comments { get; }
         IGenericRepository<Reacts> Reacts { get; }
         IGenericRepository<WorkSpace> WorkSpace { get; }
         IGenericRepository<BookMarkedTask> BookMarkedTask { get; }
         IGenericRepository<Skills> Skills { get; }
-
-            IGenericRepository<Task> Tasks { get; }
+        IGenericRepository<RoomTrack> RoomTracks { get; }
+        IGenericRepository<Task> Tasks { get; }
 
         IGenericRepository<UserTasks> UserTasks { get; }
 

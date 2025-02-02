@@ -24,16 +24,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Optern.Application.Interfaces.IRoomTrackService;
+using Optern.Application.Interfaces.ISkillService;
+using Optern.Application.Interfaces.IRoomSkillService;
 
 namespace Optern.Application.Services.RoomService
 {
-	public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService, ICloudinaryService cloudinaryService) : IRoomService
+	public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
+		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService) : IRoomService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
 		private readonly IMapper _mapper = mapper;
 		private readonly IUserService _userService = userService;
 		private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
+		private readonly IRoomPositionService _roomPositionService = roomPositionService;
+		private readonly IRoomTrackService _roomTrackService= roomTrackService;
+		private readonly ISkillService _skillService= skillService;
+		private readonly IRoomSkillService _roomSkillService = roomSkillService;
 
 		#region GetAllAsync
 		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetAllAsync()
@@ -200,7 +208,7 @@ namespace Optern.Application.Services.RoomService
 		#endregion
 
 		#region Create Room
-		public async Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model, IFile CoverPicture)
+		public async Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model, IFile? CoverPicture)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -235,47 +243,16 @@ namespace Optern.Application.Services.RoomService
 
 				if (model.Positions != null && model.Positions.Any())
 				{
-					var roomPositions = model.Positions.Select(position => new RoomPosition
-					{
-						RoomId = room.Id,
-						PositionId = position,
-					});
-					await _unitOfWork.RoomPositions.AddRangeAsync(roomPositions);
+					await _roomPositionService.AddRoomPosition(room.Id,model.Positions);
 				}
-				if (model.Skills != null && model.Skills.Any())
+				if(model.Tracks != null && model.Tracks.Any())
 				{
-					var existingSkills =await _context.Skills
-						.Select(s => new SkillsDTO { Id = s.Id,
-							Name = s.Name,
-							Description = s.Description 
-						})
-						.ToListAsync();
-
-                    var newSkills = model.Skills
-						  .Where(skill => !existingSkills.Any(es => es.Name.ToLower() == skill.Name.ToLower()))
-						  .Select(skill => new Skills
-						  {
-						      Name = skill.Name,
-						      Description = skill.Description!
-						  })
-						  .ToList();
-
-                    if (newSkills.Any())
-                    {
-                        await _context.Skills.AddRangeAsync(newSkills);
-                        await _context.SaveChangesAsync();
-                    }
-                    var allSkills = await _context.Skills
-							.Where(s => model.Skills.Select(ms => ms.Name).Contains(s.Name))
-							.ToListAsync();
-
-                    var roomSkills = allSkills.Select(skill => new RoomSkillsDTO
-                    {
-						RoomId = room.Id,
-						SkillId = skill.Id,
-					});
-					await _unitOfWork.RoomSkills.AddRangeAsync(roomSkills);
-				}
+					await _roomTrackService.AddRoomTrack(room.Id,model.Tracks);
+                }
+                if (model.Skills != null && model.Skills.Any())
+				{
+                   await ManageSkillOperationistRoomCreation(room,model.Skills);
+                }
 
 				await _unitOfWork.UserRoom.AddAsync(new UserRoom {
 					UserId = room.CreatorId,  // replace with ==> _userService.GetCurrentUserAsync()
@@ -321,7 +298,7 @@ namespace Optern.Application.Services.RoomService
 						CreatedAt = room.CreatedAt,
 						Members = room.UserRooms.Count,
 						Skills = room.RoomSkills
-						.Select(rs => new SkillsDTO {
+						.Select(rs => new SkillDTO {
 							Id=rs.Skill.Id,
 							Name=rs.Skill.Name
 						}).Distinct().ToList(),
@@ -347,5 +324,42 @@ namespace Optern.Application.Services.RoomService
 				return Response<ResponseRoomDTO>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
 			}
 		}
+
+		// Helper Function
+
+		#region Helper Function For Manage Skills in Room
+		private async Task<bool> ManageSkillOperationistRoomCreation(Room room, IEnumerable<SkillDTO> data)
+		{
+			var existingSkills = await _context.Skills
+						.Select(s => new SkillDTO
+						{
+							Id = s.Id,
+							Name = s.Name,
+							Description = s.Description
+						})
+						.ToListAsync();
+
+			var newSkills = data
+				  .Where(skill => !existingSkills.Any(es => es.Name.ToLower() == skill.Name.ToLower()))
+				  .Select(skill => new SkillDTO
+				  {
+					  Name = skill.Name,
+					  Description = skill.Description!
+				  })
+				  .ToList();
+
+			if (newSkills.Any())
+			{
+				var skill = await _skillService.AddSkills(newSkills);
+			}
+			var allSkills = await _context.Skills
+					.Where(s => data.Select(ms => ms.Name).Contains(s.Name))
+					.ToListAsync();
+
+			var roomSkills = allSkills.Select(skill => skill.Id).ToList();
+			await _roomSkillService.AddRoomSkills(room.Id, roomSkills);
+			return true;
+		} 
+		#endregion
 	}
 }

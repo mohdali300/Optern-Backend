@@ -12,6 +12,7 @@ using Optern.Application.DTOs.Task;
 using Task = Optern.Domain.Entities.Task;
 using Optern.Application.DTOs.Sprint;
 using Optern.Application.DTOs.RoomUser;
+using Optern.Application.DTOs.Skills;
 
 namespace Optern.Application.Mappings
 {
@@ -67,6 +68,7 @@ namespace Optern.Application.Mappings
 			//CreateMap<Room, ResponseRoomDTO>();
 			CreateMap<Room, ResponseRoomDTO>();
 
+            CreateMap<SkillDTO, Skills>();
 
             CreateMap<WorkSpace, WorkSpaceDTO>();
 
