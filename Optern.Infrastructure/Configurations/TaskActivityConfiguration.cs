@@ -37,6 +37,11 @@ namespace Optern.Infrastructure.Configurations
            .WithMany(t => t.Activities)
            .HasForeignKey(e => e.TaskId)
            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(ta => ta.Creator)
+               .WithMany(u => u.TaskActivities)
+               .HasForeignKey(ta => ta.CreatorId)
+               .OnDelete(DeleteBehavior.SetNull);
             #endregion
         }
     }

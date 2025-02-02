@@ -59,6 +59,8 @@ using Optern.Application.Interfaces.ISkillService;
 using Optern.Application.Services.SkillService;
 using Optern.Application.Services.RoomSkillService;
 using Optern.Application.Interfaces.IRoomSkillService;
+using Optern.Application.Interfaces.ITaskActivityService;
+using Optern.Application.Services.TaskActivityService;
 
 
 namespace Optern.Infrastructure.DependencyInjection
@@ -129,6 +131,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IRoomTrackService, RoomTrackService>();
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IRoomSkillService, RoomSkillService>();
+            services.AddScoped<ITaskActivityService, TaskActivityService>();
 
 
             return services;
