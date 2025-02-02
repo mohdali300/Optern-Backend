@@ -33,6 +33,8 @@ namespace Optern.Infrastructure.UnitOfWork
 
         IGenericRepository<UserTasks> UserTasks { get; }
 
+        IGenericRepository<TaskActivity> TaskActivites { get; }
+
         IGenericRepository<Sprint> Sprints { get; }
         IGenericRepository<UserRoom> RoomUsers { get; }
         Task<int> SaveAsync();
