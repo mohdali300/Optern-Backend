@@ -20,8 +20,6 @@ public class StartDateSpecification : Specification<Domain.Entities.Task>
         public override IQueryable<Entities.Task> Apply(IQueryable<Entities.Task> query)
         {
             if (string.IsNullOrEmpty(_startDate)) return query;
-
-            // Directly compare the string values of StartDate
             return query.Where(t => t.StartDate != null && t.StartDate.CompareTo(_startDate) >= 0);
         }
     }

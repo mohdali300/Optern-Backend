@@ -57,6 +57,8 @@ namespace Optern.Infrastructure.Data
 
         public DbSet<Tags> Tags { get; set; }
         public DbSet<Task> Tasks { get; set; }
+
+        public DbSet<TaskActivity> TaskActivities { get; set; }
         public DbSet<Track> Tracks { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserRoom> UserRooms { get; set; }
