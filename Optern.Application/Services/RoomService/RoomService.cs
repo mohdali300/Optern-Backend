@@ -335,7 +335,6 @@ namespace Optern.Application.Services.RoomService
 						{
 							Id = s.Id,
 							Name = s.Name,
-							Description = s.Description
 						})
 						.ToListAsync();
 
@@ -344,7 +343,6 @@ namespace Optern.Application.Services.RoomService
 				  .Select(skill => new SkillDTO
 				  {
 					  Name = skill.Name,
-					  Description = skill.Description!
 				  })
 				  .ToList();
 
