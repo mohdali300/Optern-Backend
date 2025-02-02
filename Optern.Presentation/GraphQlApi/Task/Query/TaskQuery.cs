@@ -10,10 +10,10 @@ public class TaskQuery
     public async Task<Response<TasksSummaryDTO>> GetTasksSummaryAsync([Service] ITaskService _taskService, string filterBy, string? roomId = null, int? sprintId = null)
         =>await _taskService.GetTasksSummaryAsync(filterBy, roomId, sprintId);
 
-    [GraphQLDescription("Get tasks for each Status")]
+    [GraphQLDescription("Get tasks with filters")]
+    public async Task<Response<TaskStatusGroupedDTO>> GetTasksWithFiltersAsync([Service] ITaskService _taskService, GetTasksWithFiltersDTO request)
+        => await _taskService.GetTasksWithFiltersAsync(request);
 
-    public async Task<Response<TaskStatusGroupedDTO>> GetTasksByStatusAsync([Service] ITaskService _taskService, GetTasksByStatusDTO request)
-        => await _taskService.GetTasksByStatusAsync(request);
 
 }
 
