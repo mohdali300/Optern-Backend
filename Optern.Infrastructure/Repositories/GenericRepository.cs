@@ -66,6 +66,18 @@ namespace Optern.Infrastructure.Repositories
         {
             return await _dbSet.FindAsync(id);
         }
+        public virtual async Task<T> GetByIdWithIncludeAsync(string id, params Expression<Func<T, object>>[] includeProperties)
+        {
+            IQueryable<T> query = _dbSet;
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.FirstOrDefaultAsync(entity => EF.Property<string>(entity, "Id") == id);
+        }
+
         public virtual async Task<T> GetByExpressionAsync(Expression<Func<T, bool>> predicate) // this to compare more than one condition
         {
             return await _dbSet.FirstOrDefaultAsync(predicate);

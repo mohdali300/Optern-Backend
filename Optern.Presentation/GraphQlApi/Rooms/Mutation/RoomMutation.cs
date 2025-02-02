@@ -18,7 +18,11 @@
     
     [GraphQLDescription("Delete Room")]
         public async Task<Response<bool>> DeleteRoom([Service] IRoomSettingService _roomSetting, string id) =>
-          await _roomSetting.DeleteRoom(id);
+          await _roomSetting.DeleteRoom(id);  
+    
+    [GraphQLDescription("Reset Room")]
+        public async Task<Response<bool>> ResetRoom([Service] IRoomSettingService _roomSetting, string id) =>
+          await _roomSetting.ResetRoom(id);
 
 
 }
