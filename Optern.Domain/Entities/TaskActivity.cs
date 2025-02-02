@@ -17,5 +17,8 @@ namespace Optern.Domain.Entities
         // Foreign Key
         public int TaskId { get; set; }
         public Task? Task { get; set; }
+
+        public string? CreatorId { get; set; }
+        public ApplicationUser? Creator { get; set; }
     }
 }
