@@ -13,6 +13,8 @@ using Optern.Application.DTOs.Task;
 using Optern.Application.Interfaces.ITaskService;
 using Optern.Domain.Entities;
 using Optern.Domain.Enums;
+using Optern.Domain.Specifications.RoomSpecifications;
+using Optern.Domain.Specifications;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalInterfaces.IFileService;
 using Optern.Infrastructure.Response;
@@ -256,70 +258,7 @@ namespace Optern.Application.Services.TaskService
         }
         #endregion
 
-        #region Get Tasks for each Status (sprint optinal --> get all sprints in that work space and workspace optinal -->get all worksapces tasks with its sprints )
-        public async Task<Response<TaskStatusGroupedDTO>> GetTasksByStatusAsync(GetTasksByStatusDTO request)
-        {
-            try
-            {
-                if (!await IsUserMemberOfRoomAsync(request.UserId!, request.RoomId!))
-                {
-                    return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), "You are not authorized to view tasks in this room.", 403);
-                }
-
-                var workspace = request.WorkspaceId.HasValue ? await _unitOfWork.WorkSpace.GetByIdAsync(request.WorkspaceId.Value) : null;
-                if (workspace == null && request.WorkspaceId.HasValue)
-                {
-                    return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), "Invalid workspace selection.", 404);
-                }
-
-                var sprint = request.SprintId.HasValue ? await _unitOfWork.Sprints.GetByIdAsync(request.SprintId.Value) : null;
-                if (sprint == null && request.SprintId.HasValue)
-                {
-                    return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), "Invalid sprint selection.", 404);
-                }
-
-                IQueryable<Task> taskQuery = _context.Tasks
-                    .Where(t => t.Sprint.WorkSpace.RoomId == request.RoomId);
-
-                 if (request.WorkspaceId.HasValue)
-                {
-                    taskQuery = taskQuery.Where(t => t.Sprint.WorkSpaceId == request.WorkspaceId);
-                }
-
-                if (request.SprintId.HasValue)
-                {
-                    taskQuery = taskQuery.Where(t => t.SprintId == request.SprintId);
-                }
-
-                taskQuery = taskQuery
-                    .Include(t => t.AssignedTasks)
-                    .ThenInclude(ut => ut.User)
-                    .Include(t => t.Sprint)
-                    .ThenInclude(s => s.WorkSpace).OrderByDescending(t => t.CreatedAt);
-
-                var tasks = await taskQuery.ToListAsync();
-
-                if (!tasks.Any())
-                {
-                    return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), "No tasks found for the given criteria.", 404);
-                }
-
-                var mappedTasks = _mapper.Map<List<TaskResponseDTO>>(tasks);
-
-                var groupedTasks = GroupTasksByStatus(mappedTasks);
-
-                return Response<TaskStatusGroupedDTO>.Success(groupedTasks, "Tasks retrieved successfully.", 200);
-            }
-            catch (Exception ex)
-            {
-                return Response<TaskStatusGroupedDTO>.Failure($"Server error: {ex.Message}", 500);
-            }
-        }
-
-        #endregion
-
-
-
+            
         #region Submit Task (upload Attachment and change status)
         public async Task<Response<string>> SubmitTaskAsync(int taskId, string userId, IFile? file, TaskState? newStatus)
         {
@@ -336,12 +275,7 @@ namespace Optern.Application.Services.TaskService
                     await transaction.RollbackAsync(); 
                     return Response<string>.Failure("", "Task not found for this user task.", 404);
                 }
-                if (userTaskWithStatus.Task == null)
-                {
-                    await transaction.RollbackAsync(); 
-                    return Response<string>.Failure("", "Task details are missing.", 404);
-                }
-
+             
                 if (file != null && file.Length > 0)
                 {
                     var fileUrl = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
@@ -397,7 +331,60 @@ namespace Optern.Application.Services.TaskService
 
         #endregion
 
+        #region Get Tasks by filters 
+        public async Task<Response<TaskStatusGroupedDTO>> GetTasksWithFiltersAsync(GetTasksWithFiltersDTO request)
+        {
+            try
+            {
+                if (!await IsUserMemberOfRoomAsync(request.UserId, request.RoomId))
+                {
+                    return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), "You are not authorized to view tasks in this room.", 403);
+                }
 
+        
+                var specifications = new List<Specification<Task>>
+        {
+            new WorkspaceSpecification(request.WorkspaceId),
+            new SprintSpecification(request.SprintId),
+            new AssigneeSpecification(request.AssigneeId),
+            new DueDateSpecification(request.DueDate),
+            new StartDateSpecification(request.StartDate)
+        };
+
+
+                var combinedSpec = specifications.Aggregate((spec1, spec2) => spec1.And(spec2));
+
+                var query = _context.Tasks
+                    .Where(t => t.Sprint.WorkSpace.RoomId == request.RoomId)
+                    .AsNoTracking() 
+                    .Include(t => t.AssignedTasks)
+                    .ThenInclude(ut => ut.User)
+                    .Include(t => t.Sprint)
+                    .ThenInclude(s => s.WorkSpace)
+                    .AsQueryable();
+
+                query = combinedSpec.Apply(query);
+
+                query = query.OrderByDescending(t => t.CreatedAt); 
+
+                var tasks = await query.ToListAsync();
+
+                if (!tasks.Any())
+                {
+                    return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), "No tasks found for the given criteria.", 404);
+                }
+
+                var mappedTasks = _mapper.Map<List<TaskResponseDTO>>(tasks);
+                var groupedTasks = GroupTasksByStatus(mappedTasks);
+
+                return Response<TaskStatusGroupedDTO>.Success(groupedTasks, "Tasks retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<TaskStatusGroupedDTO>.Failure(new TaskStatusGroupedDTO(), $"Server error: {ex.Message}", 500);
+            }
+        }
+        #endregion
 
         #region Recent Tasks
         public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
