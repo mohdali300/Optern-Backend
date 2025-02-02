@@ -28,6 +28,9 @@ namespace Optern.Domain.Entities
         public virtual Sprint Sprint { get; set; }
         public virtual ICollection<BookMarkedTask> BookMarkedTasks { get; set; }
 
+        public ICollection<TaskActivity> Activities { get; set; } = new List<TaskActivity>();
+
+
 
     }
 }
