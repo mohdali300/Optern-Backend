@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Optern.Application.DTOs.Post;
@@ -13,6 +14,7 @@ using Optern.Application.Interfaces.ITaskService;
 using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
+using Optern.Infrastructure.ExternalInterfaces.IFileService;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
 using Optern.Infrastructure.Validations;
@@ -20,11 +22,12 @@ using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Application.Services.TaskService
 {
-    public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : ITaskService
+    public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper , ICloudinaryService cloudinaryService) : ITaskService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
+        private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
 
         #region Add Task
 
@@ -315,7 +318,87 @@ namespace Optern.Application.Services.TaskService
 
         #endregion
 
- 
+
+
+        #region Submit Task (upload Attachment and change status)
+        public async Task<Response<string>> SubmitTaskAsync(int taskId, string userId, IFile? file, TaskState? newStatus)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var userTaskWithStatus = await _context.UserTasks
+                   .Include(ut => ut.Task) 
+                   .FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId);
+
+
+                if (userTaskWithStatus == null)
+                {
+                    await transaction.RollbackAsync(); 
+                    return Response<string>.Failure("", "Task not found for this user task.", 404);
+                }
+                if (userTaskWithStatus.Task == null)
+                {
+                    await transaction.RollbackAsync(); 
+                    return Response<string>.Failure("", "Task details are missing.", 404);
+                }
+
+                if (file != null && file.Length > 0)
+                {
+                    var fileUrl = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
+
+                    if (string.IsNullOrEmpty(fileUrl))
+                    {
+                        await transaction.RollbackAsync(); 
+                        return Response<string>.Failure("", "File upload failed.", 500);
+                    }
+
+                    var attachmentUrlsList = userTaskWithStatus.AttachmentUrlsList ?? new List<string>();
+                    if (!attachmentUrlsList.Contains(fileUrl))
+                    {
+                        attachmentUrlsList.Add(fileUrl);
+                    }
+
+                    userTaskWithStatus.AttachmentUrlsList = attachmentUrlsList;
+                    await _unitOfWork.UserTasks.UpdateAsync(userTaskWithStatus);
+                    await _unitOfWork.SaveAsync();
+                }
+
+                if (newStatus.HasValue)
+                {
+                    userTaskWithStatus.Task.Status = newStatus.Value;
+
+                    if (userTaskWithStatus.Task.Status == TaskState.Completed)
+                    {
+                        userTaskWithStatus.Task.EndDate = DateTime.Now.ToString(); 
+                    }
+
+                    await _unitOfWork.UserTasks.UpdateAsync(userTaskWithStatus);
+                    await _unitOfWork.SaveAsync();
+                }
+                await transaction.CommitAsync();
+
+                var message = userTaskWithStatus.Task.Status == TaskState.Completed
+                    ? "Task Updated and Submitted Successfully"
+                    : "Task Updated but couldn't be submitted as the status isn't 'Completed'";
+
+                return Response<string>.Success("", message, 200);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync(); 
+                return Response<string>.Failure($"Database error: {ex.Message}", 500);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure("", $"Server error: {ex.Message}", 500);
+            }
+        }
+
+        #endregion
+
+
+
         #region Recent Tasks
         public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
         {

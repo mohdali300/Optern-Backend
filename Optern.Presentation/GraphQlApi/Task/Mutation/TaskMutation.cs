@@ -24,4 +24,9 @@
 
           => await taskService.DeleteTaskAsync(taskId, userId);
 
+
+    [GraphQLDescription("Sumbit task")]
+    public async Task<Response<string>> SubmitTaskAsync([Service] ITaskService taskService,int taskId, string userId, IFile? file, TaskState? newStatus)
+       => await taskService.SubmitTaskAsync(taskId,userId,file,newStatus);
+
 }
