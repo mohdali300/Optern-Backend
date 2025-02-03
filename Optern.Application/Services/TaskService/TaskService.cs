@@ -293,6 +293,7 @@ namespace Optern.Application.Services.TaskService
                     }
 
                     userTaskWithStatus.AttachmentUrlsList = attachmentUrlsList;
+                    userTaskWithStatus.Attachmentdate = DateTime.UtcNow;
                     await _unitOfWork.UserTasks.UpdateAsync(userTaskWithStatus);
                     await _unitOfWork.SaveAsync();
                 }
@@ -388,7 +389,7 @@ namespace Optern.Application.Services.TaskService
 
         #region Get Task Data
 
-        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId)
+        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId,string?userId=null)
         {
             try
             {
@@ -409,18 +410,24 @@ namespace Optern.Application.Services.TaskService
 
             taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
 
-         taskDto.Attachments = task.AssignedTasks
-        .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
-        {
-            Url = att,
-            Uploader = new AssignedUserDTO
-            {
-                UserId = ut.User.Id,
-                FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
-                ProfilePicture = ut.User.ProfilePicture
-            }
-        })).ToList();
-            return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
+                taskDto.Attachments = task.AssignedTasks
+               .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
+               {
+                   Url = att,
+                   Uploader = new AssignedUserDTO
+                   {
+                       UserId = ut.User.Id,
+                       FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
+                       ProfilePicture = ut.User.ProfilePicture
+                   },
+                   AttachmentDate = ut.Attachmentdate
+               })).ToList();
+
+                taskDto.IsBookMarked = (await _context.BookMarkedTasks
+                 .Where(b => b.UserId == userId && b.TaskId == taskId)
+                 .FirstOrDefaultAsync()) != null ? true : false;
+
+                return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
             }
             catch (Exception ex)
             {

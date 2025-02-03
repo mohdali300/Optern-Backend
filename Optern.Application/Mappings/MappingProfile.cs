@@ -104,6 +104,7 @@ namespace Optern.Application.Mappings
             CreateMap<TaskActivity, TaskActivityDTO>()
          .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FirstName + " " + src.Creator.LastName : string.Empty))
          .ForMember(dest => dest.CreatorProfilePicture, opt => opt.MapFrom(src => src.Creator != null && src.Creator.ProfilePicture != null ? src.Creator.ProfilePicture : string.Empty));
+
             CreateMap<Task, TaskDTO>()
                 .ForMember(dest => dest.AssignedUsers, opt => opt.MapFrom(src => src.AssignedTasks.Select(ut => new AssignedUserDTO
                 {
@@ -120,7 +121,8 @@ namespace Optern.Application.Mappings
                             UserId = ut.User.Id,
                             FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
                             ProfilePicture = ut.User.ProfilePicture
-                        }
+                        },
+                         AttachmentDate = ut.Attachmentdate
                     })).ToList()))
                 .ForMember(dest => dest.Activities, opt => opt.MapFrom(src => src.Activities.Select(a => new TaskActivityDTO
                 {

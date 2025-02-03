@@ -19,6 +19,8 @@ namespace Optern.Application.DTOs.Task
 
         public List<TaskActivityDTO> Activities { get; set; } = new();
 
+        public bool IsBookMarked { get; set; }
+
         public TaskDTO() { }
     }
 
