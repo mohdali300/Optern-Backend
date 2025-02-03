@@ -386,6 +386,51 @@ namespace Optern.Application.Services.TaskService
         }
         #endregion
 
+        #region Get Task Data
+
+        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId)
+        {
+            try
+            {
+                bool taskExists = await _unitOfWork.Tasks.AnyAsync(t => t.Id == taskId);
+            if (!taskExists)
+            {
+                return Response<TaskDTO>.Failure(new TaskDTO(), "Task not found.", 404);
+            }
+
+            var task = await _context.Tasks
+                .Include(t => t.AssignedTasks)
+                    .ThenInclude(ut => ut.User)
+                .Include(t => t.Activities)
+                    .ThenInclude(a => a.Creator)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            var taskDto = _mapper.Map<TaskDTO>(task);
+
+            taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
+
+         taskDto.Attachments = task.AssignedTasks
+        .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
+        {
+            Url = att,
+            Uploader = new AssignedUserDTO
+            {
+                UserId = ut.User.Id,
+                FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
+                ProfilePicture = ut.User.ProfilePicture
+            }
+        })).ToList();
+            return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
+            }
+            catch (Exception ex)
+            {
+                return Response<TaskDTO>.Failure(new TaskDTO(), $"Server error: {ex.Message}", 500);
+            }
+        }
+
+
+        #endregion
+
         #region Recent Tasks
         public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
         {

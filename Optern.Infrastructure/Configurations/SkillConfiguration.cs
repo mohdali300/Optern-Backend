@@ -31,9 +31,6 @@ namespace Optern.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(s => s.Description)
-                .HasMaxLength(500);
-
             // Indexes
 
             builder.HasIndex(s => s.Name)

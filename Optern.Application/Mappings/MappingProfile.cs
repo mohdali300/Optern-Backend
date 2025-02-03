@@ -13,6 +13,7 @@ using Task = Optern.Domain.Entities.Task;
 using Optern.Application.DTOs.Sprint;
 using Optern.Application.DTOs.RoomUser;
 using Optern.Application.DTOs.Skills;
+using Optern.Application.DTOs.TaskActivity;
 
 namespace Optern.Application.Mappings
 {
@@ -100,8 +101,38 @@ namespace Optern.Application.Mappings
         .ForMember(dest => dest.EndDate, opt => opt.Ignore()) 
         .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
 
-
-            #endregion
+            CreateMap<TaskActivity, TaskActivityDTO>()
+         .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FirstName + " " + src.Creator.LastName : string.Empty))
+         .ForMember(dest => dest.CreatorProfilePicture, opt => opt.MapFrom(src => src.Creator != null && src.Creator.ProfilePicture != null ? src.Creator.ProfilePicture : string.Empty));
+            CreateMap<Task, TaskDTO>()
+                .ForMember(dest => dest.AssignedUsers, opt => opt.MapFrom(src => src.AssignedTasks.Select(ut => new AssignedUserDTO
+                {
+                    UserId = ut.User.Id,
+                    FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
+                    ProfilePicture = ut.User.ProfilePicture
+                }).ToList()))
+                .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.AssignedTasks
+                    .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
+                    {
+                        Url = att,
+                        Uploader = new AssignedUserDTO
+                        {
+                            UserId = ut.User.Id,
+                            FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
+                            ProfilePicture = ut.User.ProfilePicture
+                        }
+                    })).ToList()))
+                .ForMember(dest => dest.Activities, opt => opt.MapFrom(src => src.Activities.Select(a => new TaskActivityDTO
+                {
+                    Id = a.Id,
+                    TaskId = a.TaskId,
+                    Content = a.Content,
+                    CreatedAt = a.CreatedAt,
+                    CreatorId = a.CreatorId,
+                    CouldDelete = a.CouldDelete,
+                    CreatorName = a.Creator != null ? a.Creator.FirstName + " " + a.Creator.LastName : string.Empty,
+                    CreatorProfilePicture = a.Creator != null && a.Creator.ProfilePicture != null ? a.Creator.ProfilePicture : string.Empty
+                }).ToList()));
 
 
             //RoomUser
@@ -112,6 +143,8 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.IsAdmin ? "Leader" : "Collaborator"));
 
             CreateMap<Skills, SkillDTO>();
+
+            #endregion
 
 
         }

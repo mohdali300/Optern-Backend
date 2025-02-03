@@ -10,11 +10,9 @@ namespace Optern.Application.DTOs.Skills
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string? Description { get; set; }
         public SkillDTO() {
             Id = 0;
             Name=string.Empty;
-            Description = string.Empty;
         }
     }
 }
