@@ -49,7 +49,6 @@ builder.Services
 .AddType<PositionMutation>()
 .AddType<CommentMutation>()
 .AddType<FavouritePostsMutation>()
-.AddType<UploadType>()
 .AddType<ReactMutation>()
 .AddType<PostMutation>()
 .AddType<WorkSpaceMutation>()
@@ -59,7 +58,9 @@ builder.Services
 .AddType<BookMarkedTaskMutation>()
 .AddType<TaskActivityMutation>()
 .AddType<RepositoryFileMutation>()
-.AddFluentValidation();
+.AddFluentValidation()
+.AddType<UploadType>(); 
+
 #endregion
 
 builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
