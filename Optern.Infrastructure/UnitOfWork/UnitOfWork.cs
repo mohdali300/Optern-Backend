@@ -26,8 +26,6 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<BookMarkedTask> BookMarkedTask { get; private set;  }
         public IGenericRepository<Skills>Skills { get; private set; }
         public IGenericRepository<RoomTrack> RoomTracks { get; private set; }
-
-
         public IGenericRepository<Post> Posts { get; private set; }
 
         public IGenericRepository<Tags> Tags { get; private set; }
@@ -45,6 +43,8 @@ namespace Optern.Infrastructure.UnitOfWork
 
         public IGenericRepository<Sprint> Sprints { get; private set; }
         public IGenericRepository<UserRoom> RoomUsers { get; private set; }
+        public IGenericRepository<Repository> Repository { get; private set; }
+        public IGenericRepository<RepositoryFile> RepositoryFile { get; private set; }
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -71,6 +71,8 @@ namespace Optern.Infrastructure.UnitOfWork
             UserTasks= new GenericRepository<UserTasks>(context);
             RoomTracks= new GenericRepository<RoomTrack>(context);
             TaskActivites = new GenericRepository<TaskActivity>(context);
+            Repository= new GenericRepository<Repository>(context);
+            RepositoryFile= new GenericRepository<RepositoryFile>(context);
         }
 
         public async Task<int> SaveAsync()

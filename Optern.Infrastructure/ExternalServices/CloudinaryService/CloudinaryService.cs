@@ -34,28 +34,37 @@ namespace Optern.Infrastructure.ExternalServices.FileService
             if (file == null || file.Length == 0)
                 return string.Empty;
 
-            
-            var fileName = file.Name; 
-            if (string.IsNullOrEmpty(fileName))
-            {
-             
-                fileName = Guid.NewGuid().ToString() + ".jpg";  
-            }
+            var originalFileName = file.Name;
+            var fileExtension = Path.GetExtension(originalFileName).ToLower();
+            var fileName = !string.IsNullOrEmpty(originalFileName)
+                ? originalFileName
+                : $"{Guid.NewGuid()}{fileExtension}";
 
-            var stream = file.OpenReadStream();
+            using var stream = file.OpenReadStream();
 
-            var uploadParams = new ImageUploadParams()
-            {
-                File = new FileDescription(fileName, stream),
-                Folder = folderName,
-                UseFilename = true,  
-                UniqueFilename = true 
-            };
+            bool isImage = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp" }.Contains(fileExtension);
+
+            var uploadParams = isImage
+                ? new ImageUploadParams
+                {
+                    File = new FileDescription(fileName, stream),
+                    Folder = folderName,
+                    UseFilename = true,
+                    UniqueFilename = true
+                }
+                : new RawUploadParams
+                {
+                    File = new FileDescription(fileName, stream),
+                    Folder = folderName,
+                    UseFilename = true,
+                    UniqueFilename = true
+                };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-            return uploadResult?.SecureUrl?.ToString();
+            return uploadResult?.SecureUrl?.ToString() ?? string.Empty;
         }
+
 
         string ICloudinaryService.GetFileUrl(string path)
         {

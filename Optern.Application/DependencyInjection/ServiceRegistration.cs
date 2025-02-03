@@ -61,6 +61,10 @@ using Optern.Application.Services.RoomSkillService;
 using Optern.Application.Interfaces.IRoomSkillService;
 using Optern.Application.Interfaces.ITaskActivityService;
 using Optern.Application.Services.TaskActivityService;
+using Optern.Application.Interfaces.IRepositoryService;
+using Optern.Application.Services.RepositoryService;
+using Optern.Application.Interfaces.IRepositoryFileService;
+using Optern.Application.Services.RepositoryFileService;
 
 
 namespace Optern.Infrastructure.DependencyInjection
@@ -132,6 +136,8 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IRoomSkillService, RoomSkillService>();
             services.AddScoped<ITaskActivityService, TaskActivityService>();
+            services.AddScoped<IRepositoryService, RepositoryService>();
+            services.AddScoped<IRepositoryFileService, RepositoryFileService>();
 
 
             return services;

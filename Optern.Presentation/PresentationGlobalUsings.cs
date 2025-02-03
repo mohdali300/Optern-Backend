@@ -60,6 +60,10 @@ global using Optern.Application.Interfaces.ITagService;
 // GraphQL/Task
 global using Optern.Application.DTOs.Task;
 global using Optern.Application.Interfaces.ITaskService;
+global using Optern.Application.Services.TaskActivityService;
+global using Optern.Presentation.GraphQlApi.TaskActivity.Mutation;
+global using Optern.Presentation.GraphQlApi.TaskActivity.Query;
+
 
 //GraphQl/Track
 global using Optern.Application.Interfaces.ITrackService;
@@ -73,6 +77,11 @@ global using Optern.Application.Interfaces.IBookMarkedTaskService;
 
 // Hangfire
 global using Hangfire;
+
+//GraphQLAPI/RepositoryFile
+
+global using Optern.Application.DTOs.RepositoryFile;
+global using Optern.Application.Interfaces.IRepositoryFileService;
 
 
 
