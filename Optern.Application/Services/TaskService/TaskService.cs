@@ -293,6 +293,7 @@ namespace Optern.Application.Services.TaskService
                     }
 
                     userTaskWithStatus.AttachmentUrlsList = attachmentUrlsList;
+                    userTaskWithStatus.Attachmentdate = DateTime.UtcNow;
                     await _unitOfWork.UserTasks.UpdateAsync(userTaskWithStatus);
                     await _unitOfWork.SaveAsync();
                 }
@@ -409,17 +410,18 @@ namespace Optern.Application.Services.TaskService
 
             taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
 
-         taskDto.Attachments = task.AssignedTasks
-        .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
-        {
-            Url = att,
-            Uploader = new AssignedUserDTO
-            {
-                UserId = ut.User.Id,
-                FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
-                ProfilePicture = ut.User.ProfilePicture
-            }
-        })).ToList();
+                taskDto.Attachments = task.AssignedTasks
+               .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
+               {
+                   Url = att,
+                   Uploader = new AssignedUserDTO
+                   {
+                       UserId = ut.User.Id,
+                       FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
+                       ProfilePicture = ut.User.ProfilePicture
+                   },
+                   AttachmentDate = ut.Attachmentdate
+               })).ToList();
             return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
             }
             catch (Exception ex)
