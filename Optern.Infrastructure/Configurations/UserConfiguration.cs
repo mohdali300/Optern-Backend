@@ -176,6 +176,11 @@ namespace Optern.Infrastructure.Configurations
               .WithOne(e => e.User) 
               .HasForeignKey(e => e.UserId)
               .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(u => u.BookMarkedTasks)
+              .WithOne(e => e.User)
+              .HasForeignKey(e => e.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
             #endregion
 
         }

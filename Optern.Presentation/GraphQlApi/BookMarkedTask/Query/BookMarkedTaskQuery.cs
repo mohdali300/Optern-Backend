@@ -8,8 +8,8 @@ namespace Optern.Presentation.GraphQlApi.BookMarkedTask.Query
     public class BookMarkedTaskQuery
     {
         [GraphQLDescription("Get all Bookmarked Tasks")]
-        public async Task<Response<List<BookMarkedTaskDTO>>> GetAllBookMarks([Service] IBookMarkedTaskService _bookMarkedTask, string userId)
-            => await _bookMarkedTask.GetAll(userId);
+        public async Task<Response<List<BookMarkedTaskDTO>>> GetAllBookMarks([Service] IBookMarkedTaskService _bookMarkedTask, string userId,string roomId)
+            => await _bookMarkedTask.GetAll(userId,roomId);
 
     }
 }
