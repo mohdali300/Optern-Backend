@@ -14,6 +14,7 @@ using Optern.Application.DTOs.Sprint;
 using Optern.Application.DTOs.RoomUser;
 using Optern.Application.DTOs.Skills;
 using Optern.Application.DTOs.TaskActivity;
+using Optern.Application.DTOs.RepositoryFile;
 
 namespace Optern.Application.Mappings
 {
@@ -116,7 +117,7 @@ namespace Optern.Application.Mappings
 
             #endregion
 
-
+            CreateMap<RepositoryFile, RepositoryFileResponseDTO>();
         }
     }
 }
