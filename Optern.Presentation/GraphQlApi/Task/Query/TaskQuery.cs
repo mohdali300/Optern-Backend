@@ -15,8 +15,10 @@ public class TaskQuery
         => await _taskService.GetTasksWithFiltersAsync(request);
 
     [GraphQLDescription("Get Task Details")]
-    public async Task<Response<TaskDTO>> GetTaskDetailsAsync([Service] ITaskService _taskService, int taskId)
-        => await _taskService.GetTaskDetailsAsync(taskId);
+ 
+    public async Task<Response<TaskDTO>> GetTaskDetailsAsync([Service] ITaskService _taskService, int taskId, int? roomUserId = null)
+        => await _taskService.GetTaskDetailsAsync(taskId, roomUserId);
+
 
 
 

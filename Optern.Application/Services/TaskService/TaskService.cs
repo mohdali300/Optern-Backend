@@ -389,7 +389,7 @@ namespace Optern.Application.Services.TaskService
 
         #region Get Task Data
 
-        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId)
+        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId,int?roomUserId=null)
         {
             try
             {
@@ -422,7 +422,12 @@ namespace Optern.Application.Services.TaskService
                    },
                    AttachmentDate = ut.Attachmentdate
                })).ToList();
-            return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
+
+                taskDto.IsBookMarked = (await _context.BookMarkedTasks
+                 .Where(b => b.UserRoomId == roomUserId && b.TaskId == taskId)
+                 .FirstOrDefaultAsync()) != null ? true : false;
+
+                return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
             }
             catch (Exception ex)
             {
