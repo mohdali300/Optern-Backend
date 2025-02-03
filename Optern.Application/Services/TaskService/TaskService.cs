@@ -389,7 +389,7 @@ namespace Optern.Application.Services.TaskService
 
         #region Get Task Data
 
-        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId,int?roomUserId=null)
+        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId,string?userId=null)
         {
             try
             {
@@ -424,7 +424,7 @@ namespace Optern.Application.Services.TaskService
                })).ToList();
 
                 taskDto.IsBookMarked = (await _context.BookMarkedTasks
-                 .Where(b => b.UserRoomId == roomUserId && b.TaskId == taskId)
+                 .Where(b => b.UserId == userId && b.TaskId == taskId)
                  .FirstOrDefaultAsync()) != null ? true : false;
 
                 return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
@@ -471,6 +471,11 @@ namespace Optern.Application.Services.TaskService
         {
             try
             {
+                if(string.IsNullOrEmpty(roomId) && !sprintId.HasValue)
+                {
+                    return Response<TasksSummaryDTO>.Failure(new TasksSummaryDTO(), "Enter roomId or sprintId to get the summary for it.", 400);
+                }
+
                 var query = _context.Tasks.Include(t=>t.Sprint)
                     .ThenInclude(s=>s.WorkSpace).AsQueryable();
                 if (!string.IsNullOrEmpty(roomId))
