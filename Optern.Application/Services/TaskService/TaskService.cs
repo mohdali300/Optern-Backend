@@ -419,6 +419,11 @@ namespace Optern.Application.Services.TaskService
         {
             try
             {
+                if(string.IsNullOrEmpty(roomId) && !sprintId.HasValue)
+                {
+                    return Response<TasksSummaryDTO>.Failure(new TasksSummaryDTO(), "Enter roomId or sprintId to get the summary for it.", 400);
+                }
+
                 var query = _context.Tasks.Include(t=>t.Sprint)
                     .ThenInclude(s=>s.WorkSpace).AsQueryable();
                 if (!string.IsNullOrEmpty(roomId))
