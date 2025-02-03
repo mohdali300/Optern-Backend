@@ -1,7 +1,4 @@
 // Initialize builder
-using Optern.Application.Services.TaskActivityService;
-using Optern.Presentation.GraphQlApi.TaskActivity.Mutation;
-using Optern.Presentation.GraphQlApi.TaskActivity.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +41,7 @@ builder.Services
 .AddType<BookMarkedTaskQuery>()
 .AddType<TaskQuery>()
 .AddType<TaskActivityQuery>()
+.AddType<RepositoryFileQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -60,6 +58,7 @@ builder.Services
 .AddType<SprintMutation>()
 .AddType<BookMarkedTaskMutation>()
 .AddType<TaskActivityMutation>()
+.AddType<RepositoryFileMutation>()
 .AddFluentValidation();
 #endregion
 
