@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Optern.Application.DTOs.Room;
 using Optern.Application.DTOs.Sprint;
 using Optern.Application.DTOs.WorkSpace;
 using Optern.Application.Interfaces.ISprintService;
 using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
+using Optern.Infrastructure.ExternalInterfaces.ICacheService;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
 using Optern.Infrastructure.Validations;
@@ -17,30 +19,31 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.SprintService
 {
-    public class SprintService(IUnitOfWork unitOfWork,OpternDbContext context,IMapper mapper):ISprintService
+    public class SprintService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICacheService cacheService) : ISprintService
     {
-        private readonly IUnitOfWork _unitOfWork=unitOfWork;
-        private readonly OpternDbContext _context= context;
-        private readonly IMapper _mapper=mapper;
-
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly OpternDbContext _context = context;
+        private readonly IMapper _mapper = mapper;
+        private readonly ICacheService _cacheService = cacheService;
 
         public async Task<Response<IEnumerable<SprintResponseDTO>>> GetWorkSpaceSprints(int workSpaceId)
         {
             try
             {
-                var sprints= await _unitOfWork.Sprints.GetAllByExpressionAsync(s=>s.WorkSpaceId==workSpaceId);
+                var sprints = await _unitOfWork.Sprints.GetAllByExpressionAsync(s => s.WorkSpaceId == workSpaceId);
                 if (sprints == null || !sprints.Any())
                 {
                     return Response<IEnumerable<SprintResponseDTO>>.Failure("No Sprints Found", 404);
                 }
-                var orderSprints=sprints    // order by Sprints That Finished First
+                var orderSprints = sprints    // order by Sprints That Finished First
                    .OrderBy(s => s.EndDate)
-                    .ThenBy(s=>s.StartDate)
+                    .ThenBy(s => s.StartDate)
                     .ToList();
-                var sprintsDTO=_mapper.Map<IEnumerable<SprintResponseDTO>>(orderSprints);
+                var sprintsDTO = _mapper.Map<IEnumerable<SprintResponseDTO>>(orderSprints);
                 return Response<IEnumerable<SprintResponseDTO>>.Success(sprintsDTO, "WorkSpace Fetched Successfully!", 200);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
 
                 return Response<IEnumerable<SprintResponseDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
@@ -129,12 +132,13 @@ namespace Optern.Application.Services.SprintService
         }
 
         public async Task<Response<bool>> DeleteSprint(int id)
-         {
+        {
             var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var sprint = await _unitOfWork.Sprints.GetByIdAsync(id);
-                if (sprint == null) {
+                if (sprint == null)
+                {
                     return Response<bool>.Failure(false, "Sprint not Found !", 404);
                 }
                 await _unitOfWork.Sprints.DeleteAsync(sprint);
@@ -143,13 +147,82 @@ namespace Optern.Application.Services.SprintService
                 return Response<bool>.Success(true, "Sprint Deleted Successfully", 200);
 
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
 
-         }  
+        }
 
+        #region Store recent opened sprints in cache
+        public async System.Threading.Tasks.Task SetRecentOpenedSprintAsync(string userId, string roomId, int sprintId)
+        {
+            try
+            {
+                var sprint = await _unitOfWork.Sprints.GetByIdAsync(sprintId);
+                if (sprint != null)
+                {
+                    var recent = new RecentSprintDTO
+                    {
+                        Id = sprintId,
+                        Title = sprint.Title
+                    };
+
+                    var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
+                    var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey) ?? new List<RecentSprintDTO>();
+
+                    recentSprints.Add(recent);
+                    if (recentSprints.Count > 10)
+                    {
+                        recentSprints = recentSprints.Skip(recentSprints.Count - 10).ToList();
+                    }
+
+                    _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+        #endregion
+
+        #region Get recent opened sprints
+        public async Task<Response<IEnumerable<RecentSprintDTO>>> GetRecentOpenedSprintsAsync(string userId, string roomId)
+        {
+            try
+            {
+                var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
+
+                var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey);
+                if (recentSprints == null || !recentSprints.Any())
+                {
+                    recentSprints = await _context.Sprints.Include(s => s.WorkSpace)
+                        .Where(s => s.WorkSpace.RoomId == roomId)
+                        .OrderByDescending(s => s.StartDate).Take(5)
+                        .Select(s => new RecentSprintDTO
+                        {
+                            Id = s.Id,
+                            Title = s.Title,
+                        }).ToListAsync();
+                    if (recentSprints.Any())
+                    {
+                        _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+
+                        return Response<IEnumerable<RecentSprintDTO>>.Success(recentSprints);
+                    }
+                    return Response<IEnumerable<RecentSprintDTO>>.Success(new List<RecentSprintDTO>(), "There is no recent sprints", 204);
+                }
+
+                return Response<IEnumerable<RecentSprintDTO>>.Success(recentSprints);
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<RecentSprintDTO>>.Failure($"Server error:{ex.Message}", 500);
+            }
+        } 
+        #endregion
     }
 }
