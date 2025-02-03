@@ -1,6 +1,7 @@
 ﻿
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Optern.Application.DTOs.Task;
 using Optern.Application.DTOs.TaskActivity;
 using Optern.Application.Interfaces.IFavoritePostsService;
 using Optern.Application.Interfaces.ITaskActivityService;
@@ -8,6 +9,7 @@ using Optern.Domain.Entities;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.Response;
 using Optern.Infrastructure.UnitOfWork;
+using Optern.Infrastructure.Validations;
 
 namespace Optern.Application.Services.TaskActivityService
 {
@@ -52,7 +54,14 @@ namespace Optern.Application.Services.TaskActivityService
                     CreatorId = userId
                 };
 
-               await _unitOfWork.TaskActivites.AddAsync(newTaskActivity);
+                var validate = new TaskActivityValidator().Validate(newTaskActivity);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<TaskActivityDTO>.Failure(new TaskActivityDTO(), $"Invalid Data Model: {errorMessages}", 400);
+                }
+
+                await _unitOfWork.TaskActivites.AddAsync(newTaskActivity);
                 await _unitOfWork.SaveAsync();
 
                 var taskActivity = await _context.TaskActivities
@@ -109,6 +118,13 @@ namespace Optern.Application.Services.TaskActivityService
                 }
 
                 taskActivity.Content = newContent;
+
+                var validate = new TaskActivityValidator().Validate(taskActivity);
+                if (!validate.IsValid)
+                {
+                    var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<TaskActivityDTO>.Failure(new TaskActivityDTO(), $"Invalid Data Model: {errorMessages}", 400);
+                }
 
                 await _unitOfWork.TaskActivites.UpdateAsync(taskActivity);
                 await _unitOfWork.SaveAsync();
@@ -175,18 +191,25 @@ namespace Optern.Application.Services.TaskActivityService
 
         #region Get all Task Activity
 
-        public async Task<Response<IEnumerable<TaskActivityDTO>>> GetAllTaskActivitiesAsync()
+        public async Task<Response<IEnumerable<TaskActivityDTO>>> GetAllTaskActivitiesAsync(int taskId)
         {
             try
             {
+                var taskExists = await _unitOfWork.Tasks.AnyAsync(t => t.Id == taskId);
+
+                if (!taskExists)
+                {
+                    return Response<IEnumerable<TaskActivityDTO>>.Failure(new List<TaskActivityDTO>(), "Task not found.", 404);
+                }
                 var taskActivities = await _context.TaskActivities
+                    .Where(ta => ta.TaskId == taskId) 
                     .Include(ta => ta.Creator) 
-                    .OrderBy(ta => ta.CreatedAt)
+                    .OrderBy(ta => ta.CreatedAt) 
                     .ToListAsync();
 
                 if (taskActivities == null || taskActivities.Count == 0)
                 {
-                    return Response<IEnumerable<TaskActivityDTO>>.Failure(new List<TaskActivityDTO>(), "No task activities found.", 404);
+                    return Response<IEnumerable<TaskActivityDTO>>.Failure(new List<TaskActivityDTO>(), "No task activities found for the specified task.", 404);
                 }
 
                 var taskActivityDtos = _mapper.Map<List<TaskActivityDTO>>(taskActivities);
@@ -199,6 +222,7 @@ namespace Optern.Application.Services.TaskActivityService
             }
         }
 
+       
 
         #endregion
 

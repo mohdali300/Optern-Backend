@@ -77,6 +77,38 @@ namespace Optern.Application.Services.TaskService
                 await _unitOfWork.SaveAsync();
                await transaction.CommitAsync();
 
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+                var now = DateTime.Now;
+                DateTime targetDate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Local); 
+                var targetUtcDate = targetDate.ToUniversalTime(); 
+
+                var taskActivity = new TaskActivity
+                {
+                    Content = $" {user.FirstName} {user.LastName} Created this Task at {targetUtcDate:MMMM dd, yyyy hh:mm tt}",
+                    CreatedAt = DateTime.UtcNow, 
+                    CouldDelete = false,
+                    TaskId = task.Id,
+                };
+                await _unitOfWork.TaskActivites.AddAsync(taskActivity);
+                await _unitOfWork.SaveAsync();
+
+                foreach (var assignedUserId in taskDto.AssignedUserIds)
+                {
+                    var assignedUser = await _unitOfWork.Users.GetByIdAsync(assignedUserId);
+                    var taskAssignedActivity = new TaskActivity
+                    {
+                        Content = $" {user.FirstName} {user.LastName} Assigned this task to {assignedUser.FirstName} {assignedUser.LastName} at {targetUtcDate:MMMM dd, yyyy hh:mm tt}",
+                        CreatedAt = DateTime.UtcNow,
+                        CouldDelete = false,
+                        TaskId = task.Id,
+                    };
+
+                    await _unitOfWork.TaskActivites.AddAsync(taskAssignedActivity);
+                }
+
+                await _unitOfWork.SaveAsync();
+
                 var taskWithUsers = await _context.Tasks
                     .Where(t => t.Id == task.Id)
                     .Include(t => t.AssignedTasks)
@@ -144,23 +176,42 @@ namespace Optern.Application.Services.TaskService
                 }
 
                 // incase user remain the value as same or empty
+                var taskActivityContents = new List<string>();
+
                 if (!string.IsNullOrEmpty(editTaskDto.Title) && editTaskDto.Title != task.Title)
+                {
                     task.Title = editTaskDto.Title;
+                    taskActivityContents.Add($"Changed The Task Title to {editTaskDto.Title}");
+
+                }
 
                 if (!string.IsNullOrEmpty(editTaskDto.Description) && editTaskDto.Description != task.Description)
+                {
                     task.Description = editTaskDto.Description;
+                    taskActivityContents.Add($"Changed Task  Description to {task.Description}");
+
+                }
 
                 if (editTaskDto.Status.HasValue && editTaskDto.Status != task.Status)
+                {
                     task.Status = editTaskDto.Status.Value;
+                    taskActivityContents.Add($"Changed Task Status to {task.Status}");
+
+                }
 
                 if (!string.IsNullOrEmpty(editTaskDto.StartDate) && editTaskDto.StartDate != task.StartDate)
+                {
                     task.StartDate = editTaskDto.StartDate;
+                    taskActivityContents.Add($"Changed Start Date to {editTaskDto.StartDate}");
+                }
 
                 if (!string.IsNullOrEmpty(editTaskDto.DueDate) && editTaskDto.DueDate != task.DueDate)
+                {
                     task.DueDate = editTaskDto.DueDate;
+                    taskActivityContents.Add($"Changed Due Date to {editTaskDto.DueDate}");
+                }
 
-
-                if (editTaskDto.AssignedUserIds != null)
+                    if (editTaskDto.AssignedUserIds != null)
                 {
                     var validUserIds = await _context.Users
                         .Where(u => editTaskDto.AssignedUserIds.Contains(u.Id))
@@ -176,10 +227,11 @@ namespace Optern.Application.Services.TaskService
                     var usersToRemove = task.AssignedTasks
                         .Where(at => !editTaskDto.AssignedUserIds.Contains(at.UserId))
                         .ToList();
-
+                    await _unitOfWork.UserTasks.DeleteRangeAsync(usersToRemove);
                     foreach (var userTask in usersToRemove)
                     {
-                        await _unitOfWork.UserTasks.DeleteAsync(userTask);
+                        var userremoved = await _unitOfWork.Users.GetByIdAsync(userTask.UserId);
+                        taskActivityContents.Add($"Removed {userremoved.FirstName} {userremoved.LastName} from this task.");
                     }
 
                     // Add new assigned users
@@ -190,6 +242,11 @@ namespace Optern.Application.Services.TaskService
                         .ToList();
 
                     await _unitOfWork.UserTasks.AddRangeAsync(usersToAdd);
+                    foreach (var userr in usersToAdd)
+                    {
+                        var useradded = await _unitOfWork.Users.GetByIdAsync(userr.UserId);
+                        taskActivityContents.Add($"Assigned {useradded.FirstName} {useradded.LastName} to this task.");
+                    }
                 }
 
                 var validate = new TaskValidator().Validate(task);
@@ -202,6 +259,25 @@ namespace Optern.Application.Services.TaskService
                 await _unitOfWork.Tasks.UpdateAsync(task);
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
+
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                var now = DateTime.Now;
+                DateTime targetDate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Local);
+                var targetUtcDate = targetDate.ToUniversalTime();
+
+                foreach (var activityContent in taskActivityContents)
+                {
+                    var taskActivity = new TaskActivity
+                    {
+                        Content = $"{user.FirstName} {user.LastName} {activityContent} at {targetUtcDate:MMMM dd, yyyy hh:mm tt}",
+                        CreatedAt = DateTime.UtcNow,
+                        CouldDelete = false,
+                        TaskId = task.Id,
+                    };
+                    await _unitOfWork.TaskActivites.AddAsync(taskActivity);
+                }
+
+                await _unitOfWork.SaveAsync();
 
                 var taskResponseDto = _mapper.Map<TaskResponseDTO>(task);
                 return Response<TaskResponseDTO>.Success(taskResponseDto, "Task updated successfully.",200);
@@ -275,7 +351,8 @@ namespace Optern.Application.Services.TaskService
                     await transaction.RollbackAsync(); 
                     return Response<string>.Failure("", "Task not found for this user task.", 404);
                 }
-             
+                bool isUpdated = false;
+                string activityMessage = "";
                 if (file != null && file.Length > 0)
                 {
                     var fileUrl = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
@@ -290,9 +367,12 @@ namespace Optern.Application.Services.TaskService
                     if (!attachmentUrlsList.Contains(fileUrl))
                     {
                         attachmentUrlsList.Add(fileUrl);
+                        isUpdated = true;
+                        activityMessage += "File uploaded. ";
                     }
 
                     userTaskWithStatus.AttachmentUrlsList = attachmentUrlsList;
+                    userTaskWithStatus.Attachmentdate = DateTime.UtcNow;
                     await _unitOfWork.UserTasks.UpdateAsync(userTaskWithStatus);
                     await _unitOfWork.SaveAsync();
                 }
@@ -300,6 +380,8 @@ namespace Optern.Application.Services.TaskService
                 if (newStatus.HasValue)
                 {
                     userTaskWithStatus.Task.Status = newStatus.Value;
+                    isUpdated = true;
+                    activityMessage += $"Status changed to {newStatus.Value}. ";
 
                     if (userTaskWithStatus.Task.Status == TaskState.Completed)
                     {
@@ -311,9 +393,34 @@ namespace Optern.Application.Services.TaskService
                 }
                 await transaction.CommitAsync();
 
-                var message = userTaskWithStatus.Task.Status == TaskState.Completed
-                    ? "Task Updated and Submitted Successfully"
-                    : "Task Updated but couldn't be submitted as the status isn't 'Completed'";
+                var message = string.Empty;
+                if (userTaskWithStatus.Task.Status == TaskState.Completed)
+                {
+                    message = "Task Updated and Submitted Successfully";
+                    activityMessage += "Task Submitted";
+                }
+                else
+                {
+                    message = "Task Updated but couldn't be submitted as the status isn't 'Completed'";
+                }
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                var now = DateTime.Now;
+                DateTime targetDate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Local);
+                var targetUtcDate = targetDate.ToUniversalTime();
+
+                if (isUpdated)
+                {
+                    var taskActivity = new TaskActivity
+                    {
+                        TaskId = taskId,
+                        Content = $"{activityMessage } by by {user.FirstName} {user.LastName} at {targetUtcDate:MMMM dd, yyyy hh:mm tt} ",
+                        CouldDelete=false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.TaskActivites.AddAsync(taskActivity);
+                    await _unitOfWork.SaveAsync();
+                }
 
                 return Response<string>.Success("", message, 200);
             }
@@ -386,6 +493,57 @@ namespace Optern.Application.Services.TaskService
         }
         #endregion
 
+        #region Get Task Data
+
+        public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId,string?userId=null)
+        {
+            try
+            {
+                bool taskExists = await _unitOfWork.Tasks.AnyAsync(t => t.Id == taskId);
+            if (!taskExists)
+            {
+                return Response<TaskDTO>.Failure(new TaskDTO(), "Task not found.", 404);
+            }
+
+            var task = await _context.Tasks
+                .Include(t => t.AssignedTasks)
+                    .ThenInclude(ut => ut.User)
+                .Include(t => t.Activities)
+                    .ThenInclude(a => a.Creator)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            var taskDto = _mapper.Map<TaskDTO>(task);
+
+            taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
+
+                taskDto.Attachments = task.AssignedTasks
+               .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
+               {
+                   Url = att,
+                   Uploader = new AssignedUserDTO
+                   {
+                       UserId = ut.User.Id,
+                       FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
+                       ProfilePicture = ut.User.ProfilePicture
+                   },
+                   AttachmentDate = ut.Attachmentdate
+               })).ToList();
+
+                taskDto.IsBookMarked = (await _context.BookMarkedTasks
+                 .Where(b => b.UserId == userId && b.TaskId == taskId)
+                 .FirstOrDefaultAsync()) != null ? true : false;
+
+                return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
+            }
+            catch (Exception ex)
+            {
+                return Response<TaskDTO>.Failure(new TaskDTO(), $"Server error: {ex.Message}", 500);
+            }
+        }
+
+
+        #endregion
+
         #region Recent Tasks
         public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
         {
@@ -419,6 +577,11 @@ namespace Optern.Application.Services.TaskService
         {
             try
             {
+                if(string.IsNullOrEmpty(roomId) && !sprintId.HasValue)
+                {
+                    return Response<TasksSummaryDTO>.Failure(new TasksSummaryDTO(), "Enter roomId or sprintId to get the summary for it.", 400);
+                }
+
                 var query = _context.Tasks.Include(t=>t.Sprint)
                     .ThenInclude(s=>s.WorkSpace).AsQueryable();
                 if (!string.IsNullOrEmpty(roomId))

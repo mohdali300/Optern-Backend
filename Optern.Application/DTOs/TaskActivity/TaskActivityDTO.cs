@@ -14,7 +14,7 @@ namespace Optern.Application.DTOs.TaskActivity
 
         public DateTime CreatedAt { get; set; }
 
-        public string CreatorId { get; set; } = string.Empty;
+        public string? CreatorId { get; set; } = string.Empty;
 
         public bool CouldDelete { get; set; }
 

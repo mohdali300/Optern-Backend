@@ -24,14 +24,25 @@ namespace Optern.Infrastructure.ExternalServices.CacheService
 			return JsonSerializer.Deserialize<T>(data); 
 		}
 
-		public void SetData<T>(string key, T value)
+		public void SetData<T>(string key, T value,TimeSpan? expiration=null)
 		{
-			var options = new DistributedCacheEntryOptions()
+			var options = new DistributedCacheEntryOptions();
+
+			if (expiration.HasValue)
 			{
-				AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
-			};
+				options.AbsoluteExpirationRelativeToNow = expiration.Value;
+			}
+			else
+			{
+				options.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1);
+			}
 			
 			_cache?.SetString(key, JsonSerializer.Serialize(value),options);
 		}
-	}
+
+        public async Task RemoveDataAsync(string key)
+        {
+            await _cache.RemoveAsync(key);
+        }
+    }
 }

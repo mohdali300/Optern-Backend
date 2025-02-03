@@ -7,8 +7,8 @@ namespace Optern.Presentation.GraphQlApi.TaskActivity.Query
     public class TaskActivityQuery
     {
         [GraphQLDescription("Get All Task Activities")]
-        public async Task<Response<IEnumerable<TaskActivityDTO>>> GetAllTaskActivitiesAsync([Service] ITaskActivityService taskActivity)
+        public async Task<Response<IEnumerable<TaskActivityDTO>>> GetAllTaskActivitiesAsync([Service] ITaskActivityService taskActivity , int taskid)
 
-      => await taskActivity.GetAllTaskActivitiesAsync();
+      => await taskActivity.GetAllTaskActivitiesAsync(taskid);
     }
 }

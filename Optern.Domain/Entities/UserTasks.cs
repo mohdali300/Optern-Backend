@@ -19,6 +19,8 @@ namespace Optern.Domain.Entities
 
         public string AttachmentUrls { get; set; } = string.Empty;
 
+        public DateTime Attachmentdate { get; set; }
+
         // Navigation Properties
         public virtual ApplicationUser User {get;set;}
         public virtual Task Task {get;set;}
