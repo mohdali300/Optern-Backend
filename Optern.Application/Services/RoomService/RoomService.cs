@@ -210,7 +210,7 @@ namespace Optern.Application.Services.RoomService
 		#endregion
 
 		#region Create Room
-		public async Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model, IFile? CoverPicture)
+		public async Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model, [GraphQLType(typeof(UploadType))] IFile? CoverPicture)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 
