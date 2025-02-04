@@ -20,6 +20,6 @@ namespace Optern.Application.Interfaces.IRoomService
         
 
         public Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model , IFile CoverPicture);
-        public Task<Response<ResponseRoomDTO>> GetRoomById(string id);
+        public Task<Response<ResponseRoomDTO>> GetRoomById(string id,string? userId);
     }
 }

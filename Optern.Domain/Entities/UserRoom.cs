@@ -15,7 +15,7 @@ namespace Optern.Domain.Entities
         public string RoomId { get; set; }
         public string UserId { get; set; }
        
-        public DateTime JoinedAt { get; set; }=DateTime.Now;
+        public DateTime JoinedAt { get; set; } = DateTime.Now;
         
         public bool IsAdmin { get; set; } 
         public bool IsAccepted { get; set; }
