@@ -299,13 +299,14 @@ namespace Optern.Application.Services.RoomService
 					{
 						Id = room.Id,
 						Name = room.Name,
-						isJoined = room.UserRooms.Any(r => r.UserId == userId),
+						UserStatus = room.UserRooms.Any(r => r.UserId == userId && r.IsAccepted == true)? 
+						UserRoomStatus.Accepted:room.UserRooms.Any(r=>r.UserId == userId)?UserRoomStatus.Requested:UserRoomStatus.NONE,
 						Description = room.Description,
 						RoomType = room.RoomType,
 						CreatorId = room.CreatorId,
 						CoverPicture = room.CoverPicture,
 						CreatedAt = room.CreatedAt,
-						Members = room.UserRooms.Count,
+						Members = room.UserRooms.Count(r=>r.IsAccepted == true),
 						Skills = room.RoomSkills
 						.Select(rs => new SkillDTO {
 							Id=rs.Skill.Id,

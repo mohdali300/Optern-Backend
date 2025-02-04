@@ -17,7 +17,7 @@ namespace Optern.Application.DTOs.Room
 		public List<SkillDTO>? Skills { get; set; } 
 		public List<TrackDTO>? Tracks { get; set; }
 		public List<PositionDTO>? Position { get; set; }
-		public bool isJoined { get; set; }
+		public UserRoomStatus UserStatus { get; set; }
 		public ResponseRoomDTO()
 		{
 			Id = string.Empty;
