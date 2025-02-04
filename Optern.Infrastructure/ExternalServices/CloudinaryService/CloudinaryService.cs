@@ -29,10 +29,11 @@ namespace Optern.Infrastructure.ExternalServices.FileService
             _cloudinary = new Cloudinary(account);
         }
 
-        public async Task<string> UploadFileAsync(IFile file, string folderName = "general")
+
+        public async Task<(string PublicId, string Url)> UploadFileAsync(IFile file, string folderName = "general")
         {
             if (file == null || file.Length == 0)
-                return string.Empty;
+                return (string.Empty, string.Empty);
 
             var originalFileName = file.Name;
             var fileExtension = Path.GetExtension(originalFileName).ToLower();
@@ -50,20 +51,66 @@ namespace Optern.Infrastructure.ExternalServices.FileService
                     File = new FileDescription(fileName, stream),
                     Folder = folderName,
                     UseFilename = true,
-                    UniqueFilename = true
+                    UniqueFilename = false
                 }
                 : new RawUploadParams
                 {
                     File = new FileDescription(fileName, stream),
                     Folder = folderName,
                     UseFilename = true,
-                    UniqueFilename = true
+                    UniqueFilename = false
                 };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-            return uploadResult?.SecureUrl?.ToString() ?? string.Empty;
+            string publicId = uploadResult.PublicId;
+            string fileUrl = uploadResult.SecureUrl.ToString();
+
+            return (publicId, fileUrl);
         }
+
+        public async Task<bool> DeleteFileAsync(string publicId)
+        {
+            if (string.IsNullOrEmpty(publicId))
+                return false;
+
+            try
+            {
+                var resource = await _cloudinary.GetResourceAsync(new GetResourceParams(publicId));
+
+                if (resource == null)
+                {
+                    Console.WriteLine("File not found on Cloudinary.");
+                    return false;
+                }
+
+                string resourceTypeString = resource.ResourceType.ToString().ToLower(); 
+
+                ResourceType resourceType = resourceTypeString switch
+                {
+                    "image" => ResourceType.Image,
+                    "video" => ResourceType.Video,
+                    "raw" => ResourceType.Raw, 
+                    _ => ResourceType.Auto 
+                };
+
+                var deletionParams = new DeletionParams(publicId)
+                {
+                    Invalidate = true,
+                    ResourceType = resourceType
+                };
+
+                var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
+
+                return deletionResult.Result == "ok";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting file: {ex.Message}");
+                return false;
+            }
+        }
+
 
 
         string ICloudinaryService.GetFileUrl(string path)

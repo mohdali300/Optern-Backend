@@ -27,11 +27,12 @@ using System.Threading.Tasks;
 using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Application.Interfaces.ISkillService;
 using Optern.Application.Interfaces.IRoomSkillService;
+using Optern.Application.Interfaces.IRepositoryService;
 
 namespace Optern.Application.Services.RoomService
 {
 	public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
-		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService) : IRoomService
+		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService, IRepositoryService repositoryService) : IRoomService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
@@ -42,6 +43,7 @@ namespace Optern.Application.Services.RoomService
 		private readonly IRoomTrackService _roomTrackService= roomTrackService;
 		private readonly ISkillService _skillService= skillService;
 		private readonly IRoomSkillService _roomSkillService = roomSkillService;
+		private readonly IRepositoryService _repositoryService = repositoryService;
 
 		#region GetAllAsync
 		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetAllAsync()
@@ -220,7 +222,7 @@ namespace Optern.Application.Services.RoomService
 				}
 				// current login User  
 				var currentUser = await _userService.GetCurrentUserAsync();
-				var CoverPicturePath = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
+				var (PublicId, CoverPicturePath) = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
 				var room = new Room
 				{
 					Name = model.Name,
@@ -253,8 +255,11 @@ namespace Optern.Application.Services.RoomService
 				{
                    await ManageSkillOperationistRoomCreation(room,model.Skills);
                 }
+	
+				await _repositoryService.AddRepository(room.Id); // add Repository for Room By Default while creation process
 
-				await _unitOfWork.UserRoom.AddAsync(new UserRoom {
+
+                await _unitOfWork.UserRoom.AddAsync(new UserRoom {
 					UserId = room.CreatorId,  // replace with ==> _userService.GetCurrentUserAsync()
                     RoomId = room.Id,
 					IsAdmin = true ,
