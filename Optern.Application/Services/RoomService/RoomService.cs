@@ -298,7 +298,7 @@ namespace Optern.Application.Services.RoomService
 						Name = room.Name,
 						Description = room.Description,
 						RoomType = room.RoomType,
-						CreatorName = $"{room.Creator.FirstName} {room.Creator.LastName}",
+						CreatorId = $"{room.Creator.FirstName} {room.Creator.LastName}",
 						CoverPicture = room.CoverPicture,
 						CreatedAt = room.CreatedAt,
 						Members = room.UserRooms.Count,

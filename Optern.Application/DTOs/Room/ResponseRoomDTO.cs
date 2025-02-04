@@ -12,7 +12,7 @@ namespace Optern.Application.DTOs.Room
 {
     public class ResponseRoomDTO :BaseRoomDTO
     {
-        public string? CreatorName { get; set; }
+        public string? CreatorId{ get; set; }
         public int? Members { get; set; } 
         public List<SkillDTO>? Skills { get; set; } 
         public List<TrackDTO>? Tracks { get; set; }
@@ -20,7 +20,7 @@ namespace Optern.Application.DTOs.Room
         public ResponseRoomDTO()
         {
             Id = string.Empty;
-            CreatorName = string.Empty;
+            CreatorId = string.Empty;
             Members = 0;
             Skills = new List<SkillDTO>();
             Tracks= new List<TrackDTO>();
