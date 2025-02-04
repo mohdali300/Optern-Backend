@@ -20,7 +20,7 @@
                   await _roomService.GetJoinedRooms(id);
 
         [GraphQLDescription("Get Room By Id")]
-        public async Task<Response<ResponseRoomDTO>> GetRoomByID([Service] IRoomService _roomService, string id) =>
-          await _roomService.GetRoomById(id);
+        public async Task<Response<ResponseRoomDTO>> GetRoomByID([Service] IRoomService _roomService, string id,string? userId) =>
+          await _roomService.GetRoomById(id,userId);
     }
 
