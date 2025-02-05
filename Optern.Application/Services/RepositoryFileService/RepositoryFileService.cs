@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Path = System.IO.Path;
 
 namespace Optern.Application.Services.RepositoryFileService
 {
@@ -123,6 +124,33 @@ namespace Optern.Application.Services.RepositoryFileService
             catch (Exception ex)
             {
                 return Response<IEnumerable<RepositoryFileResponseDTO>>.Failure($"An error occurred: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<IEnumerable<RepositoryFileResponseDTO>>> Search(int repositoryId,string pattern)
+        {
+            try
+            {
+                var repositoryFiles = await _context.RepositoryFiles
+                    .Where(f => f.RepositoryId == repositoryId)
+                    .ToListAsync();
+
+                // publicId include FileName but may Be inclde extension of this file so we extract only  file name to return correct data for search
+                var filteredFiles = repositoryFiles
+                    .Where(f => Path.GetFileNameWithoutExtension(f.PublicId).ToLower().Contains(pattern.ToLower()) ||
+                                f.Description.ToLower().Contains(pattern.ToLower()))
+                                .ToList();
+                if (!filteredFiles.Any())
+                {
+                    return Response<IEnumerable<RepositoryFileResponseDTO>>.Success(new List<RepositoryFileResponseDTO>(), "No Files Matches Your Search!", 204);
+                }
+                var repositoreisDTO = _mapper.Map<IEnumerable<RepositoryFileResponseDTO>>(filteredFiles);
+                return Response<IEnumerable<RepositoryFileResponseDTO>>.Success(repositoreisDTO, "Repositories Fetched Successfully ", 200);
+
+            }
+            catch (Exception ex) { 
+                            return Response<IEnumerable<RepositoryFileResponseDTO>>.Failure($"An error occurred: {ex.Message}", 500);
+
             }
         }
 
