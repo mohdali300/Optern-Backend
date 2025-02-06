@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Persentaion
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250202204134_init1")]
+    partial class init1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -277,15 +280,14 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<int>("TaskId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserRoomId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("TaskId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserRoomId");
 
                     b.ToTable("BookMarkedTasks", (string)null);
                 });
@@ -946,10 +948,6 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("RepositoryId")
                         .HasColumnType("integer");
 
@@ -1088,6 +1086,10 @@ namespace Optern.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1360,9 +1362,6 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<string>("AttachmentUrls")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("Attachmentdate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("TaskId")
                         .HasColumnType("integer");
@@ -1639,15 +1638,15 @@ namespace Optern.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Optern.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Optern.Domain.Entities.UserRoom", "UserRoom")
                         .WithMany("BookMarkedTasks")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserRoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Task");
 
-                    b.Navigation("User");
+                    b.Navigation("UserRoom");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.CV", b =>
@@ -2181,8 +2180,6 @@ namespace Optern.Infrastructure.Migrations
                 {
                     b.Navigation("AssignedTasks");
 
-                    b.Navigation("BookMarkedTasks");
-
                     b.Navigation("CVs");
 
                     b.Navigation("CommentReacts");
@@ -2324,6 +2321,11 @@ namespace Optern.Infrastructure.Migrations
             modelBuilder.Entity("Optern.Domain.Entities.Track", b =>
                 {
                     b.Navigation("RoomTracks");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.UserRoom", b =>
+                {
+                    b.Navigation("BookMarkedTasks");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.VInterview", b =>

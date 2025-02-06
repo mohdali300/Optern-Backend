@@ -68,7 +68,7 @@ namespace Optern.Application.Services.RoomSettings
 
                 if (CoverPicture != null)
                 {
-                    var newCoverPicture = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
+                    var (publicID,newCoverPicture) = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
                     if (!string.IsNullOrEmpty(newCoverPicture))
                     {
                         room.CoverPicture = newCoverPicture;

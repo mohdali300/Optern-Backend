@@ -355,7 +355,7 @@ namespace Optern.Application.Services.TaskService
                 string activityMessage = "";
                 if (file != null && file.Length > 0)
                 {
-                    var fileUrl = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
+                    var (publicId,fileUrl) = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
 
                     if (string.IsNullOrEmpty(fileUrl))
                     {

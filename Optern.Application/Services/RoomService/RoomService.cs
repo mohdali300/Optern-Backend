@@ -27,11 +27,12 @@ using System.Threading.Tasks;
 using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Application.Interfaces.ISkillService;
 using Optern.Application.Interfaces.IRoomSkillService;
+using Optern.Application.Interfaces.IRepositoryService;
 
 namespace Optern.Application.Services.RoomService
 {
 	public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
-		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService) : IRoomService
+		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService, IRepositoryService repositoryService) : IRoomService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
@@ -42,6 +43,7 @@ namespace Optern.Application.Services.RoomService
 		private readonly IRoomTrackService _roomTrackService= roomTrackService;
 		private readonly ISkillService _skillService= skillService;
 		private readonly IRoomSkillService _roomSkillService = roomSkillService;
+		private readonly IRepositoryService _repositoryService = repositoryService;
 
 		#region GetAllAsync
 		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetAllAsync()
@@ -82,7 +84,7 @@ namespace Optern.Application.Services.RoomService
 					.OrderByDescending(r => r.NumberOfUsers)
 					.Take(4)
 					 .Select(r => new ResponseRoomDTO
-                     {
+					 {
 						 Id = r.Room.Id,
 						 Name = r.Room.Name,
 						 Description = r.Room.Description,
@@ -143,7 +145,7 @@ namespace Optern.Application.Services.RoomService
 				var joinedRooms = await _context.Rooms.Include(r => r.UserRooms)
 					 .Where(r => r.UserRooms.Any(r => r.UserId == id))
 					 .Select(r => new ResponseRoomDTO
-                     {
+					 {
 						 Id= r.Id,
 						 Name = r.Name,
 						 Description = r.Description,
@@ -193,6 +195,9 @@ namespace Optern.Application.Services.RoomService
 				{
 					RoomId = model.RoomId,
 					UserId = model.UserId,
+					IsAdmin = false ,
+					JoinedAt=DateTime.UtcNow,
+					IsAccepted=false
 				});
 				await _unitOfWork.SaveAsync();
 				await transaction.CommitAsync();
@@ -208,7 +213,7 @@ namespace Optern.Application.Services.RoomService
 		#endregion
 
 		#region Create Room
-		public async Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model, IFile? CoverPicture)
+		public async Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model, [GraphQLType(typeof(UploadType))] IFile? CoverPicture)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -220,7 +225,7 @@ namespace Optern.Application.Services.RoomService
 				}
 				// current login User  
 				var currentUser = await _userService.GetCurrentUserAsync();
-				var CoverPicturePath = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
+				var (PublicId, CoverPicturePath) = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
 				var room = new Room
 				{
 					Name = model.Name,
@@ -248,15 +253,18 @@ namespace Optern.Application.Services.RoomService
 				if(model.Tracks != null && model.Tracks.Any())
 				{
 					await _roomTrackService.AddRoomTrack(room.Id,model.Tracks);
-                }
-                if (model.Skills != null && model.Skills.Any())
+				}
+				if (model.Skills != null && model.Skills.Any())
 				{
-                   await ManageSkillOperationistRoomCreation(room,model.Skills);
-                }
+				   await ManageSkillOperationistRoomCreation(room,model.Skills);
+				}
+	
+				await _repositoryService.AddRepository(room.Id); // add Repository for Room By Default while creation process
+
 
 				await _unitOfWork.UserRoom.AddAsync(new UserRoom {
 					UserId = room.CreatorId,  // replace with ==> _userService.GetCurrentUserAsync()
-                    RoomId = room.Id,
+					RoomId = room.Id,
 					IsAdmin = true ,
 					JoinedAt=DateTime.UtcNow,
 					IsAccepted=true
@@ -267,7 +275,7 @@ namespace Optern.Application.Services.RoomService
 
 				var roomDto = _mapper.Map<ResponseRoomDTO>(room);
 			
-                return Response<ResponseRoomDTO>.Success(roomDto, "Room Added Successfully", 201);
+				return Response<ResponseRoomDTO>.Success(roomDto, "Room Added Successfully", 201);
 
 			}
 			catch (Exception ex)
@@ -278,7 +286,7 @@ namespace Optern.Application.Services.RoomService
 		}
 		#endregion
 
-		public async Task<Response<ResponseRoomDTO>> GetRoomById(string id)
+		public async Task<Response<ResponseRoomDTO>> GetRoomById(string id,string? userId)
 		{
 			try
 			{
@@ -291,12 +299,14 @@ namespace Optern.Application.Services.RoomService
 					{
 						Id = room.Id,
 						Name = room.Name,
+						UserStatus = room.UserRooms.Any(r => r.UserId == userId && r.IsAccepted == true)? 
+						UserRoomStatus.Accepted:room.UserRooms.Any(r=>r.UserId == userId)?UserRoomStatus.Requested:UserRoomStatus.NONE,
 						Description = room.Description,
 						RoomType = room.RoomType,
-						CreatorName = $"{room.Creator.FirstName} {room.Creator.LastName}",
+						CreatorId = room.CreatorId,
 						CoverPicture = room.CoverPicture,
 						CreatedAt = room.CreatedAt,
-						Members = room.UserRooms.Count,
+						Members = room.UserRooms.Count(r=>r.IsAccepted == true),
 						Skills = room.RoomSkills
 						.Select(rs => new SkillDTO {
 							Id=rs.Skill.Id,
@@ -304,10 +314,10 @@ namespace Optern.Application.Services.RoomService
 						}).Distinct().ToList(),
 						Tracks=room.RoomTracks
 						.Select(track => new TrackDTO
-                        {
-                            Id = track.Track.Id,
-                            Name = track.Track.Name
-                        }).Distinct().ToList(),
+						{
+							Id = track.Track.Id,
+							Name = track.Track.Name
+						}).Distinct().ToList(),
 						Position=room.RoomPositions
 						.Select(position=> new PositionDTO 
 						{ Id=position.Position.Id,

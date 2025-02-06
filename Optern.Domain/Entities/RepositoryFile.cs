@@ -12,6 +12,7 @@ namespace Optern.Domain.Entities
         public string FilePath { get; set; }
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string PublicId { get; set; }
 
         //Foreign keys
         public int RepositoryId { get; set; }
