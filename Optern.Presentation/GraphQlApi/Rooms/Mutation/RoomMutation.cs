@@ -9,12 +9,16 @@
             await _roomService.JoinToRoom(model);
 
         [GraphQLDescription("Create Room")]
-        public async Task<Response<ResponseRoomDTO>> CreateRoom([Service] IRoomService _roomService, CreateRoomDTO model ,[GraphQLType(typeof(UploadType))] IFile? CoverPicture) =>
-          await _roomService.CreateRoom(model, CoverPicture);    
+        public async Task<Response<ResponseRoomDTO>> CreateRoom([Service] IRoomService _roomService, CreateRoomDTO model) =>
+          await _roomService.CreateRoom(model);    
     
     [GraphQLDescription("Edit Room")]
-        public async Task<Response<string>> EditRoom([Service] IRoomSettingService _roomSetting, string id, EditRoomDTO? model ,IFile? CoverPicture) =>
-          await _roomSetting.EditRoom(id,model!, CoverPicture); 
+        public async Task<Response<string>> EditRoom([Service] IRoomSettingService _roomSetting, string id, EditRoomDTO? model ) =>
+          await _roomSetting.EditRoom(id,model!); 
+    
+    [GraphQLDescription("Edit Room Image")]
+        public async Task<Response<string>> EditRoomImage([Service] IRoomSettingService _roomSetting, [ID]string id,[GraphQLType(typeof(UploadType))] IFile? CoverPicture) =>
+          await _roomSetting.EditRoomImage(id,CoverPicture); 
     
     [GraphQLDescription("Delete Room")]
         public async Task<Response<bool>> DeleteRoom([Service] IRoomSettingService _roomSetting, string id) =>
