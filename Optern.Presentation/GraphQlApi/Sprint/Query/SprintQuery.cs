@@ -7,10 +7,6 @@ public class SprintQuery
         await _sprintService.GetWorkSpaceSprints(workSpaceID);
 
     [GraphQLDescription("Store opened sprint in cache")]
-    public async System.Threading.Tasks.Task AddRecentOpenedSprintToCache([Service] ISprintService _sprintService, string userId, string roomId, int sprintId)
-        =>await _sprintService.SetRecentOpenedSprintAsync(userId, roomId, sprintId);
-    
-    [GraphQLDescription("Store opened sprint in cache")]
     public async Task<Response<IEnumerable<RecentSprintDTO>>> GetRecentOpenedSprints([Service] ISprintService _sprintService, string userId, string roomId)
         =>await _sprintService.GetRecentOpenedSprintsAsync(userId, roomId);
 }

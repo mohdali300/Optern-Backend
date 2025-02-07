@@ -156,7 +156,7 @@ namespace Optern.Application.Services.SprintService
         }
 
         #region Store recent opened sprints in cache
-        public async System.Threading.Tasks.Task SetRecentOpenedSprintAsync(string userId, string roomId, int sprintId)
+        public async Task<bool> SetRecentOpenedSprintAsync(string userId, string roomId, int sprintId)
         {
             try
             {
@@ -172,20 +172,34 @@ namespace Optern.Application.Services.SprintService
                     var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
                     var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey) ?? new List<RecentSprintDTO>();
 
-                    recentSprints.Add(recent);
-                    if (recentSprints.Count > 10)
+                    if (!recentSprints.Any(s => s.Id == sprintId))
                     {
-                        recentSprints = recentSprints.Skip(recentSprints.Count - 10).ToList();
-                    }
+                        recentSprints.Insert(0, recent);
+                        if (recentSprints.Count > 10)
+                        {
+                            recentSprints = recentSprints.Take(10).ToList();
+                        }
 
-                    _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                        _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                    }
+                    else
+                    {
+                        var existingIndex = recentSprints.FindIndex(s => s.Id == sprintId);
+                        if (existingIndex > 0)
+                        {
+                            recentSprints.RemoveAt(existingIndex);
+                            recentSprints.Insert(0, recent);
+                            _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                        }
+                    }
+                    return true;
                 }
+                return false;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-
         }
         #endregion
 
