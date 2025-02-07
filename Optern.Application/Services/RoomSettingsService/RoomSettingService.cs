@@ -204,7 +204,7 @@ namespace Optern.Application.Services.RoomSettings
                 .Where(s => newSkillNames.Contains(s.Name))
                 .ToListAsync();
 
-            var existingSkillIdsInDb = existingSkills.Select(s => s.Id).ToHashSet();
+            var existingSkillINamesInDb = existingSkills.Select(s => s.Name).ToHashSet();
 
             var notExistingSkills = room.RoomSkills
                 .Where(rs => !newSkillNames.Contains(rs.Skill.Name))
@@ -220,9 +220,9 @@ namespace Optern.Application.Services.RoomSettings
             {
                 Skills skill;
 
-                if (existingSkillIdsInDb.Contains(item.Id))
+                if (existingSkillINamesInDb.Contains(item.Name))
                 {
-                    skill = existingSkills.First(s => s.Id == item.Id);
+                    skill = existingSkills.First(s => s.Name == item.Name);
                 }
                 else
                 {
