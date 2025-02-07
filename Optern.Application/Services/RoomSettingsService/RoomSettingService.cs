@@ -41,7 +41,7 @@ namespace Optern.Application.Services.RoomSettings
 
 
         #region EditRoom Settings
-        public async Task<Response<string>> EditRoom(string id, EditRoomDTO model, IFile? CoverPicture)
+        public async Task<Response<string>> EditRoom(string id, EditRoomDTO model)
         {
             if (model == null)
             {
@@ -65,15 +65,6 @@ namespace Optern.Application.Services.RoomSettings
                 room.Name = model.Name ?? room.Name;
                 room.RoomType = model.RoomType ?? room.RoomType;
                 room.Description = model.Description ?? room.Description;
-
-                if (CoverPicture != null)
-                {
-                    var (publicID,newCoverPicture) = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
-                    if (!string.IsNullOrEmpty(newCoverPicture))
-                    {
-                        room.CoverPicture = newCoverPicture;
-                    }
-                }
                 await _unitOfWork.Rooms.UpdateAsync(room);
                 if (model.Positions != null)
                 {
@@ -97,6 +88,37 @@ namespace Optern.Application.Services.RoomSettings
                 return Response<string>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
         } 
+
+        public async Task<Response<string>> EditRoomImage(string roomId,[GraphQLType(typeof(UploadType))] IFile? CoverPicture)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var room= await _unitOfWork.Rooms.GetByIdAsync(roomId);
+                if(room == null)
+                {
+                    return Response<string>.Failure("Room Not Found!", 404);
+                }
+                if (CoverPicture != null)
+                {
+                    var (publicID, newCoverPicture) = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
+                    if (!string.IsNullOrEmpty(newCoverPicture))
+                    {
+                        room.CoverPicture = newCoverPicture;
+                    }
+                }
+                await _unitOfWork.Rooms.UpdateAsync(room);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                return Response<string>.Success($"{room.CoverPicture}", "Room Image Updated Successfully", 200);
+
+            }
+            catch (Exception ex) 
+            {
+                await transaction.RollbackAsync();
+                return Response<string>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
+            }
+        }
         #endregion
 
         #region Delete Room
@@ -132,7 +154,7 @@ namespace Optern.Application.Services.RoomSettings
             }
            using var transaction= await _context.Database.BeginTransactionAsync();
             try
-            {
+            { 
                 room.CoverPicture = string.Empty;
                 room.Name = string.Empty;
                 room.Description = string.Empty;
@@ -182,7 +204,7 @@ namespace Optern.Application.Services.RoomSettings
                 .Where(s => newSkillNames.Contains(s.Name))
                 .ToListAsync();
 
-            var existingSkillIdsInDb = existingSkills.Select(s => s.Id).ToHashSet();
+            var existingSkillINamesInDb = existingSkills.Select(s => s.Name).ToHashSet();
 
             var notExistingSkills = room.RoomSkills
                 .Where(rs => !newSkillNames.Contains(rs.Skill.Name))
@@ -198,9 +220,9 @@ namespace Optern.Application.Services.RoomSettings
             {
                 Skills skill;
 
-                if (existingSkillIdsInDb.Contains(item.Id))
+                if (existingSkillINamesInDb.Contains(item.Name))
                 {
-                    skill = existingSkills.First(s => s.Id == item.Id);
+                    skill = existingSkills.First(s => s.Name == item.Name);
                 }
                 else
                 {

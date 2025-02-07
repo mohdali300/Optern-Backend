@@ -19,7 +19,7 @@ namespace Optern.Application.Interfaces.IRoomService
         public Task<Response<string>> JoinToRoom(JoinRoomDTO model);
         
 
-        public Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model , IFile CoverPicture);
+        public Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model );
         public Task<Response<ResponseRoomDTO>> GetRoomById(string id,string? userId);
     }
 }

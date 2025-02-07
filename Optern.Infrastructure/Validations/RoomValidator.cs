@@ -18,9 +18,6 @@ namespace Optern.Infrastructure.Validations
             RuleFor(r => r.RoomType)
                 .IsInEnum().WithMessage("Room type must be a valid enum value.");
 
-            RuleFor(r => r.CoverPicture)
-                .NotEmpty().WithMessage("Cover picture is required.")
-                .Must(IsValidImageFileName).WithMessage("Cover picture must be a valid image file (e.g., .jpg, .png).");
 
             RuleFor(r => r.CreatedAt)
                 .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("CreatedAt cannot be in the future.");
