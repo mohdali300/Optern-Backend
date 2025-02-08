@@ -14,5 +14,9 @@
         [GraphQLDescription("Delete Sprint")]
         public async Task<Response<bool>> DeleteSprint([Service] ISprintService _sprintService, int id) =>
           await _sprintService.DeleteSprint(id);
+
+        [GraphQLDescription("Store opened sprint in cache")]
+        public async Task<bool> AddRecentOpenedSprintToCache([Service] ISprintService _sprintService, string userId, string roomId, int sprintId)
+            => await _sprintService.SetRecentOpenedSprintAsync(userId, roomId, sprintId);
     }
 
