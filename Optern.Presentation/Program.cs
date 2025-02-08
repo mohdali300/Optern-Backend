@@ -42,6 +42,7 @@ builder.Services
 .AddType<TaskQuery>()
 .AddType<TaskActivityQuery>()
 .AddType<RepositoryFileQuery>()
+.AddType<SkillQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
