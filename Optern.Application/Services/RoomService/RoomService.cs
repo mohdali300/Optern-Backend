@@ -225,13 +225,11 @@ namespace Optern.Application.Services.RoomService
 				}
 				// current login User  
 				var currentUser = await _userService.GetCurrentUserAsync();
-				//var (PublicId, CoverPicturePath) = await _cloudinaryService.UploadFileAsync(CoverPicture, "RoomsCoverPictures");
 				var room = new Room
 				{
 					Name = model.Name,
 					Description = model.Description,
 					RoomType = model.RoomType,
-				//	CoverPicture = CoverPicturePath,
 					CreatedAt = DateTime.UtcNow,
 					CreatorId = model.CreatorId, // replace with ==> _userService.GetCurrentUserAsync()
 				};

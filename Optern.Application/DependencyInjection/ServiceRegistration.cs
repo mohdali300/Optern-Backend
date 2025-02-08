@@ -65,6 +65,8 @@ using Optern.Application.Interfaces.IRepositoryService;
 using Optern.Application.Services.RepositoryService;
 using Optern.Application.Interfaces.IRepositoryFileService;
 using Optern.Application.Services.RepositoryFileService;
+using Optern.Infrastructure.ExternalServices.AutoCompleteService;
+using Optern.Infrastructure.ExternalInterfaces;
 
 
 namespace Optern.Infrastructure.DependencyInjection
@@ -110,6 +112,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<OTP>();
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<IAutoCompleteService, AutoCompleteService>();
 
 
 
@@ -122,7 +125,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IFavoritePostsService, FavoritePostsService>();
-            services.AddScoped<IRoomPositionService, RoomPositionService>();
+            services.AddScoped<IRoomPositionService, RoomPositionService>(); 
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IReactService, ReactService>();
