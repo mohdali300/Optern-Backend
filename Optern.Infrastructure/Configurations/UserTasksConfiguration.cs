@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Optern.Domain.Entities;
-
-public class UserTasksConfiguration : IEntityTypeConfiguration<UserTasks>
+﻿public class UserTasksConfiguration : IEntityTypeConfiguration<UserTasks>
 {
     public void Configure(EntityTypeBuilder<UserTasks> builder)
     {

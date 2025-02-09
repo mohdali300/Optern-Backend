@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Optern.Domain.Entities;
-
-namespace Optern.Infrastructure.Persistence.Configurations
+﻿namespace Optern.Infrastructure.Persistence.Configurations
 {
     public class TrackConfiguration : IEntityTypeConfiguration<Track>
     {

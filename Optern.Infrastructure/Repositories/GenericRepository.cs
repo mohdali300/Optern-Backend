@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Optern.Infrastructure.Data;
+﻿using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Repositories
 {
@@ -98,7 +90,7 @@ namespace Optern.Infrastructure.Repositories
             await _dbContext.SaveChangesAsync(); 
         }
 
-        public virtual async Task UpdateAsync(T entity)
+        public virtual async System.Threading.Tasks.Task UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
         }

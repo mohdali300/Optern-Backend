@@ -1,15 +1,4 @@
-﻿using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Optern.Infrastructure.ExternalInterfaces.IFileService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Path = System.IO.Path;
+﻿using Path = System.IO.Path;
 
 namespace Optern.Infrastructure.ExternalServices.FileService
 {
