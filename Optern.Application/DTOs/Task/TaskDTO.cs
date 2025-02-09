@@ -1,5 +1,4 @@
-﻿using Optern.Application.DTOs.TaskActivity;
-using Optern.Domain.Enums;
+﻿
 
 namespace Optern.Application.DTOs.Task
 {

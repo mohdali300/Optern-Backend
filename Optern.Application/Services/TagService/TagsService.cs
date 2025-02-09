@@ -1,17 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs;
-using Optern.Application.DTOs.Tags;
-using Optern.Application.Interfaces.ITagService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Repositories;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.TagService
 {

@@ -1,14 +1,4 @@
-﻿using Optern.Application.DTOs.Skills;
-using Optern.Application.Interfaces.IRepositoryService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.RepositoryService
 {

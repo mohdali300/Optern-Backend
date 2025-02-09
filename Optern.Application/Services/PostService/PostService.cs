@@ -1,16 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Comment;
-using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.Tags;
-using Optern.Application.Interfaces.IPostService;
-using Optern.Domain.Entities;
-using Optern.Domain.Enums;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-
+﻿
 
 namespace Optern.Application.Services.PostService
 {

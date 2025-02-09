@@ -1,20 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.Position;
-using Optern.Application.DTOs.Track;
-using Optern.Application.Interfaces.ITrackService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Repositories;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.TrackService
 {

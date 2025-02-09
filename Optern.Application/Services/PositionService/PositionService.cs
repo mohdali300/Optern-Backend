@@ -1,18 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Position;
-using Optern.Application.DTOs.Track;
-using Optern.Application.Interfaces.IPositionService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Repositories;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.PositionService
 {
