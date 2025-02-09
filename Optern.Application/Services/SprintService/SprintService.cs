@@ -143,6 +143,10 @@ namespace Optern.Application.Services.SprintService
         {
             try
             {
+                if (!_context.UserRooms.Where(r => r.UserId == userId && r.RoomId == roomId).Any())
+                {
+                    return false;
+                }
                 var sprint = await _unitOfWork.Sprints.GetByIdAsync(sprintId);
                 if (sprint != null)
                 {
@@ -191,6 +195,11 @@ namespace Optern.Application.Services.SprintService
         {
             try
             {
+                if (!_context.UserRooms.Where(r => r.UserId == userId && r.RoomId == roomId).Any())
+                {
+                    return Response<IEnumerable<RecentSprintDTO>>.Failure(new List<RecentSprintDTO>(),"User doesn’t exist in this room, or Room id is incorrect.", 400);
+                }
+
                 var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
 
                 var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey);
