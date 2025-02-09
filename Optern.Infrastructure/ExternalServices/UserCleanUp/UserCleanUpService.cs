@@ -1,12 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Optern.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.ExternalServices.UserCleanUp
+﻿namespace Optern.Infrastructure.ExternalServices.UserCleanUp
 {
     public class UserCleanUpService
     {
@@ -17,7 +9,7 @@ namespace Optern.Infrastructure.ExternalServices.UserCleanUp
             _context = context;
         }
 
-        public async Task CleanUnConfirmedUserAsync()
+        public async System.Threading.Tasks.Task CleanUnConfirmedUserAsync()
         {
             var threshold = DateTime.UtcNow.AddHours(-24);
             var unConfirmedUsers = await _context.Users

@@ -1,12 +1,4 @@
-﻿using FluentValidation;
-using Optern.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.Validations
+﻿namespace Optern.Infrastructure.Validations
 {
 	public class PTPFeedBackValidator:AbstractValidator<PTPFeedBack>
 	{

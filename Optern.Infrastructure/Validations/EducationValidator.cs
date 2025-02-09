@@ -1,13 +1,4 @@
-﻿using FluentValidation;
-using Optern.Domain.Entities;
-using Optern.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.Validations
+﻿namespace Optern.Infrastructure.Validations
 {
 	public class EducationValidator:AbstractValidator<Education>
 	{

@@ -1,11 +1,4 @@
-﻿using FluentValidation;
-using Optern.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Task = Optern.Domain.Entities.Task;
+﻿using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.Validations
 {

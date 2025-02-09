@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.ExternalDTOs.LoginForJWT
+﻿namespace Optern.Infrastructure.ExternalDTOs.LoginForJWT
 {
 	public class LogInResponseDTO
 	{

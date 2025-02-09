@@ -1,12 +1,4 @@
-﻿using Optern.Domain.Trie;
-using Optern.Infrastructure.ExternalInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.ExternalServices.AutoCompleteService
+﻿namespace Optern.Infrastructure.ExternalServices.AutoCompleteService
 {
     public class AutoCompleteService : IAutoCompleteService
     {

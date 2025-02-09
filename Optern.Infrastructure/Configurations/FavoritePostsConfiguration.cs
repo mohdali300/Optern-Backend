@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Optern.Domain.Entities;
-
-public class FavoritePostsConfiguration : IEntityTypeConfiguration<FavoritePosts>
+﻿public class FavoritePostsConfiguration : IEntityTypeConfiguration<FavoritePosts>
 {
     public void Configure(EntityTypeBuilder<FavoritePosts> builder)
     {

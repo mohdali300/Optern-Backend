@@ -1,7 +1,3 @@
-using System.Text.Json;
-using Microsoft.Extensions.Caching.Distributed;
-using Optern.Infrastructure.ExternalInterfaces.ICacheService;
-
 namespace Optern.Infrastructure.ExternalServices.CacheService
 {
 	public class CacheService : ICacheService
@@ -40,7 +36,7 @@ namespace Optern.Infrastructure.ExternalServices.CacheService
 			_cache?.SetString(key, JsonSerializer.Serialize(value),options);
 		}
 
-        public async Task RemoveDataAsync(string key)
+        public async System.Threading.Tasks.Task RemoveDataAsync(string key)
         {
             await _cache.RemoveAsync(key);
         }
