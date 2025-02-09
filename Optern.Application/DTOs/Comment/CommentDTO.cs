@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Optern.Application.DTOs.React;
-using Optern.Domain.Enums;
+﻿
 
 namespace Optern.Application.DTOs.Comment
 {

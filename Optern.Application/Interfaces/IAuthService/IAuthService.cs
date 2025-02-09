@@ -1,14 +1,4 @@
-﻿using Optern.Application.DTOs.ResetPassword;
-using Optern.Application.DTOs.Login;
-using Optern.Application.DTOS.Register;
-using Optern.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
+﻿
 
 namespace Optern.Application.Interfaces.IAuthService
 {

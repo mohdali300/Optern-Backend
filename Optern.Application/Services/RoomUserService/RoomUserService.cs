@@ -1,22 +1,4 @@
-﻿using AutoMapper;
-using GreenDonut;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.RoomUser;
-using Optern.Application.Interfaces.IRoomUserService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.RoomUserService
 {

@@ -1,7 +1,4 @@
 ﻿
-using Optern.Application.DTOs.TaskActivity;
-using Optern.Infrastructure.Response;
-
 namespace Optern.Application.Interfaces.ITaskActivityService
 {
     public interface ITaskActivityService

@@ -1,33 +1,4 @@
-﻿using AutoMapper;
-using FluentValidation;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.Position;
-using Optern.Application.DTOs.Track;
-using Optern.Application.Interfaces.IRoomService;
-using Optern.Application.Interfaces.IUserService;
-using Optern.Domain.Entities;
-using Optern.Domain.Enums;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.ExternalInterfaces.IFileService;
-using Optern.Infrastructure.ExternalServices.FileService;
-using Optern.Infrastructure.Repositories;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Optern.Application.Interfaces.IRoomTrackService;
-using Optern.Application.Interfaces.ISkillService;
-using Optern.Application.Interfaces.IRoomSkillService;
-using Optern.Application.Interfaces.IRepositoryService;
+﻿
 
 namespace Optern.Application.Services.RoomService
 {

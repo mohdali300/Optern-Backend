@@ -1,21 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.Sprint;
-using Optern.Application.DTOs.WorkSpace;
-using Optern.Application.Interfaces.ISprintService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.ExternalInterfaces.ICacheService;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.SprintService
 {
