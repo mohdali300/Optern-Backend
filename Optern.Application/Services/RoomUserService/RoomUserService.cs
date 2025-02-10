@@ -26,7 +26,7 @@ namespace Optern.Application.Services.RoomUserService
 
                 var query = _context.UserRooms
                     .Include(ur => ur.User)
-                    .Where(ur => ur.RoomId == roomId);
+                    .Where(ur => ur.RoomId == roomId && ur.IsAccepted==true);
 
                 if (isAdmin.HasValue)
                 {
