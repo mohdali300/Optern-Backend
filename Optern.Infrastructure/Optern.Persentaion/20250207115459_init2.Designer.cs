@@ -12,8 +12,8 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Optern.Persentaion
 {
     [DbContext(typeof(OpternDbContext))]
-    [Migration("20250202204134_init1")]
-    partial class init1
+    [Migration("20250207115459_init2")]
+    partial class init2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -280,14 +280,15 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.Property<int>("TaskId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserRoomId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("TaskId");
 
-                    b.HasIndex("UserRoomId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("BookMarkedTasks", (string)null);
                 });
@@ -948,6 +949,10 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PublicId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("RepositoryId")
                         .HasColumnType("integer");
 
@@ -965,7 +970,6 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .HasColumnType("text");
 
                     b.Property<string>("CoverPicture")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1086,10 +1090,6 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1362,6 +1362,9 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.Property<string>("AttachmentUrls")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("Attachmentdate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("TaskId")
                         .HasColumnType("integer");
@@ -1638,15 +1641,15 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Optern.Domain.Entities.UserRoom", "UserRoom")
+                    b.HasOne("Optern.Domain.Entities.ApplicationUser", "User")
                         .WithMany("BookMarkedTasks")
-                        .HasForeignKey("UserRoomId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Task");
 
-                    b.Navigation("UserRoom");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.CV", b =>
@@ -2180,6 +2183,8 @@ namespace Optern.Infrastructure.Optern.Persentaion
                 {
                     b.Navigation("AssignedTasks");
 
+                    b.Navigation("BookMarkedTasks");
+
                     b.Navigation("CVs");
 
                     b.Navigation("CommentReacts");
@@ -2321,11 +2326,6 @@ namespace Optern.Infrastructure.Optern.Persentaion
             modelBuilder.Entity("Optern.Domain.Entities.Track", b =>
                 {
                     b.Navigation("RoomTracks");
-                });
-
-            modelBuilder.Entity("Optern.Domain.Entities.UserRoom", b =>
-                {
-                    b.Navigation("BookMarkedTasks");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.VInterview", b =>

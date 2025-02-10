@@ -1,21 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.FavoritePosts;
-using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.Tags;
-using Optern.Application.Interfaces.IFavoritePostsService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Repositories;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+﻿
 
 namespace Optern.Application.Services.FavoritePostsService
 {

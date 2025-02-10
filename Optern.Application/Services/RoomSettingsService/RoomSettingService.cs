@@ -1,27 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.Position;
-using Optern.Application.Interfaces.IRoomService;
-using Optern.Application.Interfaces.IRoomSettingService;
-using Optern.Application.Interfaces.IUserService;
-using Optern.Application.Services.UserService;
-using Optern.Domain.Entities;
-using Optern.Domain.Enums;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.ExternalInterfaces.IFileService;
-using Optern.Infrastructure.ExternalServices.FileService;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Optern.Application.Interfaces.ISkillService;
-using Optern.Application.Interfaces.IRoomSkillService;
-using Optern.Application.Interfaces.IRoomTrackService;
+﻿
 
 namespace Optern.Application.Services.RoomSettings
 {

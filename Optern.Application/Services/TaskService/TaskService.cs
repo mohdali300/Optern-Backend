@@ -1,26 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.Task;
-using Optern.Application.Interfaces.ITaskService;
-using Optern.Domain.Entities;
-using Optern.Domain.Enums;
-using Optern.Domain.Specifications.RoomSpecifications;
-using Optern.Domain.Specifications;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.ExternalInterfaces.IFileService;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using Task = Optern.Domain.Entities.Task;
+﻿
 
 namespace Optern.Application.Services.TaskService
 {

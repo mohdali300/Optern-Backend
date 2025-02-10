@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Optern.Domain.Entities;
-using Task = Optern.Domain.Entities.Task;
+﻿using Task = Optern.Domain.Entities.Task;
 
 public class TaskConfiguration : IEntityTypeConfiguration<Task>
 {

@@ -1,20 +1,4 @@
 ﻿
-using Optern.Application.DTOs.Tags;
-using Optern.Domain.Entities;
-using AutoMapper;
-using Optern.Application.DTOs.Post;
-using Optern.Application.DTOs.Comment;
-using Optern.Application.DTOs.React;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.FavoritePosts;
-using Optern.Application.DTOs.WorkSpace;
-using Optern.Application.DTOs.Task;
-using Task = Optern.Domain.Entities.Task;
-using Optern.Application.DTOs.Sprint;
-using Optern.Application.DTOs.RoomUser;
-using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.TaskActivity;
-using Optern.Application.DTOs.RepositoryFile;
 
 namespace Optern.Application.Mappings
 {

@@ -1,23 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
-using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
-using Optern.Infrastructure.ExternalInterfaces.IJWTService;
-using Optern.Infrastructure.Response;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.ExternalServices.JWTService
+﻿namespace Optern.Infrastructure.ExternalServices.JWTService
 {
 	public class JWTService : IJWTService
 	{

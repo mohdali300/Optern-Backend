@@ -1,13 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Optern.Application.DTOs.Room;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Optern.Application.Interfaces.IRoomService
 {
     public interface IRoomService

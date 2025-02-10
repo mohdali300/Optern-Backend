@@ -1,21 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.Sprint;
-using Optern.Application.DTOs.WorkSpace;
-using Optern.Application.Interfaces.ISprintService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.ExternalInterfaces.ICacheService;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.SprintService
 {
@@ -156,10 +139,14 @@ namespace Optern.Application.Services.SprintService
         }
 
         #region Store recent opened sprints in cache
-        public async System.Threading.Tasks.Task SetRecentOpenedSprintAsync(string userId, string roomId, int sprintId)
+        public async Task<bool> SetRecentOpenedSprintAsync(string userId, string roomId, int sprintId)
         {
             try
             {
+                if (!_context.UserRooms.Where(r => r.UserId == userId && r.RoomId == roomId).Any())
+                {
+                    return false;
+                }
                 var sprint = await _unitOfWork.Sprints.GetByIdAsync(sprintId);
                 if (sprint != null)
                 {
@@ -172,20 +159,34 @@ namespace Optern.Application.Services.SprintService
                     var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
                     var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey) ?? new List<RecentSprintDTO>();
 
-                    recentSprints.Add(recent);
-                    if (recentSprints.Count > 10)
+                    if (!recentSprints.Any(s => s.Id == sprintId))
                     {
-                        recentSprints = recentSprints.Skip(recentSprints.Count - 10).ToList();
-                    }
+                        recentSprints.Insert(0, recent);
+                        if (recentSprints.Count > 10)
+                        {
+                            recentSprints = recentSprints.Take(10).ToList();
+                        }
 
-                    _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                        _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                    }
+                    else
+                    {
+                        var existingIndex = recentSprints.FindIndex(s => s.Id == sprintId);
+                        if (existingIndex > 0)
+                        {
+                            recentSprints.RemoveAt(existingIndex);
+                            recentSprints.Insert(0, recent);
+                            _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
+                        }
+                    }
+                    return true;
                 }
+                return false;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-
         }
         #endregion
 
@@ -194,6 +195,11 @@ namespace Optern.Application.Services.SprintService
         {
             try
             {
+                if (!_context.UserRooms.Where(r => r.UserId == userId && r.RoomId == roomId).Any())
+                {
+                    return Response<IEnumerable<RecentSprintDTO>>.Failure(new List<RecentSprintDTO>(),"User doesn’t exist in this room, or Room id is incorrect.", 400);
+                }
+
                 var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
 
                 var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey);

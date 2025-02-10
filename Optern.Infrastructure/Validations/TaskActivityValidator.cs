@@ -1,8 +1,4 @@
-﻿
-using FluentValidation;
-using Optern.Domain.Entities;
-
-namespace Optern.Infrastructure.Validations
+﻿namespace Optern.Infrastructure.Validations
 {
     public class TaskActivityValidator : AbstractValidator<TaskActivity>
     {

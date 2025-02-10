@@ -1,19 +1,4 @@
-﻿using GreenDonut;
-using MailKit.Security;
-using Microsoft.Extensions.Options;
-using MimeKit;
-using Optern.Infrastructure.ExternalDTOs.Mail;
-using Optern.Infrastructure.ExternalInterfaces.IMail;
-using Optern.Infrastructure.ExternalServices.MailService;
-using Optern.Infrastructure.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Infrastructure.ExternalServices.MailService
+﻿namespace Optern.Infrastructure.ExternalServices.MailService
 {
     public class MailService : IMailService
     {

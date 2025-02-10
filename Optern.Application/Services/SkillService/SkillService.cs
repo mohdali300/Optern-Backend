@@ -1,26 +1,35 @@
-﻿using AutoMapper;
-using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.Sprint;
-using Optern.Application.Interfaces.ISkillService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.SkillService
 {
-    public class SkillService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : ISkillService
+    public class SkillService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IAutoCompleteService autocompleteService) : ISkillService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
+        private readonly IAutoCompleteService _autocompleteService= autocompleteService;
 
+
+
+        public async Task<Response<List<string>>> GetSkillSuggestions(string word)
+        {
+            try
+            {
+                var existingSkills = await _unitOfWork.Skills.GetAllAsync();
+                _autocompleteService.LoadWords(existingSkills.Select(s => s.Name.ToLower()).ToList());
+                var suggestions = _autocompleteService.GetSuggestions(word.ToLower());
+                if (!suggestions.Any())
+                {
+                    return Response<List<string>>.Success(suggestions, "No Suggestions Skills Found FOr This Skill Name", 200);
+                }
+
+                return Response<List<string>>.Success(suggestions, "Matched Skills Fetched Fetched Successfully", 200);
+            }
+            catch (Exception ex) 
+            {
+                return Response<List<string>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
+            }
+        }
         public async Task<Response<IEnumerable<SkillDTO>>> AddSkills(IEnumerable<SkillDTO> models)
         {
             if (models == null || !models.Any())

@@ -1,15 +1,4 @@
 ﻿
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Optern.Application.DTOs.Task;
-using Optern.Application.DTOs.TaskActivity;
-using Optern.Application.Interfaces.IFavoritePostsService;
-using Optern.Application.Interfaces.ITaskActivityService;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Response;
-using Optern.Infrastructure.UnitOfWork;
-using Optern.Infrastructure.Validations;
 
 namespace Optern.Application.Services.TaskActivityService
 {

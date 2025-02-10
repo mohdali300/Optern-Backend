@@ -1,23 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Optern.Application.DTOs.Login;
-using Optern.Application.DTOs.ResetPassword;
-using Optern.Application.DTOS.Register;
-using Optern.Application.Helpers;
-using Optern.Application.Interfaces.IAuthService;
-using Optern.Domain.Entities;
-using Optern.Domain.Enums;
-using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
-using Optern.Infrastructure.ExternalInterfaces.IJWTService;
-using Optern.Infrastructure.ExternalInterfaces.IMail;
-using Optern.Infrastructure.ExternalServices.MailService;
-using Optern.Infrastructure.Response;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Services.AuthService
 {

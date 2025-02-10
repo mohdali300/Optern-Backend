@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Data;
-using Optern.Infrastructure.Repositories;
-using Task = Optern.Domain.Entities.Task;
+﻿using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.UnitOfWork
 {

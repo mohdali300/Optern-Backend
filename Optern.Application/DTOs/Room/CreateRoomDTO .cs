@@ -1,13 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Optern.Application.DTOs.Skills;
-using Optern.Application.DTOs.Position;
-using Optern.Application.DTOs.Track;
-using Optern.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.DTOs.Room
 {

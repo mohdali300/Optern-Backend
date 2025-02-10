@@ -1,15 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Optern.Domain.Enums;
-using Optern.Infrastructure.ExternalDTOs.Mail;
-using Optern.Infrastructure.ExternalInterfaces.IMail;
-using Optern.Infrastructure.ExternalServices.MailService;
-using Optern.Infrastructure.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Optern.Application.Helpers
 {

@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Optern.Domain.Entities;
-using System.Reflection.Emit;
-using System;
 using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.Data

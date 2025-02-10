@@ -5,7 +5,7 @@
 namespace Optern.Infrastructure.Optern.Persentaion
 {
     /// <inheritdoc />
-    public partial class init1 : Migration
+    public partial class init2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
