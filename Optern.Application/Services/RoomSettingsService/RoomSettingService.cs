@@ -1,5 +1,8 @@
 ﻿
 
+using GreenDonut;
+using Optern.Domain.Entities;
+
 namespace Optern.Application.Services.RoomSettings
 {
     public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
@@ -160,9 +163,68 @@ namespace Optern.Application.Services.RoomSettings
 
         }
 
-            // Helpers Functions
-            #region Update Skills For Room
-            private async Task<bool> UpdateRoomSkills(Room room, List<SkillDTO>? newSkills)
+
+
+        public async Task<Response<bool>> LeaveRoomAsync(string roomId, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var userRoom = await _context.UserRooms
+                    .Include(ur => ur.Room)
+                    .Include(ur => ur.User)
+                    .FirstOrDefaultAsync(ur => ur.RoomId == roomId && ur.UserId == userId);
+
+                if (userRoom == null)
+                {
+                    return Response<bool>.Failure(false, "User is not in this room", 404);
+                }
+
+                var totalMembers = await _context.UserRooms.CountAsync(ur => ur.RoomId == roomId);
+
+                if (userRoom.IsAdmin)
+                {
+                    if (totalMembers > 1)
+                    {
+                        var remainingAdmins = await _context.UserRooms.CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != userId);
+                        if (remainingAdmins == 0)
+                        {
+                          
+                           return Response<bool>.Failure(false, "You must specify a new admin before leaving as the last admin", 400);
+                            
+                        }
+                    }
+                    else
+                    {
+
+                        _context.Rooms.Remove(userRoom.Room);
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return Response<bool>.Success(true, "You left the room and the room was deleted because it became empty", 200);
+                    }
+                }
+
+                
+                _context.UserRooms.Remove(userRoom);
+                await _context.SaveChangesAsync();
+
+
+
+                await transaction.CommitAsync();
+                return Response<bool>.Success(true, "Successfully left the room", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"An error occurred while leaving the room: {ex.Message}", 500);
+            }
+        }
+
+
+
+        // Helpers Functions
+        #region Update Skills For Room
+        private async Task<bool> UpdateRoomSkills(Room room, List<SkillDTO>? newSkills)
         {
             if (newSkills == null || !newSkills.Any())
             {
