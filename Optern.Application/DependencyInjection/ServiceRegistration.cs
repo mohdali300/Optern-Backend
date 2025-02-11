@@ -1,9 +1,4 @@
-﻿
-
-using Optern.Application.Interfaces.IMessageService;
-using Optern.Application.Services.MessageService;
-
-namespace Optern.Infrastructure.DependencyInjection
+﻿namespace Optern.Infrastructure.DependencyInjection
 {
     public static class ServiceRegistration
     {
@@ -76,6 +71,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IRepositoryService, RepositoryService>();
             services.AddScoped<IRepositoryFileService, RepositoryFileService>();
             services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IChatService, ChatService>();
 
 
             return services;
