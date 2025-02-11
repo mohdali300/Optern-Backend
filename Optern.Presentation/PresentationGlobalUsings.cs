@@ -83,7 +83,9 @@ global using Hangfire;
 global using Optern.Application.DTOs.RepositoryFile;
 global using Optern.Application.Interfaces.IRepositoryFileService;
 
-
+// GraphQLAPI/Skill
+global using Optern.Application.DTOs.Skills;
+global using Optern.Application.Interfaces.ISkillService;
 
 
 

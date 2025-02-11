@@ -1,8 +1,5 @@
 ﻿
 
-using Optern.Application.DTOs.Skills;
-using Optern.Application.Interfaces.ISkillService;
-
 [ExtendObjectType("Query")]
 public class SkillQuery
      {
