@@ -14,6 +14,8 @@ namespace Optern.Domain.Entities
         public string  UserId { get; set; } 
         public int NotificationId { get; set; }
 
+        public bool IsRead { get; set; } = false;
+
         // Navigation Properties
         public virtual ApplicationUser User { get; set; }
         public virtual Notifications Notifications { get; set; }
