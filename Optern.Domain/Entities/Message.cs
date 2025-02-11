@@ -10,7 +10,7 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
         public string Content { get; set; }
-        public DateTime SentDate { get; set; }
+        public DateTime SentAt { get; set; }
 
         //Foreign Keys
         public string SenderId { get; set; }
