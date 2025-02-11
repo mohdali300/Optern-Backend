@@ -50,7 +50,7 @@ namespace Optern.Infrastructure.Services.RoomService
 					  (room, userRooms) => new
 					  {
 						  Room = room,
-						  NumberOfUsers = userRooms.Count()
+						  NumberOfUsers = userRooms.Count(r=>r.IsAccepted)
 					  }
 					)
 					.OrderByDescending(r => r.NumberOfUsers)
