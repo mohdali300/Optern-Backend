@@ -2,11 +2,13 @@
 
 namespace Optern.Application.Services.RoomUserService
 {
-    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IRoomUserService
+    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService) : IRoomUserService
+    public class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IRoomUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
+        private readonly IChatService _chatService = chatService;
 
 
         public async Task<Response<List<RoomUserDTO>>> GetAllCollaboratorsAsync(string roomId, bool? isAdmin = null)
@@ -15,18 +17,18 @@ namespace Optern.Application.Services.RoomUserService
             {
                 if (string.IsNullOrWhiteSpace(roomId))
                 {
-                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"Room ID cannot be empty.",400);
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Room ID cannot be empty.", 400);
                 }
 
                 var roomExists = await _context.Rooms.AnyAsync(r => r.Id == roomId);
                 if (!roomExists)
                 {
-                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"Room not found.",404);
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Room not found.", 404);
                 }
 
                 var query = _context.UserRooms
                     .Include(ur => ur.User)
-                    .Where(ur => ur.RoomId == roomId && ur.IsAccepted==true);
+                    .Where(ur => ur.RoomId == roomId && ur.IsAccepted == true);
 
                 if (isAdmin.HasValue)
                 {
@@ -40,12 +42,12 @@ namespace Optern.Application.Services.RoomUserService
 
                 if (!collaborators.Any())
                 {
-                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"No collaborators found.",404);
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "No collaborators found.", 404);
                 }
 
                 var collaboratorsDto = _mapper.Map<List<RoomUserDTO>>(collaborators);
 
-                return Response<List<RoomUserDTO>>.Success(collaboratorsDto,"Collaborators retrieved successfully.",200);
+                return Response<List<RoomUserDTO>>.Success(collaboratorsDto, "Collaborators retrieved successfully.", 200);
             }
             catch (Exception ex)
             {
@@ -64,7 +66,7 @@ namespace Optern.Application.Services.RoomUserService
                 var room = await _context.Rooms.FindAsync(roomId);
                 if (room == null)
                 {
-                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"Room not found",404);
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Room not found", 404);
                 }
 
                 var isLeader = await _context.UserRooms
@@ -74,7 +76,7 @@ namespace Optern.Application.Services.RoomUserService
 
                 if (!isLeader)
                 {
-                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"Unauthorized access",403);
+                    return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Unauthorized access", 403);
                 }
 
                 var pendingRequests = await _context.UserRooms
@@ -83,22 +85,22 @@ namespace Optern.Application.Services.RoomUserService
                     .OrderBy(ur => ur.JoinedAt)
                     .Select(ur => new RoomUserDTO
                     {
-                        Id=ur.Id,
+                        Id = ur.Id,
                         RoomId = ur.RoomId,
                         UserId = ur.UserId,
                         UserName = $"{ur.User.FirstName} {ur.User.LastName}",
                         ProfilePicture = ur.User.ProfilePicture,
                         JoinedAt = ur.JoinedAt,
-                        IsAccepted=ur.IsAccepted,
-                        IsAdmin=ur.IsAdmin,
+                        IsAccepted = ur.IsAccepted,
+                        IsAdmin = ur.IsAdmin,
                     })
                     .ToListAsync();
 
-                return Response<List<RoomUserDTO>>.Success(pendingRequests,pendingRequests.Any()? $"Found {pendingRequests.Count} pending requests": "No pending requests found",200);
+                return Response<List<RoomUserDTO>>.Success(pendingRequests, pendingRequests.Any() ? $"Found {pendingRequests.Count} pending requests" : "No pending requests found", 200);
             }
             catch (Exception ex)
             {
-                return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),"An error occurred while retrieving requests",500);
+                return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "An error occurred while retrieving requests", 500);
             }
         }
 
@@ -175,7 +177,7 @@ namespace Optern.Application.Services.RoomUserService
                 }
 
                 var targetUserRoom = await _context.UserRooms
-                    .Include(ur => ur.User) 
+                    .Include(ur => ur.User)
                     .FirstOrDefaultAsync(ur => ur.RoomId == RoomId && ur.UserId == TargetUserId);
 
                 if (targetUserRoom == null)
@@ -228,7 +230,7 @@ namespace Optern.Application.Services.RoomUserService
                 var room = await _context.Rooms.FindAsync(roomId);
                 if (room == null)
                 {
-                    return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Room not found", 404); 
+                    return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Room not found", 404);
                 }
 
                 var currentUserRoom = await _context.UserRooms
@@ -240,19 +242,19 @@ namespace Optern.Application.Services.RoomUserService
                 }
 
                 var targetUserRoom = await _context.UserRooms
-                    .Include(ur => ur.User) 
+                    .Include(ur => ur.User)
                     .FirstOrDefaultAsync(ur => ur.RoomId == roomId && ur.UserId == targetUserId);
 
                 if (targetUserRoom == null)
                 {
-                    return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Target user is not a room member", 404);  
+                    return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Target user is not a room member", 404);
                 }
 
                 bool isPromoting = !targetUserRoom.IsAdmin; //new status
 
                 if (!isPromoting)
                 {
-                    
+
                     var remainingLeaders = await _context.UserRooms
                         .CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != targetUserId);
 
@@ -301,6 +303,7 @@ namespace Optern.Application.Services.RoomUserService
                     if (userRoom == null)
                         return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Request not found", 404);
 
+                    await _chatService.JoinToRoomChat(roomId, userRoom.UserId); // add user to room chat
                     userRoom.IsAccepted = true;
                     userRoom.JoinedAt = DateTime.UtcNow;
                     userRoom.IsAdmin = false;

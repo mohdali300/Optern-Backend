@@ -15,7 +15,6 @@ namespace Optern.Domain.Entities
 
         //Foreign Keys
         public string CreatorId { get; set; }
-        public string RoomId { get; set; }
 
         // Navigation Properties
         public virtual ApplicationUser Creator { get; set; }

@@ -23,10 +23,6 @@
             builder.Property(c => c.CreatorId)
                 .IsRequired();
 
-            builder.Property(c => c.RoomId)
-                .IsRequired(false);
-
-
             builder.Property(c => c.Type)
                    .IsRequired()
                    .HasConversion<string>();
@@ -44,11 +40,6 @@
             builder.HasMany(c => c.ChatParticipants)
                  .WithOne(cp => cp.Chat)
                  .HasForeignKey(cp => cp.ChatId) 
-                 .OnDelete(DeleteBehavior.Cascade);
-            // 1 to 1 relation , each room has exactly one chat
-            builder.HasOne(c => c.Room)
-                 .WithOne(r => r.Chat)
-                 .HasForeignKey<Chat>(c => c.RoomId) 
                  .OnDelete(DeleteBehavior.Cascade);
             // 1 to m , each chat has many Messages
             builder.HasMany(c => c.Messages)

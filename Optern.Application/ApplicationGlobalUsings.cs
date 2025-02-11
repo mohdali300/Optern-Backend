@@ -118,3 +118,8 @@ global using Optern.Domain.Specifications;
 global using Task = Optern.Domain.Entities.Task;
 global using Microsoft.EntityFrameworkCore.ChangeTracking;
 global using Optern.Application.DTOs.RoomPosition;
+global using Optern.Application.DTOs.Chat;
+global using Optern.Application.Interfaces.IChatService;
+global using Optern.Application.Services.ChatService;
+
+
