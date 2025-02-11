@@ -87,6 +87,10 @@ global using Optern.Application.Interfaces.IRepositoryFileService;
 global using Optern.Application.DTOs.Skills;
 global using Optern.Application.Interfaces.ISkillService;
 
+global using Optern.Presentation.GraphQlApi.Chat.Query;
+global using Optern.Application.DTOs.Chat;
+global using Optern.Application.Interfaces.IChatService;
+
 
 
 
