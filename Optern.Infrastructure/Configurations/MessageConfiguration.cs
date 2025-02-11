@@ -20,12 +20,12 @@
             .HasMaxLength(1000)
             .IsRequired();
 
-            builder.Property(m => m.SentDate)
+            builder.Property(m => m.SentAt)
           .HasDefaultValueSql("NOW()")  
           .IsRequired();
             
             // Indexes
-            builder.HasIndex(m => new { m.ChatId, m.SentDate, m.SenderId })
+            builder.HasIndex(m => new { m.ChatId, m.SentAt, m.SenderId })
            .HasDatabaseName("IX_Messages_ChatId_SentDate_SenderId");
 
 

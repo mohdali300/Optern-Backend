@@ -7,7 +7,7 @@
             RuleFor(m => m.Content)
                 .NotEmpty().WithMessage("Message Cannot be empty!");
 
-            RuleFor(m => m.SentDate)
+            RuleFor(m => m.SentAt)
                 .LessThanOrEqualTo(DateTime.Now);
 		}
 

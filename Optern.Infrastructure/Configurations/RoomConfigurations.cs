@@ -34,6 +34,8 @@
             builder.Property(c=>c.CreatorId)
              .IsRequired();
 
+            builder.Property(c => c.ChatId)
+                .IsRequired();
 
             // Indexes
 
@@ -76,6 +78,12 @@
                 .WithOne(rp => rp.Room)
                 .HasForeignKey(rp => rp.RoomId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // 1 to 1 relation , each room has exactly one chat
+            builder.HasOne(c => c.Chat)
+                 .WithOne(r => r.Room)
+                 .HasForeignKey<Room>(c => c.ChatId)
+                 .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
     }
