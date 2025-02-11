@@ -3,6 +3,7 @@
 namespace Optern.Application.Services.RoomUserService
 {
     internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService) : IRoomUserService
+    public class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IRoomUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;

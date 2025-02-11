@@ -1,5 +1,7 @@
 ﻿
 
+using Optern.Application.DTOs.Message;
+
 namespace Optern.Application.Mappings
 {
 	public class MappingProfile : Profile
@@ -128,6 +130,11 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
             .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.User.ProfilePicture))
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.IsAdmin ? "Leader" : "Collaborator"));
+
+            //message
+            CreateMap<Message, MessageDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.Sender.FirstName} {src.Sender.LastName}"))
+            .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.Sender.ProfilePicture));
 
             CreateMap<Skills, SkillDTO>();
 

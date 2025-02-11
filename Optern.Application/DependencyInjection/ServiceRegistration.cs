@@ -70,6 +70,7 @@
             services.AddScoped<ITaskActivityService, TaskActivityService>();
             services.AddScoped<IRepositoryService, RepositoryService>();
             services.AddScoped<IRepositoryFileService, RepositoryFileService>();
+            services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IChatService, ChatService>();
 
 
