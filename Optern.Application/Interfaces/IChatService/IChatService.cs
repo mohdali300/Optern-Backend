@@ -2,9 +2,10 @@
 {
     public interface IChatService
     {
-        public Task<Response<ChatDTO>> CreateRoomChat(string creatorId, ChatType type);
-        public Task<Response<bool>> JoinToRoomChat(string roomId,string participantId);
-        public Task<Response<bool>> JoinAllToRoomChat(string roomId,List<string> participantsIds);
-        public Task<Response<List<ChatParticipantsDTO>>> GetChatParticipants(int chatId); //for test
+        public Task<Response<ChatDTO>> CreateRoomChatAsync(string creatorId, ChatType type);
+        public Task<Response<bool>> JoinToRoomChatAsync(string roomId,string participantId);
+        public Task<Response<bool>> JoinAllToRoomChatAsync(string roomId,List<string> participantsIds);
+        public Task<Response<bool>> RemoveFromRoomChatAsync(int chatId,string userId);
+        public Task<Response<List<ChatParticipantsDTO>>> GetChatParticipantsAsync(int chatId); //for test
     }
 }

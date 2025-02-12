@@ -301,7 +301,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     if (userRoom == null)
                         return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Request not found", 404);
 
-                    await _chatService.JoinToRoomChat(roomId, userRoom.UserId); // add user to room chat
+                    await _chatService.JoinToRoomChatAsync(roomId, userRoom.UserId); // add user to room chat
                     userRoom.IsAccepted = true;
                     userRoom.JoinedAt = DateTime.UtcNow;
                     userRoom.IsAdmin = false;
@@ -315,7 +315,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
 
                     List<string> UsersIds = new List<string>();
                     requestsToApprove.ForEach(ur => UsersIds.Add(ur.UserId));
-                    await _chatService.JoinAllToRoomChat(roomId, UsersIds); // add all to room caht
+                    await _chatService.JoinAllToRoomChatAsync(roomId, UsersIds); // add all to room caht
 
                     requestsToApprove.ForEach(ur =>
                     {
