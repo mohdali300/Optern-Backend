@@ -1,5 +1,4 @@
 ﻿
-
 namespace Optern.Application.Interfaces.IAuthService
 {
     public interface IAuthService

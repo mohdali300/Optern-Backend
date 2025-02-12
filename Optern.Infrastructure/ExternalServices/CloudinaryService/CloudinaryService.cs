@@ -1,5 +1,4 @@
-﻿using Path = System.IO.Path;
-
+﻿
 namespace Optern.Infrastructure.ExternalServices.FileService
 {
     public class CloudinaryService : ICloudinaryService

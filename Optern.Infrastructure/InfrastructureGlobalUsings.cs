@@ -2,12 +2,7 @@
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Optern.Domain.Entities;
-global using System;
-global using System.Collections.Generic;
-global using System.Linq;
 global using System.Text;
-global using System.Threading.Tasks;
-global using static Dapper.SqlMapper;
 global using Optern.Infrastructure.Data;
 global using System.Linq.Expressions;
 global using Microsoft.EntityFrameworkCore.Storage;
@@ -16,9 +11,7 @@ global using HotChocolate.Authorization;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Http;
 global using System.ComponentModel.DataAnnotations;
-global using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
 global using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
-global using Optern.Infrastructure.Response;
 global using System.IdentityModel.Tokens.Jwt;
 global using Optern.Infrastructure.ExternalDTOs.Mail;
 global using Optern.Domain.Trie;
@@ -44,3 +37,81 @@ global using Optern.Infrastructure.ExternalInterfaces.IMail;
 global using System.Net.Mail;
 global using Optern.Infrastructure.Repositories;
 global using FluentValidation;
+global using Optern.Application.DTOs.Login;
+global using Optern.Application.DTOs.ResetPassword;
+global using Optern.Application.DTOS.Register;
+global using Optern.Application.Interfaces.IAuthService;
+global using Optern.Domain.Enums;
+global using Optern.Application.DTOs.BookMarkedTask;
+global using Optern.Application.Interfaces.IBookMarkedTaskService;
+global using Optern.Infrastructure.UnitOfWork;
+global using Optern.Application.DTOs.Chat;
+global using Optern.Application.Interfaces.IChatService;
+global using Optern.Application.DTOs.Comment;
+global using Optern.Application.Interfaces.ICommentService;
+global using AutoMapper;
+global using Optern.Application.DTOs.FavoritePosts;
+global using Optern.Application.DTOs.Post;
+global using Optern.Application.Interfaces.IFavoritePostsService;
+global using Optern.Application.DTOs.Message;
+global using Optern.Application.Interfaces.IMessageService;
+global using Optern.Application.Interfaces.INotificationService;
+global using Optern.Application.DTOs.Position;
+global using Optern.Application.Interfaces.IPositionService;
+global using Optern.Infrastructure.Validations;
+global using Optern.Application.DTOs.Tags;
+global using Optern.Application.Interfaces.IPostService;
+global using Optern.Application.DTOs.React;
+global using Optern.Application.Interfaces.IReactService;
+global using Path = System.IO.Path;
+global using Optern.Application.DTOs.RepositoryFile;
+global using Optern.Application.Interfaces.IRepositoryFileService;
+global using Optern.Application.Response;
+global using Optern.Application.DTOs.LoginForJWT;
+global using Optern.Infrastructure.Helpers;
+global using Optern.Application.Interfaces.IRepositoryService;
+global using Optern.Application.DTOs.Room;
+global using Optern.Application.Interfaces.IRoomTrackService;
+
+global using Optern.Application.DTOs.Skills;
+global using Optern.Application.DTOs.Track;
+global using Optern.Application.Interfaces.IRoomService;
+global using Optern.Application.Interfaces.IRoomSkillService;
+global using Optern.Application.Interfaces.ISkillService;
+global using Optern.Application.Interfaces.IUserService;
+global using Optern.Application.Interfaces.IRoomSettingService;
+
+
+global using Optern.Application.DTOs.RoomUser;
+global using Optern.Application.Interfaces.IRoomUserService;
+
+global using Optern.Application.DTOs.Sprint;
+global using Optern.Application.Interfaces.ISprintService;
+
+global using Optern.Application.Interfaces.ITagService;
+
+global using Optern.Application.Interfaces.ITaskActivityService;
+global using Optern.Application.DTOs.TaskActivity;
+
+
+global using Optern.Application.DTOs.Task;
+global using Optern.Application.Interfaces.ITaskService;
+global using Optern.Domain.Specifications;
+global using Optern.Domain.Specifications.RoomSpecifications;
+
+global using Optern.Application.DTOs.WorkSpace;
+global using Optern.Application.Interfaces.IWorkSpaceService;
+
+global using Optern.Application.Interfaces.ITrackService;
+
+
+
+
+
+
+
+
+
+
+
+

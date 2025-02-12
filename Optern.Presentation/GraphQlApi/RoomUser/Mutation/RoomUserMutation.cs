@@ -1,9 +1,4 @@
-﻿using Optern.Application.DTOs.Room;
-using Optern.Application.DTOs.RoomUser;
-using Optern.Application.Interfaces.IRoomService;
-using Optern.Application.Interfaces.IRoomUserService;
-using Optern.Infrastructure.Response;
-
+﻿
 [ExtendObjectType("Mutation")]
     public class RoomUserMutation
     {

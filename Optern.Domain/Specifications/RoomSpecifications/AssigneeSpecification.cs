@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Optern.Domain.Specifications.RoomSpecifications
 {
     public class AssigneeSpecification : Specification<Domain.Entities.Task>
