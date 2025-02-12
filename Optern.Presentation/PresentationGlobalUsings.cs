@@ -1,27 +1,21 @@
 ﻿
 // Program.cs
+global using Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation;
+global using Optern.Presentation.GraphQlApi.BookMarkedTask.Query;
+
 global using AppAny.HotChocolate.FluentValidation;
 global using FluentValidation;
 global using Optern.Infrastructure.DependencyInjection;
+global using Optern.Infrastructure.ExternalServices.BackgroundJobs;
 global using Optern.Infrastructure.Hubs;
 global using Optern.Infrastructure.Validations;
-global using Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation;
-global using Optern.Presentation.GraphQlApi.BookMarkedTask.Query;
 // GraphQlAPI/Auth/
 global using Optern.Application.DTOs.Login;
 global using Optern.Application.DTOs.ResetPassword;
 global using Optern.Application.DTOS.Register;
-global using Optern.Application.Helpers;
 global using Optern.Application.Interfaces.IAuthService;
 global using Optern.Domain.Enums;
-global using Optern.Infrastructure.ExternalDTOs.LoginForJWT;
-global using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
-global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
-global using Optern.Infrastructure.ExternalServices.BackgroundJobs;
-global using Optern.Infrastructure.ExternalServices.UserCleanUp;
-global using Optern.Infrastructure.Response;
 global using Optern.Application.Interfaces.IRoomService;
-global using Optern.Domain.Entities;
 
 // GraphQlAPI/Comment
 global using Optern.Application.DTOs.Comment;
@@ -60,7 +54,6 @@ global using Optern.Application.Interfaces.ITagService;
 // GraphQL/Task
 global using Optern.Application.DTOs.Task;
 global using Optern.Application.Interfaces.ITaskService;
-global using Optern.Application.Services.TaskActivityService;
 global using Optern.Presentation.GraphQlApi.TaskActivity.Mutation;
 global using Optern.Presentation.GraphQlApi.TaskActivity.Query;
 
@@ -84,12 +77,21 @@ global using Optern.Application.DTOs.RepositoryFile;
 global using Optern.Application.Interfaces.IRepositoryFileService;
 
 // GraphQLAPI/Skill
-global using Optern.Application.DTOs.Skills;
 global using Optern.Application.Interfaces.ISkillService;
 
 global using Optern.Presentation.GraphQlApi.Chat.Query;
 global using Optern.Application.DTOs.Chat;
 global using Optern.Application.Interfaces.IChatService;
+
+global using Optern.Application.Response;
+
+
+
+global using Optern.Application.DTOs.LoginForJWT;
+global using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
+global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
+global using Optern.Infrastructure.Helpers;
+
 
 
 

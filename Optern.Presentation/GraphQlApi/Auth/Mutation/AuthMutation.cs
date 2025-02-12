@@ -1,6 +1,6 @@
 ﻿
 
-    [ExtendObjectType("Mutation")]
+[ExtendObjectType("Mutation")]
     public class AuthMutation
     {
         [GraphQLDescription("Register")]

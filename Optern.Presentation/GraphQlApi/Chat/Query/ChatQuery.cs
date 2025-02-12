@@ -1,4 +1,5 @@
-﻿namespace Optern.Presentation.GraphQlApi.Chat.Query
+﻿
+namespace Optern.Presentation.GraphQlApi.Chat.Query
 {
     [ExtendObjectType("Query")]
     public class ChatQuery

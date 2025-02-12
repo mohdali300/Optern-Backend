@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Optern.Domain.Specifications.RoomSpecifications
+﻿namespace Optern.Domain.Specifications.RoomSpecifications
 {
     public class DueDateSpecification : Specification<Domain.Entities.Task>
     {

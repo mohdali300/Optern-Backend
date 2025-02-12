@@ -1,5 +1,4 @@
 ﻿
-
 namespace Optern.Application.Interfaces.IRepositoryService
 {
     public interface IRepositoryService
