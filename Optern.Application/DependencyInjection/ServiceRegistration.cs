@@ -1,4 +1,7 @@
-﻿namespace Optern.Infrastructure.DependencyInjection
+﻿using Optern.Application.Interfaces.IMessageService;
+using Optern.Application.Services.MessageService;
+
+namespace Optern.Infrastructure.DependencyInjection
 {
     public static class ServiceRegistration
     {
