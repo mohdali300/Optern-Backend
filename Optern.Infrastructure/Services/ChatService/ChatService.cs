@@ -74,6 +74,46 @@ namespace Optern.Infrastructure.Services.ChatService
         }
         #endregion
 
+        #region Join All To Room Chat
+        public async Task<Response<bool>> JoinAllToRoomChat(string roomId, List<string> participantsIds)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(roomId) && participantsIds.Count() > 0)
+                {
+                    var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+                    if (room != null)
+                    {
+                        var participants = new List<ChatParticipants>();
+                        foreach (var id in participantsIds)
+                        {
+                            var user = await _unitOfWork.Users.GetByIdAsync(id);
+                            if (user != null)
+                            {
+                                var participant = new ChatParticipants
+                                {
+                                    UserId = id,
+                                    ChatId = room.ChatId
+                                };
+                                participants.Add(participant);
+                            }
+                        }
+
+                        await _unitOfWork.ChatParticipants.AddRangeAsync(participants);
+                        await _unitOfWork.SaveAsync();
+                        return Response<bool>.Success(true, "New participants joined to room chat.", 201);
+                    }
+                    return Response<bool>.Failure(false, "This Room is not existed!", 400);
+                }
+                return Response<bool>.Failure(false, "Invalid Room or Users IDs!", 400);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        } 
+        #endregion
+
         #region Get chat participants
         public async Task<Response<List<ChatParticipantsDTO>>> GetChatParticipants(int chatId)
         {

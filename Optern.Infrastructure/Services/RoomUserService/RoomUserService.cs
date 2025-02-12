@@ -313,6 +313,10 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     if (!requestsToApprove.Any())
                         return Response<List<RoomUserDTO>>.Success(new List<RoomUserDTO>(), "No pending requests to approve.");
 
+                    List<string> UsersIds = new List<string>();
+                    requestsToApprove.ForEach(ur => UsersIds.Add(ur.UserId));
+                    await _chatService.JoinAllToRoomChat(roomId, UsersIds); // add all to room caht
+
                     requestsToApprove.ForEach(ur =>
                     {
                         ur.IsAccepted = true;
@@ -340,7 +344,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<List<RoomUserDTO>>.Failure($"An error occurred processing the request: {ex.Message}", 500);
+                return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),$"An error occurred processing the request: {ex.Message}", 500);
             }
         }
 
