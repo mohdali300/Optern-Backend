@@ -90,7 +90,7 @@ namespace Optern.Infrastructure.Services.RoomService
 						Id=r.Id,
 						Name = r.Name,
 						Description = r.Description,
-						CoverPicture = r.CoverPicture.ToString(),
+						CoverPicture = r.CoverPicture,
 						Members = r.UserRooms.Count(),
 						CreatedAt = r.CreatedAt,
 						RoomType = r.RoomType,
