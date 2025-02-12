@@ -198,7 +198,7 @@ namespace Optern.Infrastructure.Services.RoomService
 				}
 				// current login User  
 				var currentUser = await _userService.GetCurrentUserAsync();
-                var chat = await _chatService.CreateRoomChat(model.CreatorId, ChatType.Group); // create chat for room
+                var chat = await _chatService.CreateRoomChatAsync(model.CreatorId, ChatType.Group); // create chat for room
 
                 var room = new Room
 				{
@@ -244,7 +244,7 @@ namespace Optern.Infrastructure.Services.RoomService
 					IsAccepted=true
 				});
 
-				await _chatService.JoinToRoomChat(room.Id, room.CreatorId); // add creator to chat
+				await _chatService.JoinToRoomChatAsync(room.Id, room.CreatorId); // add creator to chat
 
 				await _unitOfWork.SaveAsync();
 

@@ -301,7 +301,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     if (userRoom == null)
                         return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Request not found", 404);
 
-                    await _chatService.JoinToRoomChat(roomId, userRoom.UserId); // add user to room chat
+                    await _chatService.JoinToRoomChatAsync(roomId, userRoom.UserId); // add user to room chat
                     userRoom.IsAccepted = true;
                     userRoom.JoinedAt = DateTime.UtcNow;
                     userRoom.IsAdmin = false;
@@ -312,6 +312,10 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     requestsToApprove = await _context.UserRooms.Where(ur => ur.RoomId == roomId && !ur.IsAccepted).Include(ur => ur.User).ToListAsync();
                     if (!requestsToApprove.Any())
                         return Response<List<RoomUserDTO>>.Success(new List<RoomUserDTO>(), "No pending requests to approve.");
+
+                    List<string> UsersIds = new List<string>();
+                    requestsToApprove.ForEach(ur => UsersIds.Add(ur.UserId));
+                    await _chatService.JoinAllToRoomChatAsync(roomId, UsersIds); // add all to room caht
 
                     requestsToApprove.ForEach(ur =>
                     {
@@ -340,7 +344,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<List<RoomUserDTO>>.Failure($"An error occurred processing the request: {ex.Message}", 500);
+                return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),$"An error occurred processing the request: {ex.Message}", 500);
             }
         }
 
