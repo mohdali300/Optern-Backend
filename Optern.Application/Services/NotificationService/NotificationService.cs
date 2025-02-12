@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Optern.Application.Services.NotificationService
 {
-    public class NotificationService: INotificationService
-    {
+    //public class NotificationService: INotificationService
+    //{
 
-    }
+    //}
 }

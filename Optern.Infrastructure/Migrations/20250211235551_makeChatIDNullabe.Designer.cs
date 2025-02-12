@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250211235551_makeChatIDNullabe")]
+    partial class makeChatIDNullabe
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -960,7 +963,7 @@ namespace Optern.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
 
-                    b.Property<int?>("ChatId")
+                    b.Property<int?>("ChatID")
                         .IsRequired()
                         .HasColumnType("integer");
 
@@ -992,7 +995,7 @@ namespace Optern.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId")
+                    b.HasIndex("ChatID")
                         .IsUnique();
 
                     b.HasIndex("CreatorId")
@@ -1933,7 +1936,7 @@ namespace Optern.Infrastructure.Migrations
                 {
                     b.HasOne("Optern.Domain.Entities.Chat", "Chat")
                         .WithOne("Room")
-                        .HasForeignKey("Optern.Domain.Entities.Room", "ChatId")
+                        .HasForeignKey("Optern.Domain.Entities.Room", "ChatID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

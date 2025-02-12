@@ -3,6 +3,7 @@ namespace Optern.Application.Interfaces.IRoomService
 {
     public interface IRoomService
     {
+        public Task<bool> IsRoomExist(string roomId);
         public Task<Response<IEnumerable<ResponseRoomDTO>>> GetAllAsync();
         public Task<Response<IEnumerable<ResponseRoomDTO>>> GetCreatedRooms(string id);
         public Task<Response<IEnumerable<ResponseRoomDTO>>> GetPopularRooms();

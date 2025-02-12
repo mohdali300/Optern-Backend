@@ -72,6 +72,8 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<ITaskActivityService, TaskActivityService>();
             services.AddScoped<IRepositoryService, RepositoryService>();
             services.AddScoped<IRepositoryFileService, RepositoryFileService>();
+         //   services.AddScoped<INotificationService, NotificationService>();
+          //  services.AddScoped<IUserNotificationService, UserNotificationService>();
 
 
             return services;
