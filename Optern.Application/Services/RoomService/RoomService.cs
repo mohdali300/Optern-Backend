@@ -1,9 +1,8 @@
-﻿
-
-namespace Optern.Application.Services.RoomService
+﻿namespace Optern.Application.Services.RoomService
 {
 	public class RoomService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
-		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService, IRepositoryService repositoryService) : IRoomService
+		ICloudinaryService cloudinaryService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, ISkillService skillService, IRoomSkillService roomSkillService,
+		IRepositoryService repositoryService, IChatService chatService) : IRoomService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
@@ -15,6 +14,7 @@ namespace Optern.Application.Services.RoomService
 		private readonly ISkillService _skillService= skillService;
 		private readonly IRoomSkillService _roomSkillService = roomSkillService;
 		private readonly IRepositoryService _repositoryService = repositoryService;
+		private readonly IChatService _chatService = chatService;
 
 		#region GetAllAsync
 
@@ -153,7 +153,7 @@ namespace Optern.Application.Services.RoomService
 			{
 				if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.RoomId))
 				{
-					return Response<string>.Failure("Invalid Data Model", 400);
+					return Response<string>.Failure("Either Room or User is not found!", 400);
 				}
 				var roomExist = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
 				var userExist = await _unitOfWork.Users.GetByIdAsync(model.UserId);
@@ -167,7 +167,7 @@ namespace Optern.Application.Services.RoomService
 					.GetByExpressionAsync(u => u.UserId == model.UserId && u.RoomId == model.RoomId);
 				if (isUserInRoom != null)
 				{
-					return Response<string>.Failure($"You Already Joined To This Room Before!", 400);
+					return Response<string>.Failure($"You have already requested to join this room!", 400);
 				}
 				var joinRoom = await _unitOfWork.UserRoom.AddAsync(new UserRoom
 				{
@@ -177,9 +177,10 @@ namespace Optern.Application.Services.RoomService
 					JoinedAt=DateTime.UtcNow,
 					IsAccepted=false
 				});
+
 				await _unitOfWork.SaveAsync();
 				await transaction.CommitAsync();
-				return Response<string>.Success($"You have successfully to joined the room ", "You have successfully joined to the room ", 201);
+				return Response<string>.Success($"Your request to join has been sent successfully", "Waiting for approval", 201);
 
 			}
 			catch (Exception ex)
@@ -203,13 +204,16 @@ namespace Optern.Application.Services.RoomService
 				}
 				// current login User  
 				var currentUser = await _userService.GetCurrentUserAsync();
-				var room = new Room
+                var chat = await _chatService.CreateRoomChat(model.CreatorId, ChatType.Group); // create chat for room
+
+                var room = new Room
 				{
 					Name = model.Name,
 					Description = model.Description,
 					RoomType = model.RoomType,
 					CreatedAt = DateTime.UtcNow,
 					CreatorId = model.CreatorId, // replace with ==> _userService.GetCurrentUserAsync()
+					ChatId=chat.Data.Id
 				};
 
 				var validate = new RoomValidator().Validate(room);
@@ -219,7 +223,7 @@ namespace Optern.Application.Services.RoomService
 					var errorMessages = string.Join(", ", validate.Errors.Select(e => e.ErrorMessage));
 					return Response<ResponseRoomDTO>.Failure(new ResponseRoomDTO(), $"Invalid Data Model: {errorMessages}", 400);
 				}
-				await _unitOfWork.Rooms.AddAsync(room);
+                await _unitOfWork.Rooms.AddAsync(room);
 				await _unitOfWork.SaveAsync();
 
 				if (model.Positions != null && model.Positions.Any())
@@ -245,6 +249,9 @@ namespace Optern.Application.Services.RoomService
 					JoinedAt=DateTime.UtcNow,
 					IsAccepted=true
 				});
+
+				await _chatService.JoinToRoomChat(room.Id, room.CreatorId); // add creator to chat
+
 				await _unitOfWork.SaveAsync();
 
 				await transaction.CommitAsync();

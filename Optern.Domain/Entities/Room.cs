@@ -19,7 +19,7 @@ namespace Optern.Domain.Entities
         // Foreign Keys
 
         public string CreatorId { get; set; }
-        public int? ChatId { get; set; }
+        public int ChatId { get; set; }
 
         // Navigation Property
         public virtual ApplicationUser Creator {get;set;}

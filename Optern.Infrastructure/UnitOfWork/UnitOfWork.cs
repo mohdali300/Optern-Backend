@@ -36,6 +36,11 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<UserRoom> RoomUsers { get; private set; }
         public IGenericRepository<Repository> Repository { get; private set; }
         public IGenericRepository<RepositoryFile> RepositoryFile { get; private set; }
+        public IGenericRepository<Chat> Chats { get; private set; }
+        public IGenericRepository<ChatParticipants> ChatParticipants { get; private set; }
+        public IGenericRepository<Notifications> Notifications { get; private set; }
+        public IGenericRepository<UserNotification> UserNotification { get; private set; }
+
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -64,6 +69,10 @@ namespace Optern.Infrastructure.UnitOfWork
             TaskActivites = new GenericRepository<TaskActivity>(context);
             Repository= new GenericRepository<Repository>(context);
             RepositoryFile= new GenericRepository<RepositoryFile>(context);
+            Chats= new GenericRepository<Chat>(context);
+            ChatParticipants= new GenericRepository<ChatParticipants>(context);
+            UserNotification= new GenericRepository<UserNotification>(context);
+            Notifications= new GenericRepository<Notifications>(context);
         }
 
         public async Task<int> SaveAsync()

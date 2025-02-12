@@ -1,4 +1,6 @@
-﻿
+﻿using Optern.Application.Interfaces.IMessageService;
+using Optern.Application.Services.MessageService;
+using Optern.Infrastructure.ExternalInterfaces.IUserNotificationService;
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -72,8 +74,10 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<ITaskActivityService, TaskActivityService>();
             services.AddScoped<IRepositoryService, RepositoryService>();
             services.AddScoped<IRepositoryFileService, RepositoryFileService>();
-         //   services.AddScoped<INotificationService, NotificationService>();
-          //  services.AddScoped<IUserNotificationService, UserNotificationService>();
+            services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IUserNotificationService, UserNotificationService>();
 
 
             return services;

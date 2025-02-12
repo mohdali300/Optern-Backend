@@ -32,6 +32,11 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<UserRoom> RoomUsers { get; }
         IGenericRepository<Repository> Repository { get; }
         IGenericRepository<RepositoryFile> RepositoryFile { get;  }
+        IGenericRepository<Chat> Chats { get; }
+        IGenericRepository<ChatParticipants> ChatParticipants { get; } 
+        IGenericRepository<Notifications> Notifications { get; }
+        IGenericRepository<UserNotification> UserNotification { get; }
+
         Task<int> SaveAsync();
     }
 }
