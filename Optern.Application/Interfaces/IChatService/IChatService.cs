@@ -6,6 +6,6 @@
         public Task<Response<bool>> JoinToRoomChatAsync(string roomId,string participantId);
         public Task<Response<bool>> JoinAllToRoomChatAsync(string roomId,List<string> participantsIds);
         public Task<Response<bool>> RemoveFromRoomChatAsync(int chatId,string userId);
-        public Task<Response<List<ChatParticipantsDTO>>> GetChatParticipantsAsync(int chatId); //for test
+        public Task<Response<List<ChatParticipants>>> GetChatParticipantsAsync(int? chatId=null,string? userId=null);
     }
 }
