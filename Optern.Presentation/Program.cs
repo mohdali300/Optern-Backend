@@ -1,5 +1,8 @@
 // Initialize builder
 
+using Microsoft.Extensions.Logging;
+using Serilog;
+
 using Optern.Presentation.GraphQlApi.Message.Mutation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,6 +75,17 @@ builder.Services
 builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
 
 
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Logging.ClearProviders()
+	.AddSerilog()
+	.AddConsole()
+	.SetMinimumLevel(LogLevel.Information);
+
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
@@ -109,4 +123,5 @@ app.MapHub<ChatHub>("/ChatHub");
 app.MapHub<NotificationHub>("/NotificationHub");
 app.MapControllers();
 app.MapGraphQL("/ui/graphql");
+app.Logger.LogInformation("Website is running.");
 app.Run();
