@@ -53,7 +53,7 @@ namespace Optern.Infrastructure.Services.RoomService
 					  (room, userRooms) => new
 					  {
 						  Room = room,
-						  NumberOfUsers = userRooms.Count()
+						  NumberOfUsers = userRooms.Count(r=>r.IsAccepted)
 					  }
 					)
 					.OrderByDescending(r => r.NumberOfUsers)
@@ -95,7 +95,7 @@ namespace Optern.Infrastructure.Services.RoomService
 						Id=r.Id,
 						Name = r.Name,
 						Description = r.Description,
-						CoverPicture = r.CoverPicture.ToString(),
+						CoverPicture = r.CoverPicture,
 						Members = r.UserRooms.Count(),
 						CreatedAt = r.CreatedAt,
 						RoomType = r.RoomType,
