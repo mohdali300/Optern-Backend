@@ -3,6 +3,8 @@
 using Microsoft.Extensions.Logging;
 using Serilog;
 
+using Optern.Presentation.GraphQlApi.Message.Mutation;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -47,6 +49,7 @@ builder.Services
 .AddType<RepositoryFileQuery>()
 .AddType<SkillQuery>()
 .AddType<ChatQuery>()
+.AddType<WorkSpaceQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -63,6 +66,7 @@ builder.Services
 .AddType<BookMarkedTaskMutation>()
 .AddType<TaskActivityMutation>()
 .AddType<RepositoryFileMutation>()
+.AddType<MessageMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 
