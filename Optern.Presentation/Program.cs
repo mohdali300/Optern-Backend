@@ -1,12 +1,4 @@
 // Initialize builder
-
-
-using Optern.Presentation.GraphQlApi.Notification.Mutation;
-using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Optern.Presentation.GraphQlApi.Message.Mutation;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -48,6 +40,7 @@ builder.Services
 .AddType<SkillQuery>()
 .AddType<ChatQuery>()
 .AddType<WorkSpaceQuery>()
+.AddType<UserNotificationQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()

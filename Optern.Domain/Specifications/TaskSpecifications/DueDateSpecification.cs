@@ -1,4 +1,4 @@
-﻿namespace Optern.Domain.Specifications.RoomSpecifications
+﻿namespace Optern.Domain.Specifications.TaskSpecifications
 {
     public class DueDateSpecification : Specification<Domain.Entities.Task>
     {
