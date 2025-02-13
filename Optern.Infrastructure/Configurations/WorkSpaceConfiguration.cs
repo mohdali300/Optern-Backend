@@ -7,9 +7,6 @@
 
             #region Attributes
 
-            //Table Name
-
-            builder.ToTable("WorkSpaces", t => t.HasCheckConstraint("CK_WorkSpaces_CreatedDate_Future", "CreatedDate > NOW()"));
 
             // Primary key
             builder.HasKey(ws => ws.Id);
