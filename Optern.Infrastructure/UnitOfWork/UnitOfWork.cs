@@ -39,6 +39,7 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Chat> Chats { get; private set; }
         public IGenericRepository<ChatParticipants> ChatParticipants { get; private set; }
 
+        public IGenericRepository<Message> Messages { get; private set; }
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -69,6 +70,7 @@ namespace Optern.Infrastructure.UnitOfWork
             RepositoryFile= new GenericRepository<RepositoryFile>(context);
             Chats= new GenericRepository<Chat>(context);
             ChatParticipants= new GenericRepository<ChatParticipants>(context);
+            Messages= new GenericRepository<Message>(context);
         }
 
         public async Task<int> SaveAsync()

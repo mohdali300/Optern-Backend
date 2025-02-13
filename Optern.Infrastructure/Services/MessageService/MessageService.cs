@@ -9,65 +9,101 @@ namespace Optern.Infrastructure.Services.MessageService
         private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
 
         #region Send Message To Room
-        public async Task<Response<MessageDTO>> SendMessageToRoomAsync(int chatId, string senderId, string content, IFile? file = null)
+        public async Task<Response<MessageDTO>> SendMessageToRoomAsync(int chatId,string senderId,string? content = null,IFile? file = null)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                content = !string.IsNullOrWhiteSpace(content) ? content.Trim() : null;
+
+                if (file == null && content == null)
+                {
+                    return Response<MessageDTO>.Failure(new MessageDTO(), "Either message content or file attachment is required.", 400);
+                }
+
                 var chat = await _context.Chats
                     .Include(c => c.ChatParticipants)
                     .FirstOrDefaultAsync(c => c.Id == chatId);
 
                 if (chat == null)
-                    return Response<MessageDTO>.Failure(new MessageDTO(), "Chat Room not found.", 404);
+                {
+                    return Response<MessageDTO>.Failure(new MessageDTO(), "Chat room not found.", 404);
+                }
 
                 if (!chat.ChatParticipants.Any(p => p.UserId == senderId))
-                    return Response<MessageDTO>.Failure(new MessageDTO(), "User not in room chat.", 403);
+                {
+                    return Response<MessageDTO>.Failure(new MessageDTO(), "You are not a member of this chat room.", 403);
+                }
 
                 string? fileUrl = null;
+                string? publicId = null;
+
                 if (file != null)
                 {
+                    if (file.Length > 10_485_760)
+                    {
+                        return Response<MessageDTO>.Failure(new MessageDTO(), "File size exceeds maximum allowed 10MB.", 400);
+                    }
+
                     try
                     {
-                        var uploadResult = await _cloudinaryService.UploadFileAsync(file, "chat-attachments");
+                        (publicId, fileUrl) = await _cloudinaryService.UploadFileAsync(file, "chat-attachments");
 
-                        if (string.IsNullOrEmpty(uploadResult.Url))
+                        if (string.IsNullOrEmpty(fileUrl))
                         {
                             return Response<MessageDTO>.Failure(new MessageDTO(), "Failed to upload file. Please try again.", 500);
                         }
-
-                        fileUrl = uploadResult.Url;
                     }
-                    catch (Exception ex)
+                    catch (Exception uploadEx)
                     {
-                        await transaction.RollbackAsync();
-                        return Response<MessageDTO>.Failure(new MessageDTO(), $"File upload error: {ex.Message}", 500);
+                        return Response<MessageDTO>.Failure(new MessageDTO(), "File upload service unavailable. Please try again later.", 503);
                     }
                 }
 
-                var message = new Message
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    ChatId = chatId,
-                    SenderId = senderId,
-                    Content = content,
-                    SentAt = DateTime.UtcNow,
-                   // AttachmentUrl = fileUrl
-                };
+                    var message = new Message
+                    {
+                        ChatId = chatId,
+                        SenderId = senderId,
+                        Content = content,
+                        SentAt = DateTime.UtcNow,
+                        AttachmentUrl = fileUrl,
+                        IsDeleted = false,
+                    };
 
-                _context.Messages.Add(message);
-                await _context.SaveChangesAsync();
+                    _context.Messages.Add(message);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
-                await transaction.CommitAsync();
+                    var messageDto = _mapper.Map<MessageDTO>(message);
+                    return Response<MessageDTO>.Success(
+                        messageDto,
+                        file != null && content != null ? "Message with attachment sent successfully"
+                        : file != null ? "File sent successfully"
+                        : "Message sent successfully",
+                        200
+                    );
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
 
-                var messageDto = _mapper.Map<MessageDTO>(message);
-                return Response<MessageDTO>.Success(messageDto, "Message sent successfully.", 200);
+                    if (!string.IsNullOrEmpty(publicId))
+                    {
+                        await _cloudinaryService.DeleteFileAsync(publicId);
+                    }
+
+                    return Response<MessageDTO>.Failure(new MessageDTO(), "Failed to send message. Please try again.", 500);
+                }
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return Response<MessageDTO>.Failure(new MessageDTO(), $"An error occurred while sending the message: {ex.Message}", 500);
+                return Response<MessageDTO>.Failure(new MessageDTO(), "An unexpected error occurred. Please try again.", 500);
             }
         }
+
+
         #endregion
 
     }

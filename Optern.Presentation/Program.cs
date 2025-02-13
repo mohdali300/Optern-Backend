@@ -1,5 +1,7 @@
 // Initialize builder
 
+using Optern.Presentation.GraphQlApi.Message.Mutation;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -60,6 +62,7 @@ builder.Services
 .AddType<BookMarkedTaskMutation>()
 .AddType<TaskActivityMutation>()
 .AddType<RepositoryFileMutation>()
+.AddType<MessageMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 
