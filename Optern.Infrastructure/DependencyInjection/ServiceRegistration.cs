@@ -1,6 +1,9 @@
 ﻿using Hangfire.PostgreSql;
 using Microsoft.Extensions.DependencyInjection;
+using Optern.Application.Interfaces.IUserNotificationService;
 using Optern.Application.Mappings;
+using Optern.Application.Services.NotificationService;
+using Optern.Application.Services.UserNotificationService;
 using Optern.Infrastructure.ExternalServices.AutoCompleteService;
 using Optern.Infrastructure.ExternalServices.BackgroundJobs;
 using Optern.Infrastructure.ExternalServices.CacheService;
@@ -107,6 +110,8 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IRepositoryFileService, RepositoryFileService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IUserNotificationService, UserNotificationService>();
 
 
             return services;

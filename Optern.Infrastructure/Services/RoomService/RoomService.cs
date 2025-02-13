@@ -21,7 +21,14 @@ namespace Optern.Infrastructure.Services.RoomService
 		private readonly IChatService _chatService = chatService;
 
 		#region GetAllAsync
-		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetAllAsync()
+
+        public async Task<bool> IsRoomExist(string roomId)
+        {
+            var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+            return  room == null ? false : true;
+        }
+
+        public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetAllAsync()
 		{
 			try
 			{

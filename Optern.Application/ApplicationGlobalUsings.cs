@@ -28,9 +28,14 @@ global using Optern.Application.DTOs.WorkSpace;
 global using Optern.Application.DTOs.Task;
 global using Optern.Application.DTOs.TaskActivity;
 global using Task = Optern.Domain.Entities.Task;
+global using System.Globalization;
+global using Optern.Domain.Specifications.RoomSpecifications;
+global using Optern.Domain.Specifications;
+global using Microsoft.EntityFrameworkCore.ChangeTracking;
+global using Optern.Application.DTOs.RoomPosition;
 global using Optern.Application.DTOs.Chat;
 global using Optern.Application.Response;
 global using Optern.Application.DTOs.LoginForJWT;
-
-
-
+global using Optern.Application.Interfaces.IChatService;
+global using Optern.Application.DTOs.Notification;
+global using Optern.Application.DTOs.UserNotification;

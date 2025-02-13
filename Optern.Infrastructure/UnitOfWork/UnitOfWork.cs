@@ -38,6 +38,8 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<RepositoryFile> RepositoryFile { get; private set; }
         public IGenericRepository<Chat> Chats { get; private set; }
         public IGenericRepository<ChatParticipants> ChatParticipants { get; private set; }
+        public IGenericRepository<Notifications> Notifications { get; private set; }
+        public IGenericRepository<UserNotification> UserNotification { get; private set; }
 
         public IGenericRepository<Message> Messages { get; private set; }
 
@@ -70,6 +72,8 @@ namespace Optern.Infrastructure.UnitOfWork
             RepositoryFile= new GenericRepository<RepositoryFile>(context);
             Chats= new GenericRepository<Chat>(context);
             ChatParticipants= new GenericRepository<ChatParticipants>(context);
+            UserNotification= new GenericRepository<UserNotification>(context);
+            Notifications= new GenericRepository<Notifications>(context);
             Messages= new GenericRepository<Message>(context);
         }
 

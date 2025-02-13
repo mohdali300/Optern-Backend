@@ -1,8 +1,10 @@
 // Initialize builder
 
+
+using Optern.Presentation.GraphQlApi.Notification.Mutation;
+using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
 using Microsoft.Extensions.Logging;
 using Serilog;
-
 using Optern.Presentation.GraphQlApi.Message.Mutation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,11 +22,7 @@ builder.Services.AddSwaggerGen();
 // Register FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
-// register SignalR
-builder.Services.AddSignalR(options =>
-{
-	options.EnableDetailedErrors = true;
-});
+
 
 
 #region Register GraphQL
@@ -66,6 +64,8 @@ builder.Services
 .AddType<BookMarkedTaskMutation>()
 .AddType<TaskActivityMutation>()
 .AddType<RepositoryFileMutation>()
+.AddType<NotificationMutation>()
+.AddType<UserNotificationMutation>()
 .AddType<MessageMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
@@ -90,11 +90,16 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("http://localhost:3000")
-			  .AllowAnyHeader()
+		policy.WithOrigins("http://127.0.0.1:5500")//"http://localhost:3000"
+              .AllowAnyHeader()
 			  .AllowAnyMethod()
 			  .AllowCredentials();
 	});
+});
+// register SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
 });
 
 var app = builder.Build();
