@@ -41,6 +41,7 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Notifications> Notifications { get; private set; }
         public IGenericRepository<UserNotification> UserNotification { get; private set; }
 
+        public IGenericRepository<Message> Messages { get; private set; }
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -73,6 +74,7 @@ namespace Optern.Infrastructure.UnitOfWork
             ChatParticipants= new GenericRepository<ChatParticipants>(context);
             UserNotification= new GenericRepository<UserNotification>(context);
             Notifications= new GenericRepository<Notifications>(context);
+            Messages= new GenericRepository<Message>(context);
         }
 
         public async Task<int> SaveAsync()

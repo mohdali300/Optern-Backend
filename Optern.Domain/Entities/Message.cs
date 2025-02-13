@@ -9,8 +9,12 @@ namespace Optern.Domain.Entities
     public class Message
     {
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string? Content { get; set; }
         public DateTime SentAt { get; set; }
+        public string? AttachmentUrl { get; set; }
+        public bool IsDeleted { get; set; } = false;
+        public bool IsRead { get; set; } = false;
+
 
         //Foreign Keys
         public string SenderId { get; set; }

@@ -1,4 +1,8 @@
 ﻿
+using MimeKit;
+using Optern.Domain.Entities;
+using Optern.Infrastructure.Hubs;
+
 namespace Optern.Infrastructure.Services.ChatService
 {
     public class ChatService:IChatService
@@ -13,7 +17,7 @@ namespace Optern.Infrastructure.Services.ChatService
         }
 
         #region Create room chat
-        public async Task<Response<ChatDTO>> CreateRoomChat(string creatorId, ChatType type)
+        public async Task<Response<ChatDTO>> CreateRoomChatAsync(string creatorId, ChatType type)
         {
             try
             {
@@ -41,7 +45,7 @@ namespace Optern.Infrastructure.Services.ChatService
         #endregion
 
         #region Join to room chat
-        public async Task<Response<bool>> JoinToRoomChat(string roomId, string participantId)
+        public async Task<Response<bool>> JoinToRoomChatAsync(string roomId, string participantId)
         {
             try
             {
@@ -74,34 +78,107 @@ namespace Optern.Infrastructure.Services.ChatService
         }
         #endregion
 
-        #region Get chat participants
-        public async Task<Response<List<ChatParticipantsDTO>>> GetChatParticipants(int chatId)
+        #region Join All To Room Chat
+        public async Task<Response<bool>> JoinAllToRoomChatAsync(string roomId, List<string> participantsIds)
         {
             try
             {
-                if (await _unitOfWork.Chats.GetByIdAsync(chatId) != null)
+                if (!string.IsNullOrEmpty(roomId) && participantsIds.Count() > 0)
                 {
-                    var participants = await _context.ChatParticipants.Include(p => p.User)
-                        .Where(p => p.ChatId == chatId)
-                        .Select(p => new ChatParticipantsDTO
-                        {
-                            Id = p.Id,
-                            UserId = p.UserId,
-                            Name = $"{p.User.FirstName} {p.User.LastName}"
-                        })
-                        .ToListAsync();
-
-                    if (participants.Any())
+                    var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+                    if (room != null)
                     {
-                        return Response<List<ChatParticipantsDTO>>.Success(participants);
+                        var participants = new List<ChatParticipants>();
+                        foreach (var id in participantsIds)
+                        {
+                            var user = await _unitOfWork.Users.GetByIdAsync(id);
+                            if (user != null)
+                            {
+                                var participant = new ChatParticipants
+                                {
+                                    UserId = id,
+                                    ChatId = room.ChatId
+                                };
+                                participants.Add(participant);
+                            }
+                        }
+
+                        await _unitOfWork.ChatParticipants.AddRangeAsync(participants);
+                        await _unitOfWork.SaveAsync();
+
+                        return Response<bool>.Success(true, "New participants joined to room chat.", 201);
                     }
-                    return Response<List<ChatParticipantsDTO>>.Success(new List<ChatParticipantsDTO>(), "There is no participants in this chat.");
+                    return Response<bool>.Failure(false, "This Room is not existed!", 400);
                 }
-                return Response<List<ChatParticipantsDTO>>.Failure(new List<ChatParticipantsDTO>(), "This Chat not found.", 404);
+                return Response<bool>.Failure(false, "Invalid Room or Users IDs!", 400);
             }
             catch (Exception ex)
             {
-                return Response<List<ChatParticipantsDTO>>.Failure(new List<ChatParticipantsDTO>(), $"Server error: {ex.Message}", 500);
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        }
+        #endregion
+
+        #region Remove from room chat
+        public async Task<Response<bool>> RemoveFromRoomChatAsync(int chatId, string userId)
+        {
+            try
+            {
+                var chatParticipant = await _unitOfWork.ChatParticipants
+                    .GetByExpressionAsync(p => p.ChatId == chatId && p.UserId == userId);
+                if (chatParticipant != null)
+                {
+                    await _unitOfWork.ChatParticipants.DeleteAsync(chatParticipant);
+                    await _unitOfWork.SaveAsync();
+
+                    return Response<bool>.Success(true, "User left room chat.", 200);
+                }
+                return Response<bool>.Failure(false, "User already left th chat!", 400);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        }
+        #endregion
+
+        #region Get chat participants for user or chat
+        public async Task<Response<List<ChatParticipants>>> GetChatParticipantsAsync(int? chatId = null, string? userId = null)
+        {
+            try
+            {
+                if ((!chatId.HasValue && string.IsNullOrEmpty(userId)) || (chatId.HasValue && !string.IsNullOrEmpty(userId)))
+                    return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "Specify either ChatId or UserId, only one from them.", 400);
+
+                List<ChatParticipants> participants = new();
+                if (chatId.HasValue)
+                {
+                    if (await _context.Chats.FindAsync(chatId) == null)
+                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This chat not existed.", 400);
+
+                    participants = await _context.ChatParticipants.Include(p => p.User)
+                        .Include(p => p.Chat)
+                        .Where(p => p.ChatId == chatId)
+                        .ToListAsync();
+                }
+                else
+                {
+                    var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                    if (user == null)
+                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This user not existed.", 400);
+
+                    participants = await _context.ChatParticipants.Include(p => p.User)
+                        .Include(p => p.Chat)
+                        .Where(p => p.UserId == userId)
+                        .ToListAsync();
+                }
+
+                return (participants.Any()) ? Response<List<ChatParticipants>>.Success(participants)
+                    : Response<List<ChatParticipants>>.Success(participants, "There is no Chat Participant yet.", 204);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), $"Server error: {ex.Message}", 500);
             }
 
         } 
