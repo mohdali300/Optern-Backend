@@ -1,4 +1,8 @@
 ﻿
+using MimeKit;
+using Optern.Domain.Entities;
+using Optern.Infrastructure.Hubs;
+
 namespace Optern.Infrastructure.Services.ChatService
 {
     public class ChatService:IChatService
@@ -101,6 +105,7 @@ namespace Optern.Infrastructure.Services.ChatService
 
                         await _unitOfWork.ChatParticipants.AddRangeAsync(participants);
                         await _unitOfWork.SaveAsync();
+
                         return Response<bool>.Success(true, "New participants joined to room chat.", 201);
                     }
                     return Response<bool>.Failure(false, "This Room is not existed!", 400);
@@ -134,37 +139,46 @@ namespace Optern.Infrastructure.Services.ChatService
             {
                 return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
-        } 
+        }
         #endregion
 
-        #region Get chat participants
-        public async Task<Response<List<ChatParticipantsDTO>>> GetChatParticipantsAsync(int chatId)
+        #region Get chat participants for user or chat
+        public async Task<Response<List<ChatParticipants>>> GetChatParticipantsAsync(int? chatId = null, string? userId = null)
         {
             try
             {
-                if (await _unitOfWork.Chats.GetByIdAsync(chatId) != null)
-                {
-                    var participants = await _context.ChatParticipants.Include(p => p.User)
-                        .Where(p => p.ChatId == chatId)
-                        .Select(p => new ChatParticipantsDTO
-                        {
-                            Id = p.Id,
-                            UserId = p.UserId,
-                            Name = $"{p.User.FirstName} {p.User.LastName}"
-                        })
-                        .ToListAsync();
+                if ((!chatId.HasValue && string.IsNullOrEmpty(userId)) || (chatId.HasValue && !string.IsNullOrEmpty(userId)))
+                    return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "Specify either ChatId or UserId, only one from them.", 400);
 
-                    if (participants.Any())
-                    {
-                        return Response<List<ChatParticipantsDTO>>.Success(participants);
-                    }
-                    return Response<List<ChatParticipantsDTO>>.Success(new List<ChatParticipantsDTO>(), "There is no participants in this chat.");
+                List<ChatParticipants> participants = new();
+                if (chatId.HasValue)
+                {
+                    if (await _context.Chats.FindAsync(chatId) == null)
+                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This chat not existed.", 400);
+
+                    participants = await _context.ChatParticipants.Include(p => p.User)
+                        .Include(p => p.Chat)
+                        .Where(p => p.ChatId == chatId)
+                        .ToListAsync();
                 }
-                return Response<List<ChatParticipantsDTO>>.Failure(new List<ChatParticipantsDTO>(), "This Chat not found.", 404);
+                else
+                {
+                    var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                    if (user == null)
+                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This user not existed.", 400);
+
+                    participants = await _context.ChatParticipants.Include(p => p.User)
+                        .Include(p => p.Chat)
+                        .Where(p => p.UserId == userId)
+                        .ToListAsync();
+                }
+
+                return (participants.Any()) ? Response<List<ChatParticipants>>.Success(participants)
+                    : Response<List<ChatParticipants>>.Success(participants, "There is no Chat Participant yet.", 204);
             }
             catch (Exception ex)
             {
-                return Response<List<ChatParticipantsDTO>>.Failure(new List<ChatParticipantsDTO>(), $"Server error: {ex.Message}", 500);
+                return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), $"Server error: {ex.Message}", 500);
             }
 
         } 

@@ -91,6 +91,7 @@ global using Optern.Application.DTOs.LoginForJWT;
 global using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
 global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
 global using Optern.Infrastructure.Helpers;
+global using Optern.Domain.Entities;
 
 
 
