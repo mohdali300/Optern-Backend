@@ -1,6 +1,4 @@
-﻿using Optern.Application.Interfaces.IBookMarkedTaskService;
-using Optern.Infrastructure.Response;
-
+﻿
 namespace Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation
 {
     [ExtendObjectType("Mutation")]

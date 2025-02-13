@@ -1,6 +1,7 @@
 ﻿//using Optern.Application.DTOs.UserNotification;
-using Optern.Infrastructure.ExternalDTOs.UserNotification;
-using Optern.Infrastructure.ExternalInterfaces.IUserNotificationService;
+
+using Optern.Application.DTOs.UserNotification;
+using Optern.Application.Interfaces.IUserNotificationService;
 
 namespace Optern.Presentation.GraphQlApi.UserNotification.Mutation
 {

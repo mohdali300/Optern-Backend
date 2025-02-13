@@ -138,9 +138,12 @@ namespace Optern.Application.Mappings
 
             CreateMap<Skills, SkillDTO>();
 
+            CreateMap<RepositoryFile, RepositoryFileResponseDTO>();
             #endregion
 
-            CreateMap<RepositoryFile, RepositoryFileResponseDTO>();
+            //Notification
+            CreateMap<Notifications, NotificationResponseDTO>();
+
         }
     }
 }

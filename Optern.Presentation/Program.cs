@@ -18,11 +18,7 @@ builder.Services.AddSwaggerGen();
 // Register FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 
-// register SignalR
-builder.Services.AddSignalR(options =>
-{
-	options.EnableDetailedErrors = true;
-});
+
 
 
 #region Register GraphQL
@@ -77,11 +73,16 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("http://localhost:3000")
-			  .AllowAnyHeader()
+		policy.WithOrigins("http://127.0.0.1:5500")//"http://localhost:3000"
+              .AllowAnyHeader()
 			  .AllowAnyMethod()
 			  .AllowCredentials();
 	});
+});
+// register SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
 });
 
 var app = builder.Build();

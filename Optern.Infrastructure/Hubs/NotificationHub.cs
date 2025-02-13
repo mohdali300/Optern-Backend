@@ -1,13 +1,143 @@
-﻿using Task = System.Threading.Tasks.Task;
+﻿using Optern.Application.DTOs.Notification;
+using Optern.Application.DTOs.UserNotification;
+using Optern.Application.Interfaces.IUserNotificationService;
+using Optern.Infrastructure.Services.UserService;
+using System.Collections.Concurrent;
+using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Hubs
 {
-    [Authorize]
-    public class NotificationHub:Hub
+  //  [Authorize]
+    public class NotificationHub(INotificationService notificationService, IUserNotificationService userNotificationService, IUserService userService) : Hub
     {
-        public override Task OnConnectedAsync()
+        private readonly INotificationService _notificationService= notificationService;
+        private readonly IUserNotificationService _userNotificationService= userNotificationService;
+        private readonly IUserService _userService = userService;
+
+        private static ConcurrentDictionary<string, HashSet<string>> userConnections = new ConcurrentDictionary<string, HashSet<string>>();
+
+
+        #region On Users Connected
+
+        public override async Task OnConnectedAsync()
         {
-            return base.OnConnectedAsync(); 
+            var userId = Context.GetHttpContext()?.Request.Query["userId"];
+            if (!string.IsNullOrEmpty(userId))
+            {
+                userConnections.AddOrUpdate(
+                    userId,
+                    new HashSet<string> { Context.ConnectionId },
+                    (key, oldValue) =>
+                    {
+                        oldValue.Add(Context.ConnectionId);
+                        return oldValue;
+                    });
+            }
+
+            await base.OnConnectedAsync();
+        } 
+        #endregion
+
+        #region On Users DisConnected
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var userId = userConnections.FirstOrDefault(x => x.Value.Contains(Context.ConnectionId)).Key;
+
+            if (!string.IsNullOrEmpty(userId) && userConnections.TryGetValue(userId, out var connections))
+            {
+                connections.Remove(Context.ConnectionId);
+                if (connections.Count == 0)
+                {
+                    userConnections.TryRemove(userId, out _);
+                }
+            }
+
+            await base.OnDisconnectedAsync(exception);
+        } 
+        #endregion
+
+
+        #region Send Notifications To All Users in System
+        public async Task<Response<bool>> SendNotificationToAll(string? title, string message)
+        {
+            try
+            {
+                var notification = new NotificationDTO()
+                {
+                    Title = title,
+                    Message = message,
+                };
+
+                var notificationResult = await _notificationService.AddNotification(notification);
+                if (!notificationResult.IsSuccess)
+                {
+                    return Response<bool>.Failure("Failed to save notification", 500);
+                }
+
+                var users = await _userService.GetAll();
+                foreach (var user in users.Data)
+                {
+                    var userNotification = new UserNotificationDTO()
+                    {
+                        UserId = user.Id,
+                        NotificationId = notificationResult.Data.Id
+                    };
+                    await _userNotificationService.SaveNotification(userNotification);
+                }
+                await Clients.All.SendAsync("ReceiveNotificationAll", title, message, DateTime.UtcNow);
+                return Response<bool>.Success(true, "Notification sent successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure("An error occurred while sending the notification", 500);
+            }
         }
+
+        #endregion
+
+
+        #region Send Notification To Specific User in System
+        public async Task<Response<bool>> SendNotificationToUser(string userId, string? title, string message)
+        {
+            try
+            {
+                var notification = new NotificationDTO()
+                {
+                    Title = title,
+                    Message = message,
+                };
+
+                var notificationResult = await _notificationService.AddNotification(notification);
+                if (!notificationResult.IsSuccess)
+                {
+                    return Response<bool>.Failure("Failed to save notification", 500);
+                }
+
+                var userNotification = new UserNotificationDTO()
+                {
+                    UserId = userId,
+                    NotificationId = notificationResult.Data.Id
+                };
+                var userNotificationResult = await _userNotificationService.SaveNotification(userNotification);
+
+                if (userNotificationResult.IsSuccess && userConnections.TryGetValue(userId, out var connections))
+                {
+                    foreach (var connectionId in connections)
+                    {
+                        await Clients.Client(connectionId).SendAsync("ReceiveNotificationUser", title, message, DateTime.UtcNow);
+                    }
+                }
+                return Response<bool>.Success(true, "Notification sent successfully", 200);
+
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure("An error occurred while sending the notification", 500);
+
+            }
+        } 
+        #endregion
+
+
     }
 }

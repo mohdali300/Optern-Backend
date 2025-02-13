@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
-namespace Optern.Domain.Specifications.RoomSpecifications
+﻿namespace Optern.Domain.Specifications.RoomSpecifications
 {
 public class StartDateSpecification : Specification<Domain.Entities.Task>
     {

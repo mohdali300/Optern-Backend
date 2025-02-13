@@ -42,7 +42,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Optern.Domain\Optern.Domain.csproj" />
+	  <ProjectReference Include="..\Optern.Application\Optern.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{c0c07587-41a7-46c8-8fbd-3f9c8ebe2ddc}" />

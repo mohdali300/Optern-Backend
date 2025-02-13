@@ -960,8 +960,7 @@ namespace Optern.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
 
-                    b.Property<int?>("ChatId")
-                        .IsRequired()
+                    b.Property<int>("ChatId")
                         .HasColumnType("integer");
 
                     b.Property<string>("CoverPicture")

@@ -1,6 +1,5 @@
-﻿using Optern.Infrastructure.ExternalInterfaces.INotificationService;
-using Optern.Infrastructure.ExternalDTOs.Notification;
-using Optern.Infrastructure.ExternalInterfaces.INotificationService;
+﻿using Optern.Application.DTOs.Notification;
+using Optern.Application.Interfaces.INotificationService;
 
 namespace Optern.Presentation.GraphQlApi.Notification.Mutation
 {
@@ -8,7 +7,7 @@ namespace Optern.Presentation.GraphQlApi.Notification.Mutation
     public class NotificationMutation
     {
         [GraphQLDescription("Add Notification")]
-        public async Task<Response<bool>> AddNotification([Service] INotificationService _notificationService,
+        public async Task<Response<NotificationResponseDTO>> AddNotification([Service] INotificationService _notificationService,
             NotificationDTO model) =>
             await _notificationService.AddNotification(model);
     }
