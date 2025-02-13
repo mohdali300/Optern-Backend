@@ -16,6 +16,7 @@ namespace Optern.Application.DTOs.Message
             SenderId=string.Empty;
             UserName=string.Empty;
             ProfilePicture=string.Empty;
+            AttachmentUrl=string.Empty;
         }
         public int? Id { get; set; }
         public string? Content { get; set; }
@@ -24,7 +25,8 @@ namespace Optern.Application.DTOs.Message
         public int? ChatId { get; set; }
         public string? UserName { get;set; }
         public string? ProfilePicture { get; set; }
-
-        public string SentHour => SentAt.ToString("hh:mm tt");
+        public string? AttachmentUrl { get; set; }
+        public bool IsDeleted { get; set; } = false;
+        public string SentHour => SentAt.ToLocalTime().ToString("hh:mm tt");
     }
 }

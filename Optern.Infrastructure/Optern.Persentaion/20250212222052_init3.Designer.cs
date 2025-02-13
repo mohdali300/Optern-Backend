@@ -12,8 +12,8 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Optern.Persentaion
 {
     [DbContext(typeof(OpternDbContext))]
-    [Migration("20250207115459_init2")]
-    partial class init2
+    [Migration("20250212222052_init3")]
+    partial class init3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -339,9 +339,6 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("RoomId")
-                        .HasColumnType("text");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
@@ -349,9 +346,6 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
-
-                    b.HasIndex("RoomId")
-                        .IsUnique();
 
                     b.ToTable("Chats", (string)null);
                 });
@@ -609,7 +603,7 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("SentDate")
+                    b.Property<DateTime>("SentAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -618,7 +612,7 @@ namespace Optern.Infrastructure.Optern.Persentaion
 
                     b.HasIndex("SenderId");
 
-                    b.HasIndex("ChatId", "SentDate", "SenderId")
+                    b.HasIndex("ChatId", "SentAt", "SenderId")
                         .HasDatabaseName("IX_Messages_ChatId_SentDate_SenderId");
 
                     b.ToTable("Messages", (string)null);
@@ -969,6 +963,9 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
 
+                    b.Property<int>("ChatId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("CoverPicture")
                         .HasColumnType("text");
 
@@ -996,6 +993,9 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChatId")
+                        .IsUnique();
 
                     b.HasIndex("CreatorId")
                         .HasDatabaseName("IX_Rooms_CreatorId");
@@ -1269,6 +1269,9 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("NotificationId")
                         .HasColumnType("integer");
@@ -1671,14 +1674,7 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Optern.Domain.Entities.Room", "Room")
-                        .WithOne("Chat")
-                        .HasForeignKey("Optern.Domain.Entities.Chat", "RoomId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Creator");
-
-                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.ChatParticipants", b =>
@@ -1937,11 +1933,19 @@ namespace Optern.Infrastructure.Optern.Persentaion
 
             modelBuilder.Entity("Optern.Domain.Entities.Room", b =>
                 {
+                    b.HasOne("Optern.Domain.Entities.Chat", "Chat")
+                        .WithOne("Room")
+                        .HasForeignKey("Optern.Domain.Entities.Room", "ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Optern.Domain.Entities.ApplicationUser", "Creator")
                         .WithMany("Rooms")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Chat");
 
                     b.Navigation("Creator");
                 });
@@ -2227,6 +2231,9 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.Navigation("ChatParticipants");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("Room")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.Comment", b =>
@@ -2278,9 +2285,6 @@ namespace Optern.Infrastructure.Optern.Persentaion
 
             modelBuilder.Entity("Optern.Domain.Entities.Room", b =>
                 {
-                    b.Navigation("Chat")
-                        .IsRequired();
-
                     b.Navigation("Notifications");
 
                     b.Navigation("Repository")
