@@ -6,6 +6,6 @@ namespace Optern.Presentation.GraphQlApi.Chat.Query
     {
         [GraphQLDescription("Get room chat participants")]
         public async Task<Response<List<ChatParticipantsDTO>>> GetChatParticipants([Service]IChatService _chatService, int chatId)
-            =>await _chatService.GetChatParticipants(chatId);
+            =>await _chatService.GetChatParticipantsAsync(chatId);
     }
 }

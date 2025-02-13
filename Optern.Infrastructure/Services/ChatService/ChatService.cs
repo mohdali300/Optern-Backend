@@ -13,7 +13,7 @@ namespace Optern.Infrastructure.Services.ChatService
         }
 
         #region Create room chat
-        public async Task<Response<ChatDTO>> CreateRoomChat(string creatorId, ChatType type)
+        public async Task<Response<ChatDTO>> CreateRoomChatAsync(string creatorId, ChatType type)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace Optern.Infrastructure.Services.ChatService
         #endregion
 
         #region Join to room chat
-        public async Task<Response<bool>> JoinToRoomChat(string roomId, string participantId)
+        public async Task<Response<bool>> JoinToRoomChatAsync(string roomId, string participantId)
         {
             try
             {
@@ -74,8 +74,71 @@ namespace Optern.Infrastructure.Services.ChatService
         }
         #endregion
 
+        #region Join All To Room Chat
+        public async Task<Response<bool>> JoinAllToRoomChatAsync(string roomId, List<string> participantsIds)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(roomId) && participantsIds.Count() > 0)
+                {
+                    var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+                    if (room != null)
+                    {
+                        var participants = new List<ChatParticipants>();
+                        foreach (var id in participantsIds)
+                        {
+                            var user = await _unitOfWork.Users.GetByIdAsync(id);
+                            if (user != null)
+                            {
+                                var participant = new ChatParticipants
+                                {
+                                    UserId = id,
+                                    ChatId = room.ChatId
+                                };
+                                participants.Add(participant);
+                            }
+                        }
+
+                        await _unitOfWork.ChatParticipants.AddRangeAsync(participants);
+                        await _unitOfWork.SaveAsync();
+                        return Response<bool>.Success(true, "New participants joined to room chat.", 201);
+                    }
+                    return Response<bool>.Failure(false, "This Room is not existed!", 400);
+                }
+                return Response<bool>.Failure(false, "Invalid Room or Users IDs!", 400);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        }
+        #endregion
+
+        #region Remove from room chat
+        public async Task<Response<bool>> RemoveFromRoomChatAsync(int chatId, string userId)
+        {
+            try
+            {
+                var chatParticipant = await _unitOfWork.ChatParticipants
+                    .GetByExpressionAsync(p => p.ChatId == chatId && p.UserId == userId);
+                if (chatParticipant != null)
+                {
+                    await _unitOfWork.ChatParticipants.DeleteAsync(chatParticipant);
+                    await _unitOfWork.SaveAsync();
+
+                    return Response<bool>.Success(true, "User left room chat.", 200);
+                }
+                return Response<bool>.Failure(false, "User already left th chat!", 400);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        } 
+        #endregion
+
         #region Get chat participants
-        public async Task<Response<List<ChatParticipantsDTO>>> GetChatParticipants(int chatId)
+        public async Task<Response<List<ChatParticipantsDTO>>> GetChatParticipantsAsync(int chatId)
         {
             try
             {

@@ -2,7 +2,7 @@
 namespace Optern.Infrastructure.Services.RoomSettings
 {
     public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
-        ICloudinaryService cloudinaryService, IRoomService roomService, ISkillService skillService, IRoomSkillService roomSkillService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService) : IRoomSettingService
+        ICloudinaryService cloudinaryService, IRoomService roomService, ISkillService skillService, IRoomSkillService roomSkillService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, IChatService chatService) : IRoomSettingService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
@@ -10,10 +10,11 @@ namespace Optern.Infrastructure.Services.RoomSettings
         private readonly IUserService _userService = userService;
         private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
         private readonly IRoomService _roomService = roomService;
-        private readonly ISkillService  _skillService = skillService;
+        private readonly ISkillService _skillService = skillService;
         private readonly IRoomSkillService _roomSkillService = roomSkillService;
-        private readonly IRoomPositionService _roomPositionService  = roomPositionService;
+        private readonly IRoomPositionService _roomPositionService = roomPositionService;
         private readonly IRoomTrackService _roomTrackService = roomTrackService;
+        private readonly IChatService _chatService = chatService;
 
 
         #region EditRoom Settings
@@ -26,7 +27,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
 
             var room = await _context.Rooms
                 .Include(r => r.RoomPositions)
-                .Include(r=>r.RoomTracks)
+                .Include(r => r.RoomTracks)
                 .Include(r => r.RoomSkills)
                 .ThenInclude(s => s.Skill)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -50,8 +51,9 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 {
                     await UpdateRoomSkills(room, model.Skills);
                 }
-                if (model.Tracks != null) {
-                   await UpdateRoomTracks(room, model.Tracks);
+                if (model.Tracks != null)
+                {
+                    await UpdateRoomTracks(room, model.Tracks);
                 }
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -63,15 +65,15 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 await transaction.RollbackAsync();
                 return Response<string>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
-        } 
+        }
 
-        public async Task<Response<string>> EditRoomImage(string roomId,[GraphQLType(typeof(UploadType))] IFile? CoverPicture)
+        public async Task<Response<string>> EditRoomImage(string roomId, [GraphQLType(typeof(UploadType))] IFile? CoverPicture)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var room= await _unitOfWork.Rooms.GetByIdAsync(roomId);
-                if(room == null)
+                var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+                if (room == null)
                 {
                     return Response<string>.Failure("Room Not Found!", 404);
                 }
@@ -89,7 +91,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 return Response<string>.Success($"{room.CoverPicture}", "Room Image Updated Successfully", 200);
 
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 return Response<string>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
@@ -130,9 +132,9 @@ namespace Optern.Infrastructure.Services.RoomSettings
             {
                 return Response<bool>.Failure(false, "Room not Found !", 404);
             }
-           using var transaction= await _context.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
-            { 
+            {
                 room.CoverPicture = string.Empty;
                 room.Name = string.Empty;
                 room.Description = string.Empty;
@@ -153,8 +155,8 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 return Response<bool>.Success(true, "Room Rested Successfully", 200);
 
             }
-            catch (Exception ex) 
-            {      
+            catch (Exception ex)
+            {
                 await transaction.RollbackAsync();
                 return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
@@ -189,9 +191,9 @@ namespace Optern.Infrastructure.Services.RoomSettings
                         var remainingAdmins = await _context.UserRooms.CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != userId);
                         if (remainingAdmins == 0)
                         {
-                          
-                           return Response<bool>.Failure(false, "You must specify a new admin before leaving as the last admin", 400);
-                            
+
+                            return Response<bool>.Failure(false, "You must specify a new admin before leaving as the last admin", 400);
+
                         }
                     }
                     else
@@ -204,8 +206,9 @@ namespace Optern.Infrastructure.Services.RoomSettings
                     }
                 }
 
-                
+
                 _context.UserRooms.Remove(userRoom);
+                await _chatService.RemoveFromRoomChatAsync(userRoom.Room.ChatId, userId); // remove from room chat
                 await _context.SaveChangesAsync();
 
 
@@ -274,7 +277,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
                     }
                     else
                     {
-                        return false; 
+                        return false;
                     }
                 }
 
@@ -294,7 +297,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
         #region Update Positions For Room
         private async Task<bool> UpdateRoomPositions(Room room, List<int>? newPositions)
         {
-            if (newPositions == null || !newPositions.Any()) 
+            if (newPositions == null || !newPositions.Any())
                 return false;
 
             var existingPositionIds = room.RoomPositions.Select(rt => rt.PositionId).ToHashSet();
@@ -311,7 +314,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 if (!existingPositionIds.Contains(item))
                 {
                     var newRoomTrack = new List<RoomPosition> { new RoomPosition { PositionId = item } };
-                    var response =await _roomPositionService.AddRoomPosition(room.Id,newRoomTrack.Select(r=>r.PositionId).ToList());
+                    var response = await _roomPositionService.AddRoomPosition(room.Id, newRoomTrack.Select(r => r.PositionId).ToList());
                 }
             }
             return true;
@@ -345,7 +348,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
             }
             await _unitOfWork.SaveAsync();
             return true;
-        } 
+        }
         #endregion
 
 
