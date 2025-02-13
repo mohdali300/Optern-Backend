@@ -141,6 +141,9 @@ namespace Optern.Application.Mappings
             CreateMap<RepositoryFile, RepositoryFileResponseDTO>();
             #endregion
 
+            //Notification
+            CreateMap<Notifications, NotificationResponseDTO>();
+
         }
     }
 }
