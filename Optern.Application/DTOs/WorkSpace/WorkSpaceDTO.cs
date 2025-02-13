@@ -14,7 +14,7 @@ namespace Optern.Application.DTOs.WorkSpace
             RoomId = string.Empty;
             Id = 0;
             Title = string.Empty;   
-            CreatedDate = DateTime.MinValue;
+            CreatedDate = DateTime.UtcNow;
         }
     }
 }

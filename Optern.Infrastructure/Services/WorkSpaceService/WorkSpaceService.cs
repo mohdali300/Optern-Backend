@@ -48,25 +48,25 @@ namespace Optern.Infrastructure.Services.WorkSpaceService
 		#endregion
 		
 		  #region get all WorkSpace
-        public async Task<Response<List<WorkSpace>>> GetAllWorkSpace(string roomId)
-        {
-            try
-            {
-                var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
-                if (room == null)
-                {
-                    return Response<List<WorkSpace>>.Failure(new List<WorkSpace>(), "Room Not Found!", 404);
-                }
+		public async Task<Response<List<WorkSpace>>> GetAllWorkSpace(string roomId)
+		{
+			try
+			{
+				var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+				if (room == null)
+				{
+					return Response<List<WorkSpace>>.Failure(new List<WorkSpace>(), "Room Not Found!", 404);
+				}
 				var workSpaces = await _context.WorkSpaces.Where(ws=>ws.RoomId == roomId).ToListAsync();
 
-                return Response<List<WorkSpace>>.Success(workSpaces, "Workspace Fetched Successfully", 201);
-            }
-            catch (Exception ex)
-            {
-                return Response<List<WorkSpace>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
-            }
-        }
-        #endregion
+				return Response<List<WorkSpace>>.Success(workSpaces, "Workspace Fetched Successfully", 201);
+			}
+			catch (Exception ex)
+			{
+				return Response<List<WorkSpace>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+			}
+		}
+		#endregion
 
 		#region Update WorkSpace
 		public async Task<Response<WorkSpaceDTO>> UpdateWorkSpace(int id, string title)
