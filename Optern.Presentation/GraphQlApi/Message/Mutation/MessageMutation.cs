@@ -11,7 +11,7 @@ namespace Optern.Presentation.GraphQlApi.Message.Mutation
             await _messageService.SendMessageToRoomAsync(chatId, senderId, content, file);
 
         [GraphQLDescription("Delete Message From Room")]
-        public async Task<Response<int>> DeleteMessageAsync([Service] IMessageService _messageService, int messageId, string userId)=>
+        public async Task<Response<bool>> DeleteMessageAsync([Service] IMessageService _messageService, int messageId, string userId)=>
             await _messageService.DeleteMessageAsync(messageId, userId);
 
 
