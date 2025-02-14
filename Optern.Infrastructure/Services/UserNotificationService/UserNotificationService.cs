@@ -134,7 +134,7 @@ namespace Optern.Application.Services.UserNotificationService
                 }
 
                 userNotification.IsRead = true;
-               await _unitOfWork.UserNotification.UpdateAsync(userNotification);
+                await _unitOfWork.UserNotification.UpdateAsync(userNotification);
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 

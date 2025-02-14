@@ -60,6 +60,11 @@ namespace Optern.Infrastructure.Hubs
         #region Send Notifications To All Users in System
         public async Task<Response<bool>> SendNotificationToAll(string? title, string message)
         {
+            if (string.IsNullOrEmpty(message))
+            {
+                return Response<bool>.Failure(false,"message should not be empty", 400);
+
+            }
             try
             {
                 var notification = new NotificationDTO()
@@ -137,6 +142,36 @@ namespace Optern.Infrastructure.Hubs
             }
         }
         #endregion
+
+        public async Task<Response<bool>> SendNotificationToAllInRoom(string roomId, string? title, string message)
+        {
+            if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(roomId))
+            {
+                return Response<bool>.Failure(false, "Invalid Data", 400);
+            }
+            try
+            {
+                var notification = new NotificationDTO()
+                {
+                    Title = title,
+                    Message = message,
+                };
+
+                var notificationResult = await _notificationService.AddNotification(notification);
+                if (!notificationResult.IsSuccess)
+                {
+                    return Response<bool>.Failure("Failed to save notification", 500);
+                }
+
+                await Clients.Group(roomId).SendAsync("ReceiveNotificationRoom", title, message, DateTime.UtcNow);
+
+                return Response<bool>.Success(true, "Notification sent successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure($"An error occurred while sending the notification: {ex.Message}", 500);
+            }
+        }
 
         #region Mark Noatification as Read for Specific User
         public async Task<Response<bool>> MarkNotificationAsRead(string userId, int notificationId)
