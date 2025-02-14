@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Optern.Domain.Entities;
+using System.Collections.Concurrent;
 using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Hubs
@@ -11,18 +12,14 @@ namespace Optern.Infrastructure.Hubs
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
         private readonly IChatService _chatService;
-        private readonly IRoomUserService _roomUserService;
-        private readonly IRoomSettingService _roomSettingService;
-        private static readonly ConcurrentDictionary<string, string> _userConnectionMap = new();
+        private static readonly ConcurrentDictionary<string, HashSet<string>> _userConnectionMap = new(); // track user connections (from more than a device)
 
-        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService, IRoomUserService roomUserService, IRoomSettingService roomSettingService)
+        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _userService = userService;
             _chatService = chatService;
-            _roomUserService = roomUserService;
-            _roomSettingService = roomSettingService;
         }
 
         public override async Task OnConnectedAsync()
@@ -31,13 +28,24 @@ namespace Optern.Infrastructure.Hubs
             if (user != null)
             {
                 var userId = user.Id;
-                _userConnectionMap[userId] = Context.ConnectionId; // track user connections (from more than a device)
+                _userConnectionMap.AddOrUpdate(
+                    userId, // key
+                    new HashSet<string> { Context.ConnectionId }, // value if key doesnt exist
+                    (key, connections) => // if key exists, add current ConId to its connections
+                    {
+                        lock (connections)
+                        {
+                            connections.Add(Context.ConnectionId);
+                            return connections;
+                        }
+                    }
+               );
 
-                var userChats = await _chatService.GetChatParticipantsAsync(chatId:null,userId);
+                var userChats = await _chatService.GetChatParticipantsAsync(null,userId);
                 foreach (var chat in userChats.Data)
                 {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{chat.Chat.Room.Name}{chat.ChatId}");
-                    _logger.LogInformation($"{user.FirstName} {user.LastName} reconnect to {chat.Chat.Room.Name}{chat.ChatId}.");
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{chat.Chat.Room.Id}");
+                    _logger.LogInformation($"{user.FirstName} {user.LastName} reconnect to {chat.Chat.Room.Id} with ConnectionId: {Context.ConnectionId}.");
                 }
 
                 // send all unread messages
@@ -48,36 +56,21 @@ namespace Optern.Infrastructure.Hubs
         }
 
         [HubMethodName("jointoroomchat")]
-        public async Task<Response<List<RoomUserDTO>>> JoinToRoomChat(string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null)
+        public async Task JoinToRoomChat(string roomId)
         {
-            var response=await _roomUserService.AcceptRequestsAsync(roomId,leaderId,userRoomId,approveAll);
-            if (response.IsSuccess)
-            {
-                foreach(var user in response.Data)
-                {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomId}");
-                    await Clients.OthersInGroup($"{roomId}").SendAsync("New Member", $"{user.UserName} joined to Room.");
-                    _logger.LogInformation($"{user.UserName} joined to {roomId} room.");
-                }
-                return Response<List<RoomUserDTO>>.Success(response.Data,response.Message);
-            }
-            return Response<List<RoomUserDTO>>.Failure(response.Data, response.Message, response.StatusCode);
+            var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "New Collaborator";
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomId}");
+            await Clients.OthersInGroup($"{roomId}").SendAsync("New Member", $"{userName} joined to Room.");
+            _logger.LogInformation($"{userName} joined to {roomId} room.");
         }
 
         [HubMethodName("leaveroomchat")]
-        public async Task<Response<bool>> LeaveRoomChat(string roomId, string userId)
+        public async Task LeaveRoomChat(string roomId)
         {
-            var response=await _roomSettingService.LeaveRoomAsync(roomId, userId);
-            if (response.IsSuccess)
-            {
-                var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomId}");
-                await Clients.OthersInGroup($"{roomId}").SendAsync("Member Left", $"{userName} left the Room.");
-                _logger.LogInformation($"{userName} left the {roomId} room.");
-
-                return Response<bool>.Success(response.Data,response.Message,response.StatusCode);
-            }
-            return Response<bool>.Failure(response.Data, response.Message, response.StatusCode);
+            var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "Collaborator";
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomId}");
+            await Clients.OthersInGroup($"{roomId}").SendAsync("Member Left", $"{userName} left the Room.");
+            _logger.LogInformation($"{userName} left the {roomId} room.");
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -85,7 +78,16 @@ namespace Optern.Infrastructure.Hubs
             var user=await _userService.GetCurrentUserAsync();
             if (user != null)
             {
-                _userConnectionMap.TryRemove(user.Id, out _);
+                if (_userConnectionMap.TryGetValue(user.Id,out var userConnections))
+                {
+                    lock (userConnections)
+                    {
+                        userConnections.Remove(Context.ConnectionId);
+                        if (userConnections.Count == 0)
+                            _userConnectionMap.TryRemove(user.Id, out _);
+                        _logger.LogInformation($"{user.FirstName} {user.LastName} disconnect from ConnectionId: {Context.ConnectionId}.");
+                    }
+                }
             }
 
             await base.OnDisconnectedAsync(exception);
