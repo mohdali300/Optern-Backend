@@ -19,7 +19,7 @@
             // Properties
 
             builder.Property(n => n.Title)
-                   .IsRequired()
+                   .HasDefaultValue(string.Empty)
                    .HasMaxLength(100);
 
             builder.Property(n => n.Message)

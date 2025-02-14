@@ -49,6 +49,7 @@ builder.Services
 .AddType<SkillQuery>()
 .AddType<ChatQuery>()
 .AddType<WorkSpaceQuery>()
+.AddType<UserNotificationQuery>()
 .AddType<MessageQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
@@ -92,7 +93,7 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("http://127.0.0.1:5500")//"http://localhost:3000"
+		policy.WithOrigins("http://localhost:3000")//"http://localhost:3000"
               .AllowAnyHeader()
 			  .AllowAnyMethod()
 			  .AllowCredentials();

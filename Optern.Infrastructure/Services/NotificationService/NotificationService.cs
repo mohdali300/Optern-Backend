@@ -16,6 +16,7 @@ namespace Optern.Application.Services.NotificationService
         private readonly IRoomService _roomService = roomService;
         private readonly IMapper _mapper = _mapper;
 
+        #region Add Notification
         public async Task<Response<NotificationResponseDTO>> AddNotification(NotificationDTO model)
         {
             if (model == null)
@@ -49,12 +50,14 @@ namespace Optern.Application.Services.NotificationService
                 return Response<NotificationResponseDTO>.Failure("There is a server error. Please try again later.", 500);
             }
         }
+        #endregion
 
-
+        #region Is Notification Exist
         public async Task<bool> IsNotificationExist(int notificationId)
         {
             var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
             return notification == null ? false : true;
         }
+        #endregion
     }
 }

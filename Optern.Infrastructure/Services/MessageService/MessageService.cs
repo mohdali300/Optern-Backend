@@ -16,7 +16,7 @@ namespace Optern.Infrastructure.Services.MessageService
 
 
         #region Send Message To Room
-        public async Task<Response<MessageDTO>> SendMessageToRoomAsync(int chatId,string senderId,string? content = null,IFile? file = null)
+        public async Task<Response<MessageDTO>> SendMessageToRoomAsync(int chatId, string senderId, string? content = null, IFile? file = null)
         {
             try
             {
@@ -77,14 +77,21 @@ namespace Optern.Infrastructure.Services.MessageService
                         SentAt = DateTime.UtcNow,
                         AttachmentUrl = fileUrl,
                         IsDeleted = false,
+                        Chat = chat,
                     };
 
                     _context.Messages.Add(message);
                     await _context.SaveChangesAsync();
-                    await _cacheService.RemoveDataAsync($"chat_{message.ChatId}_messages");
-                    await transaction.CommitAsync();
 
                     var messageDto = _mapper.Map<MessageDTO>(message);
+
+                    string cacheKey = $"chat_{chatId}_messages";
+                    var cachedMessages = _cacheService.GetData<List<MessageDTO>>(cacheKey) ?? new List<MessageDTO>();
+                    cachedMessages.Add(messageDto);
+                    _cacheService.SetData(cacheKey, cachedMessages, TimeSpan.FromMinutes(10));
+
+                    await transaction.CommitAsync();
+
                     return Response<MessageDTO>.Success(
                         messageDto,
                         file != null && content != null ? "Message with attachment sent successfully"
@@ -116,7 +123,7 @@ namespace Optern.Infrastructure.Services.MessageService
 
         #region Delete Message From Room
 
-        public async Task<Response<int>> DeleteMessageAsync(int messageId, string userId)
+        public async Task<Response<bool>> DeleteMessageAsync(int messageId, string userId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -125,15 +132,15 @@ namespace Optern.Infrastructure.Services.MessageService
 
                 if (message == null)
                 {
-                    return Response<int>.Failure(0,"Message not found.", 404);
+                    return Response<bool>.Failure(false,"Message not found.", 404);
                 }
                 if (message.SenderId != userId)
                 {
-                    return Response<int>.Failure(0,"You can only delete your own messages.", 403);
+                    return Response<bool>.Failure(false, "You can only delete your own messages.", 403);
                 }
                 if (message.IsDeleted)
                 {
-                    return Response<int>.Failure(0, "The message already Deleted", 404);
+                    return Response<bool>.Failure(false, "The message already Deleted", 404);
                 }
 
                 if (!string.IsNullOrEmpty(message.AttachmentUrl))
@@ -141,11 +148,15 @@ namespace Optern.Infrastructure.Services.MessageService
                     try
                     {
                         string publicId = ExtractPublicIdFromUrl(message.AttachmentUrl);
-                        await _cloudinaryService.DeleteFileAsync(publicId);
+                        var fileDeleted =await _cloudinaryService.DeleteFileAsync(publicId);
+                        if (!fileDeleted)
+                        {
+                            return Response<bool>.Failure(false, "Failed to delete file from cloud storage.", 500);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        return Response<int>.Failure(0,"Failed to delete file from cloud storage.", 500);
+                        return Response<bool>.Failure(false,"Failed to delete file from cloud storage.", 500);
                     }
                 }
 
@@ -156,18 +167,19 @@ namespace Optern.Infrastructure.Services.MessageService
                 await _cacheService.RemoveDataAsync($"chat_{message.ChatId}_messages");
                 await transaction.CommitAsync();
 
-                return Response<int>.Success(message.ChatId,"Message deleted successfully.", 200);
+                return Response<bool>.Success(true,"Message deleted successfully.", 200);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<int>.Failure(0,"Failed to delete message. Please try again.", 500);
+                return Response<bool>.Failure(false,"Failed to delete message. Please try again.", 500);
             }
         }
 
 
         #endregion
 
+        #region Get All Chat Messages
         public async Task<Response<List<MessageDTO>>> GetChatMessagesAsync(int chatId)
         {
             try
@@ -181,13 +193,13 @@ namespace Optern.Infrastructure.Services.MessageService
                 }
 
                 var messages = await _context.Messages
-                    .Include(m=>m.Sender)
+                    .Include(m => m.Sender)
                     .Where(m => m.ChatId == chatId && !m.IsDeleted)
                     .OrderBy(m => m.SentAt)
                     .ToListAsync();
                 if (!messages.Any())
                 {
-                    return Response<List<MessageDTO>>.Success(new List<MessageDTO>(),"No messages found",200);
+                    return Response<List<MessageDTO>>.Success(new List<MessageDTO>(), "No messages found", 200);
                 }
 
                 var messageDTOs = _mapper.Map<List<MessageDTO>>(messages);
@@ -201,6 +213,49 @@ namespace Optern.Infrastructure.Services.MessageService
                 return Response<List<MessageDTO>>.Failure(new List<MessageDTO>(), $"An error occurred while retrieving messages: {ex.Message}", 500);
             }
         }
+
+        #endregion
+
+        #region Get Unread Messages
+        public async Task<Response<List<MessageDTO>>> GetUnreadMessagesAsync(int chatId)
+        {
+            try
+            {
+                //string cacheKey = $"chat_{chatId}_unread_messages";
+
+                //var cachedMessages = _cacheService.GetData<List<MessageDTO>>(cacheKey);
+                //if (cachedMessages != null)
+                //{
+                //    return Response<List<MessageDTO>>.Success(cachedMessages, "Unread messages retrieved from cache.", 200);
+                //}
+
+                var messages = await _context.Messages
+                    .Include(m => m.Sender)
+                    .Where(m => m.ChatId == chatId && !m.IsDeleted && !m.IsRead)
+                    .OrderBy(m => m.SentAt)
+                    .ToListAsync();
+
+                if (!messages.Any())
+                {
+                    return Response<List<MessageDTO>>.Success(new List<MessageDTO>(), "No unread messages found.", 200);
+                }
+
+                messages.ForEach(m => m.IsRead = true);
+                var messageDTOs = _mapper.Map<List<MessageDTO>>(messages);
+
+                //_cacheService.SetData(cacheKey, messageDTOs, TimeSpan.FromMinutes(1));
+                
+                await _context.SaveChangesAsync();
+
+                return Response<List<MessageDTO>>.Success(messageDTOs, "Unread messages retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<MessageDTO>>.Failure(new List<MessageDTO>(), $"An error occurred while retrieving unread messages: {ex.Message}", 500);
+            }
+        }
+
+        #endregion
 
         #region helpers
         private string ExtractPublicIdFromUrl(string url)

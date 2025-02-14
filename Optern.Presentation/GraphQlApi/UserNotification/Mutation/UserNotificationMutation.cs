@@ -17,5 +17,11 @@ namespace Optern.Presentation.GraphQlApi.UserNotification.Mutation
         public async Task<Response<bool>> DeleteNotification([Service] IUserNotificationService _notificationService,
             UserNotificationDTO model) =>
             await _notificationService.DeleteUserNotification(model);
+
+        [GraphQLDescription("Mark Notification as Read")]
+        public async Task<Response<string>> MarkNotificationAsRead([Service] IUserNotificationService _notificationService,
+            UserNotificationDTO model) =>
+            await _notificationService.MarkNotificationAsRead(model);
+
     }
 }

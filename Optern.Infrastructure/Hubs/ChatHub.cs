@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using GreenDonut;
+using System.Collections.Concurrent;
 using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Hubs
@@ -11,16 +12,20 @@ namespace Optern.Infrastructure.Hubs
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
         private readonly IChatService _chatService;
+        private readonly IRoomUserService _roomUserService;
+        private readonly IRoomSettingService _roomSettingService;
         private readonly IMessageService _messageService;
         private static readonly ConcurrentDictionary<string, string> _userConnectionMap = new();
 
-        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService,IMessageService messageService)
+        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService, IRoomUserService roomUserService, IRoomSettingService roomSettingService, IMessageService messageService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _userService = userService;
             _chatService = chatService;
             _messageService = messageService;
+            _roomUserService = roomUserService;
+            _roomSettingService = roomSettingService;
         }
 
         public override async Task OnConnectedAsync()
@@ -46,51 +51,84 @@ namespace Optern.Infrastructure.Hubs
         }
 
         [HubMethodName("jointoroomchat")]
-        public async Task JoinToRoomChat(string roomName,int chatId,string userName)
+        public async Task<Response<List<RoomUserDTO>>> JoinToRoomChat(string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomName}{chatId}");
-            await Clients.OthersInGroup($"{roomName}{chatId}").SendAsync("New Member", $"{userName} joined to Room.");
-            _logger.LogInformation($"{userName} joined to {roomName}{chatId} group.");
+            var response=await _roomUserService.AcceptRequestsAsync(roomId,leaderId,userRoomId,approveAll);
+            if (response.IsSuccess)
+            {
+                foreach(var user in response.Data)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomId}");
+                    await Clients.OthersInGroup($"{roomId}").SendAsync("New Member", $"{user.UserName} joined to Room.");
+                    _logger.LogInformation($"{user.UserName} joined to {roomId} room.");
+                }
+                return Response<List<RoomUserDTO>>.Success(response.Data,response.Message);
+            }
+            return Response<List<RoomUserDTO>>.Failure(response.Data, response.Message, response.StatusCode);
         }
 
         [HubMethodName("leaveroomchat")]
-        public async Task LeaveRoomChat(string roomName, int chatId, string userName)
+        public async Task<Response<bool>> LeaveRoomChat(string roomId, string userId)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomName}{chatId}");
-            await Clients.OthersInGroup($"{roomName}{chatId}").SendAsync("Member Left", $"{userName} left the Room.");
-            _logger.LogInformation($"{userName} left the {roomName}{chatId} group.");
+            var response=await _roomSettingService.LeaveRoomAsync(roomId, userId);
+            if (response.IsSuccess)
+            {
+                var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomId}");
+                await Clients.OthersInGroup($"{roomId}").SendAsync("Member Left", $"{userName} left the Room.");
+                _logger.LogInformation($"{userName} left the {roomId} room.");
+
+                return Response<bool>.Success(response.Data,response.Message,response.StatusCode);
+            }
+            return Response<bool>.Failure(response.Data, response.Message, response.StatusCode);
         }
 
         [HubMethodName("SendMessageToRoom")]
-        public async Task SendMessageToRoom(string roomName,int chatId, string senderId, string? content = null, IFile? file = null)
-        {
-            //var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var messageResult = await _messageService.SendMessageToRoomAsync(chatId,senderId,content,file);
-
-            if (messageResult.IsSuccess)
-            {
-                await Clients.Group($"{roomName}{chatId}").SendAsync("ReceiveMessage", messageResult.Data);
-            }
-        }
-        [HubMethodName("DeleteMessage")]
-        public async Task DeleteMessage(string roomName, int messageId)
+        public async Task SendMessageToRoom(string roomId, int chatId, string userId, string? content = null, IFile? file = null)
         {
             try
             {
-                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
+                //var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (userId == null)
+                //{
+                //    throw new HubException("Unauthorized: User not found.");
+                //}
+
+                var messageResult = await _messageService.SendMessageToRoomAsync(chatId, userId, content, file);
+
+                if (messageResult.IsSuccess)
                 {
-                    await Clients.Caller.SendAsync("DeleteMessageFailed", "Unauthorized");
-                    return;
+                    await Clients.Group($"{roomId}").SendAsync("ReceiveMessage", messageResult.Data);
                 }
+                else
+                {
+                    await Clients.Caller.SendAsync("ReceiveError", messageResult.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("ReceiveError", "An unexpected error occurred. Please try again.");
+            }
+        }
+        [HubMethodName("DeleteMessage")]
+        public async Task DeleteMessage(string roomId, int messageId, string userId)
+        {
+            try
+            {
+                //var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (string.IsNullOrEmpty(userId))
+                //{
+                //    await Clients.Caller.SendAsync("DeleteMessageFailed", "Unauthorized");
+                //    return;
+                //}
 
                 var result = await _messageService.DeleteMessageAsync(messageId, userId);
 
                 if (result.IsSuccess)
                 {
-                    await Clients.Group($"{roomName}{result.Data}").SendAsync("MessageDeleted", messageId);
+                    await Clients.Group($"{roomId}").SendAsync("MessageDeleted", messageId);
 
-                    await Clients.Caller.SendAsync("MessageDeleted", messageId);
+                    //await Clients.Caller.SendAsync("MessageDeleted", messageId);
                 }
                 else
                 {
@@ -102,7 +140,50 @@ namespace Optern.Infrastructure.Hubs
                 await Clients.Caller.SendAsync("DeleteMessageFailed", "Internal server error");
             }
         }
-        public override async Task OnDisconnectedAsync(Exception? exception)
+
+        [HubMethodName("GetChatMessages")]
+        public async Task GetChatMessages(int chatId)
+        {
+            try
+            {
+                var result = await _messageService.GetChatMessagesAsync(chatId);
+                if (result.IsSuccess)
+                {
+                    await Clients.Caller.SendAsync("ReceiveChatMessages", result.Data, result.Message);
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("ReceiveError", result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("ReceiveError", "An unexpected error occurred while retrieving chat messages.");
+            }
+        }
+
+        [HubMethodName("GetUnreadMessages")]
+        public async Task GetUnreadMessages(int chatId)
+        {
+            try
+            {
+                var result = await _messageService.GetUnreadMessagesAsync(chatId);
+                if (result.IsSuccess)
+                {
+                    await Clients.Caller.SendAsync("ReceiveUnreadMessages", result.Data, result.Message);
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("ReceiveError", result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("ReceiveError", "An unexpected error occurred while retrieving unread messages.");
+            }
+        }
+    
+    public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var user=await _userService.GetCurrentUserAsync();
             if (user != null)
