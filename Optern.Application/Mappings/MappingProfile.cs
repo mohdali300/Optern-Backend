@@ -139,10 +139,19 @@ namespace Optern.Application.Mappings
             CreateMap<Skills, SkillDTO>();
 
             CreateMap<RepositoryFile, RepositoryFileResponseDTO>();
-            #endregion
 
             //Notification
             CreateMap<Notifications, NotificationResponseDTO>();
+
+            // User Notification
+            CreateMap<UserNotification, GetUserNotificationDTO>()
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Notifications.Title ?? string.Empty))
+            .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Notifications.Message ?? string.Empty))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.NotificationId))
+            .ForMember(dest => dest.CreatedTime, opt => opt.MapFrom(src => src.Notifications.CreatedTime));
+            #endregion
+
+
 
         }
     }

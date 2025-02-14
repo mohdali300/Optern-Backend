@@ -135,9 +135,43 @@ namespace Optern.Infrastructure.Hubs
                 return Response<bool>.Failure("An error occurred while sending the notification", 500);
 
             }
-        } 
+        }
         #endregion
 
+        #region Mark Noatification as Read for Specific User
+        public async Task<Response<bool>> MarkNotificationAsRead(string userId, int notificationId)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || notificationId <= 0)
+                return Response<bool>.Failure("Invalid parameters provided.", 400);
+            try
+            {
+                var notification = new UserNotificationDTO()
+                {
+                    UserId = userId,
+                    NotificationId = notificationId
+                };
+                var result = await _userNotificationService.MarkNotificationAsRead(notification);
+
+                if (!result.IsSuccess)
+                {
+                    return Response<bool>.Failure("Failed to mark notification as read", 500);
+                }
+
+                if (userConnections.TryGetValue(userId, out var connections) && connections.Any())
+                {
+                    await Task.WhenAll(connections.Select(connectionId =>
+                        Clients.Client(connectionId).SendAsync("NotificationMarkedAsRead", notificationId)
+                    ));
+                }
+
+                return Response<bool>.Success(true, "Notification marked as read successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure($"An error occurred while marking the notification as read{ex.Message}", 500);
+            }
+        }
+        #endregion
 
     }
 }

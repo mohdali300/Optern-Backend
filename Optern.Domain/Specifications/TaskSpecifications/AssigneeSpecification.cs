@@ -1,5 +1,5 @@
 ﻿
-namespace Optern.Domain.Specifications.RoomSpecifications
+namespace Optern.Domain.Specifications.TaskSpecifications
 {
     public class AssigneeSpecification : Specification<Domain.Entities.Task>
     {

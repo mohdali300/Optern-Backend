@@ -1,14 +1,27 @@
 ﻿namespace Optern.Infrastructure.Services.PostService
 {
-	public class PostService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IPostService
+	public class PostService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICacheService cacheService) : IPostService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
+		private readonly ICacheService _cacheService = cacheService;
 		private readonly IMapper _mapper = mapper;
 
-        #region Get Latest
-        public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync(string? userId = null,int lastIdx = 0,int limit = 10)
+		#region Get Latest
+		public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync(string? userId = null, int lastIdx = 0, int limit = 10)
 		{
+			var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("LatestPosts");
+
+			if (cachedPosts is not null)
+			{
+
+				return Response<IEnumerable<PostDTO>>.Success(
+					cachedPosts,
+					"Posts retrieved successfully.",
+					200
+				);
+			}
+
 			try
 			{
 				var query = _context.Posts
@@ -21,24 +34,24 @@
 				{
 					query = query.Where(p => p.Creator.Id == userId);
 				}
-				
-				
+
+
 
 				query = query.OrderByDescending(p => p.CreatedDate);
 
 				var posts = await query.Select(p => new PostDTO
-									   {
-										   Id = p.Id,
-										   Title = p.Title,
-										   Content = p.Content,
-										   CreatorName = $"{p.Creator.FirstName} {p.Creator.LastName}",
-										   ProfilePicture = p.Creator.ProfilePicture, 
-										   Tags = p.PostTags.Select(pt => pt.Tag.Name).ToList(),
-										   CreatedDate = p.CreatedDate,
-										   EditedDate=p.EditedDate,
-										   ReactsCount = p.Reacts.Count,
-										   CommentsCount = p.Comments.Count
-									   })
+				{
+					Id = p.Id,
+					Title = p.Title,
+					Content = p.Content,
+					CreatorName = $"{p.Creator.FirstName} {p.Creator.LastName}",
+					ProfilePicture = p.Creator.ProfilePicture,
+					Tags = p.PostTags.Select(pt => pt.Tag.Name).ToList(),
+					CreatedDate = p.CreatedDate,
+					EditedDate = p.EditedDate,
+					ReactsCount = p.Reacts.Count,
+					CommentsCount = p.Comments.Count
+				})
 									   .ToListAsync();
 
 				if (!posts.Any())
@@ -49,11 +62,12 @@
 						200
 					);
 				}
-				
-				
+
+
 				posts = posts.Skip(lastIdx).Take(limit).ToList();
-			
-				
+
+				_cacheService.SetData("LatestPosts", posts, TimeSpan.FromMinutes(5));
+
 				return Response<IEnumerable<PostDTO>>.Success(
 					posts,
 					"Posts retrieved successfully.",
@@ -69,9 +83,9 @@
 				);
 			}
 		}
-        #endregion
-        #region Get Post
-        public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync(int postId,string? userId = null)
+		#endregion
+		#region Get Post
+		public async Task<Response<PostWithDetailsDTO>> GetPostByIdAsync(int postId, string? userId = null)
 		{
 			try
 			{
@@ -87,15 +101,15 @@
 						Title = p.Title,
 						Content = p.Content,
 						CreatedDate = p.CreatedDate,
-						UserId=p.CreatorId,
+						UserId = p.CreatorId,
 						UserName = $"{p.Creator.FirstName} {p.Creator.LastName}",
 						ProfilePicture = p.Creator.ProfilePicture,
-						Tags = p.PostTags.Select(pt => new TagDTO {Id=pt.Tag.Id, Name = pt.Tag.Name }).ToList(),
-						ReactCount = p.Reacts.Count(r=>r.ReactType == ReactType.VOTEUP) - p.Reacts.Count(r=>r.ReactType == ReactType.VOTEDOWN),
+						Tags = p.PostTags.Select(pt => new TagDTO { Id = pt.Tag.Id, Name = pt.Tag.Name }).ToList(),
+						ReactCount = p.Reacts.Count(r => r.ReactType == ReactType.VOTEUP) - p.Reacts.Count(r => r.ReactType == ReactType.VOTEDOWN),
 						CommentCount = _context.Comments.Count(c => c.PostId == p.Id),
 						UserReact = ReactType.NOTVOTEYET,
-                        IsFav = false
-                    })
+						IsFav = false
+					})
 					.FirstOrDefaultAsync();
 
 				if (post == null)
@@ -110,7 +124,7 @@
 				var parentComments = await _context.Comments
 					.Include(c => c.User)
 					.Include(c => c.CommentReacts)
-					.Where(c => c.PostId == postId && c.ParentId == null) 
+					.Where(c => c.PostId == postId && c.ParentId == null)
 					.OrderBy(c => c.CommentDate)
 					.ToListAsync();
 
@@ -122,22 +136,22 @@
 					UserId = parent.UserId,
 					UserName = $"{parent.User?.FirstName} {parent.User?.LastName}",
 					ProfilePicture = parent.User?.ProfilePicture,
-					ReactCommentCount = parent.CommentReacts.Count(r=>r.ReactType == ReactType.VOTEUP) - parent.CommentReacts.Count(r=>r.ReactType == ReactType.VOTEDOWN) ,
-                    UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId && r.CommentId == parent.Id)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
+					ReactCommentCount = parent.CommentReacts.Count(r => r.ReactType == ReactType.VOTEUP) - parent.CommentReacts.Count(r => r.ReactType == ReactType.VOTEDOWN),
+					UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId && r.CommentId == parent.Id)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
 
 
-                }).ToList();
-				
-				if(userId is not null)
+				}).ToList();
+
+				if (userId is not null)
 				{
-					var react = await _context.Reacts.Where(r => r.UserId == userId && r.PostId == postId).Select(r=>r.ReactType).ToListAsync();
-					
-					if(react is not null && react.Any())
+					var react = await _context.Reacts.Where(r => r.UserId == userId && r.PostId == postId).Select(r => r.ReactType).ToListAsync();
+
+					if (react is not null && react.Any())
 					{
 						post.UserReact = react[0];
 					}
-                    post.IsFav = await _context.FavoritePosts.AnyAsync(fp => fp.UserId == userId && fp.PostId == postId);
-                }
+					post.IsFav = await _context.FavoritePosts.AnyAsync(fp => fp.UserId == userId && fp.PostId == postId);
+				}
 
 				return Response<PostWithDetailsDTO>.Success(
 					post,
@@ -155,11 +169,23 @@
 			}
 		}
 
-        #endregion
+		#endregion
 
-        #region Get Recommended Posts (Only Post Title  Required (post creator (Optoinal)))
-        public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync(int topN)
+		#region Get Recommended Posts (Only Post Title  Required (post creator (Optoinal)))
+		public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync(int topN)
 		{
+			
+			var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("RecomendedPosts");
+
+			if (cachedPosts is not null)
+			{
+
+				return Response<IEnumerable<PostDTO>>.Success(
+					cachedPosts,
+					"Posts retrieved successfully.",
+					200
+				);
+			}
 			try
 			{
 				var recommendedPosts = await _context.Posts
@@ -168,12 +194,14 @@
 					.Take(topN)
 					.ToListAsync();
 
+
+				_cacheService.SetData("RecomendedPosts", recommendedPosts, TimeSpan.FromMinutes(50));
+
 				if (recommendedPosts.Any())
 				{
 					var postDtos = _mapper.Map<IEnumerable<PostDTO>>(recommendedPosts);
 					return Response<IEnumerable<PostDTO>>.Success(postDtos, "Posts fetched successfully.");
 				}
-
 				return Response<IEnumerable<PostDTO>>.Failure(new List<PostDTO>(), "No posts found.", 404);
 			}
 			catch (Exception ex)
@@ -181,177 +209,177 @@
 				return Response<IEnumerable<PostDTO>>.Failure("Error occurred while fetching recommended posts.", 500, new List<string> { ex.Message });
 			}
 		}
-        #endregion
+		#endregion
 
-        #region Search Posts By (Keyword , tag , Username)
+		#region Search Posts By (Keyword , tag , Username)
 
-        public async Task<Response<IEnumerable<SearchPostDTO>>> SearchPostsAsync(
-    string? tagName = null,
-    string? username = null,
-    string? keyword = null,
-    int lastIdx = 0, int limit = 10)
-        {
-            try
-            {
-                var searchResults = new List<SearchPostDTO>();
+		public async Task<Response<IEnumerable<SearchPostDTO>>> SearchPostsAsync(
+	string? tagName = null,
+	string? username = null,
+	string? keyword = null,
+	int lastIdx = 0, int limit = 10)
+		{
+			try
+			{
+				var searchResults = new List<SearchPostDTO>();
 
-                var commentCounts = await _context.Comments
-                    .GroupBy(c => c.PostId)
-                    .Select(g => new { PostId = g.Key, Count = g.Count() })
-                    .ToDictionaryAsync(g => g.PostId, g => g.Count);
+				var commentCounts = await _context.Comments
+					.GroupBy(c => c.PostId)
+					.Select(g => new { PostId = g.Key, Count = g.Count() })
+					.ToDictionaryAsync(g => g.PostId, g => g.Count);
 
-                var tasks = new List<Task<List<SearchPostDTO>>>();
+				var tasks = new List<Task<List<SearchPostDTO>>>();
 
-                // Search by Tag Name
-                if (!string.IsNullOrEmpty(tagName))
-                {
-                    tasks.Add(_context.PostTags
-                        .Where(pt => EF.Functions.Like(pt.Tag.Name, $"%{tagName}%"))
-                        .Include(pt => pt.Post)
-                            .ThenInclude(p => p.Creator)
-                        .Include(pt => pt.Post.PostTags)
-                            .ThenInclude(pt => pt.Tag)
-                        .Include(pt => pt.Post.Reacts)
-                        .Select(pt => new SearchPostDTO
-                        {
-                            SourceType = "Post",
-                            Highlight = $"Tag Name: {pt.Tag.Name}",
-                            Data = new PostWithDetailsDTO
-                            {
-                                Id = pt.Post.Id,
-                                Title = pt.Post.Title,
-                                Content = pt.Post.Content,
-                                CreatedDate = pt.Post.CreatedDate,
-                                UserName = $"{pt.Post.Creator.FirstName} {pt.Post.Creator.LastName}",
-                                ProfilePicture = pt.Post.Creator.ProfilePicture,
-                                Tags = pt.Post.PostTags.Select(tag => new TagDTO { Id = tag.Id, Name = tag.Tag.Name }).ToList(),
-                                ReactCount = pt.Post.Reacts.Count,
-                                CommentCount = commentCounts.ContainsKey(pt.Post.Id) ? commentCounts[pt.Post.Id] : 0
-                            }
-                        }).Skip(lastIdx)
-                          .Take(limit)
+				// Search by Tag Name
+				if (!string.IsNullOrEmpty(tagName))
+				{
+					tasks.Add(_context.PostTags
+						.Where(pt => EF.Functions.Like(pt.Tag.Name, $"%{tagName}%"))
+						.Include(pt => pt.Post)
+							.ThenInclude(p => p.Creator)
+						.Include(pt => pt.Post.PostTags)
+							.ThenInclude(pt => pt.Tag)
+						.Include(pt => pt.Post.Reacts)
+						.Select(pt => new SearchPostDTO
+						{
+							SourceType = "Post",
+							Highlight = $"Tag Name: {pt.Tag.Name}",
+							Data = new PostWithDetailsDTO
+							{
+								Id = pt.Post.Id,
+								Title = pt.Post.Title,
+								Content = pt.Post.Content,
+								CreatedDate = pt.Post.CreatedDate,
+								UserName = $"{pt.Post.Creator.FirstName} {pt.Post.Creator.LastName}",
+								ProfilePicture = pt.Post.Creator.ProfilePicture,
+								Tags = pt.Post.PostTags.Select(tag => new TagDTO { Id = tag.Id, Name = tag.Tag.Name }).ToList(),
+								ReactCount = pt.Post.Reacts.Count,
+								CommentCount = commentCounts.ContainsKey(pt.Post.Id) ? commentCounts[pt.Post.Id] : 0
+							}
+						}).Skip(lastIdx)
+						  .Take(limit)
 						  .ToListAsync());
-                }
+				}
 
-                // Search by Username (FirstName + LastName)
-          
-                if (!string.IsNullOrEmpty(username))
-                {
-                    var user = await _unitOfWork.Users
-                        .GetByExpressionAsync(u =>
-                            (u.FirstName.ToLower() + " " + u.LastName.ToLower()) == username.ToLower());
+				// Search by Username (FirstName + LastName)
 
-                    if (user == null)
-                    {
-                        return Response<IEnumerable<SearchPostDTO>>.Success(
-                            new List<SearchPostDTO>(),
-                            $"User with username '{username}' does not exist.",
-                            404
-                        );
-                    }
+				if (!string.IsNullOrEmpty(username))
+				{
+					var user = await _unitOfWork.Users
+						.GetByExpressionAsync(u =>
+							(u.FirstName.ToLower() + " " + u.LastName.ToLower()) == username.ToLower());
 
-                    // Then, search for posts by the user
-                    var userPostsQuery = _context.Users
-                        .Where(u => EF.Functions.Like((u.FirstName + " " + u.LastName).ToLower(), $"%{username.ToLower()}%"))
-                        .Include(u => u.CreatedPosts)
-                            .ThenInclude(p => p.Creator)
-                        .Include(u => u.CreatedPosts)
-                            .ThenInclude(p => p.Reacts)
-                        .Include(u => u.CreatedPosts)
-                            .ThenInclude(p => p.PostTags)
-                            .ThenInclude(pt => pt.Tag)
-                        .SelectMany(u => u.CreatedPosts)
-                         .Skip(lastIdx)
-                         .Take(limit)
-                        .AsQueryable(); 
+					if (user == null)
+					{
+						return Response<IEnumerable<SearchPostDTO>>.Success(
+							new List<SearchPostDTO>(),
+							$"User with username '{username}' does not exist.",
+							404
+						);
+					}
 
-                    var userPosts = await userPostsQuery.ToListAsync(); 
+					// Then, search for posts by the user
+					var userPostsQuery = _context.Users
+						.Where(u => EF.Functions.Like((u.FirstName + " " + u.LastName).ToLower(), $"%{username.ToLower()}%"))
+						.Include(u => u.CreatedPosts)
+							.ThenInclude(p => p.Creator)
+						.Include(u => u.CreatedPosts)
+							.ThenInclude(p => p.Reacts)
+						.Include(u => u.CreatedPosts)
+							.ThenInclude(p => p.PostTags)
+							.ThenInclude(pt => pt.Tag)
+						.SelectMany(u => u.CreatedPosts)
+						 .Skip(lastIdx)
+						 .Take(limit)
+						.AsQueryable();
 
-                    if (userPosts == null || !userPosts.Any())
-                    {
-                        return Response<IEnumerable<SearchPostDTO>>.Success(
-                            new List<SearchPostDTO>(),
-                            "No posts found for the specified user.",
-                            404
-                        );
-                    }
+					var userPosts = await userPostsQuery.ToListAsync();
 
-                    searchResults.AddRange(userPosts.Select(post => new SearchPostDTO
-                    {
-                        SourceType = "User",
-                        Highlight = $"Username: {user.UserName}",
-                        Data = new PostWithDetailsDTO
-                        {
-                            Id = post.Id,
-                            Title = post.Title,
-                            Content = post.Content,
-                            CreatedDate = post.CreatedDate,
-                            UserName = user.UserName,
-                            ProfilePicture = post.Creator.ProfilePicture,
-                            Tags = post.PostTags.Select(tag => new TagDTO { Id = tag.Id, Name = tag.Tag.Name }).ToList(),
-                            ReactCount = post.Reacts.Count,
-                            CommentCount = commentCounts.ContainsKey(post.Id) ? commentCounts[post.Id] : 0
-                        }
-                    }));
-                }
+					if (userPosts == null || !userPosts.Any())
+					{
+						return Response<IEnumerable<SearchPostDTO>>.Success(
+							new List<SearchPostDTO>(),
+							"No posts found for the specified user.",
+							404
+						);
+					}
+
+					searchResults.AddRange(userPosts.Select(post => new SearchPostDTO
+					{
+						SourceType = "User",
+						Highlight = $"Username: {user.UserName}",
+						Data = new PostWithDetailsDTO
+						{
+							Id = post.Id,
+							Title = post.Title,
+							Content = post.Content,
+							CreatedDate = post.CreatedDate,
+							UserName = user.UserName,
+							ProfilePicture = post.Creator.ProfilePicture,
+							Tags = post.PostTags.Select(tag => new TagDTO { Id = tag.Id, Name = tag.Tag.Name }).ToList(),
+							ReactCount = post.Reacts.Count,
+							CommentCount = commentCounts.ContainsKey(post.Id) ? commentCounts[post.Id] : 0
+						}
+					}));
+				}
 
 
-                // Search by Keyword
-                if (!string.IsNullOrEmpty(keyword))
-                {
-                    tasks.Add(_context.Posts
-                        .Where(p => EF.Functions.Like(p.Title, $"%{keyword}%") || EF.Functions.Like(p.Content, $"%{keyword}%"))
-                        .Include(p => p.Creator)
-                        .Include(p => p.PostTags)
-                            .ThenInclude(pt => pt.Tag)
-                        .Include(p => p.Reacts)
-                        .Select(p => new SearchPostDTO
-                        {
-                            SourceType = "Post",
-                            Highlight = $"Post Title: {p.Title}",
-                            Data = new PostWithDetailsDTO
-                            {
-                                Id = p.Id,
-                                Title = p.Title,
-                                Content = p.Content,
-                                CreatedDate = p.CreatedDate,
-                                UserName = $"{p.Creator.FirstName} {p.Creator.LastName}",
-                                ProfilePicture = p.Creator.ProfilePicture,
-                                Tags = p.PostTags.Select(pt => new TagDTO { Id = pt.Tag.Id, Name = pt.Tag.Name }).ToList(),
-                                ReactCount = p.Reacts.Count,
-                                CommentCount = commentCounts.ContainsKey(p.Id) ? commentCounts[p.Id] : 0
-                            }
-                        }).Skip(lastIdx)
-                          .Take(limit)
+				// Search by Keyword
+				if (!string.IsNullOrEmpty(keyword))
+				{
+					tasks.Add(_context.Posts
+						.Where(p => EF.Functions.Like(p.Title, $"%{keyword}%") || EF.Functions.Like(p.Content, $"%{keyword}%"))
+						.Include(p => p.Creator)
+						.Include(p => p.PostTags)
+							.ThenInclude(pt => pt.Tag)
+						.Include(p => p.Reacts)
+						.Select(p => new SearchPostDTO
+						{
+							SourceType = "Post",
+							Highlight = $"Post Title: {p.Title}",
+							Data = new PostWithDetailsDTO
+							{
+								Id = p.Id,
+								Title = p.Title,
+								Content = p.Content,
+								CreatedDate = p.CreatedDate,
+								UserName = $"{p.Creator.FirstName} {p.Creator.LastName}",
+								ProfilePicture = p.Creator.ProfilePicture,
+								Tags = p.PostTags.Select(pt => new TagDTO { Id = pt.Tag.Id, Name = pt.Tag.Name }).ToList(),
+								ReactCount = p.Reacts.Count,
+								CommentCount = commentCounts.ContainsKey(p.Id) ? commentCounts[p.Id] : 0
+							}
+						}).Skip(lastIdx)
+						  .Take(limit)
 						  .ToListAsync());
-                }
+				}
 
 
 
-                var results = await System.Threading.Tasks.Task.WhenAll(tasks);
+				var results = await System.Threading.Tasks.Task.WhenAll(tasks);
 
-                searchResults.AddRange(results.SelectMany(r => r));
+				searchResults.AddRange(results.SelectMany(r => r));
 
-                searchResults = searchResults
-                    .OrderByDescending(x => x.Data?.CreatedDate)
-                    .ToList();
+				searchResults = searchResults
+					.OrderByDescending(x => x.Data?.CreatedDate)
+					.ToList();
 
-                return Response<IEnumerable<SearchPostDTO>>.Success(searchResults, "Search completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                return Response<IEnumerable<SearchPostDTO>>.Failure($"An error occurred: {ex.Message}", 500);
-            }
-        }
-
-
-        #endregion
+				return Response<IEnumerable<SearchPostDTO>>.Success(searchResults, "Search completed successfully.");
+			}
+			catch (Exception ex)
+			{
+				return Response<IEnumerable<SearchPostDTO>>.Failure($"An error occurred: {ex.Message}", 500);
+			}
+		}
 
 
-        #region Add Post
+		#endregion
 
 
-        public async Task<Response<PostDTO>> CreatePostAsync(string userId, ManagePostDTO model)
+		#region Add Post
+
+
+		public async Task<Response<PostDTO>> CreatePostAsync(string userId, ManagePostDTO model)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -359,13 +387,13 @@
 			{
 				if (model == null || string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.Content))
 				{
-					return Response<PostDTO>.Failure(new PostDTO(),"Title and Content cannot be empty.", 400);
+					return Response<PostDTO>.Failure(new PostDTO(), "Title and Content cannot be empty.", 400);
 				}
 
 				var user = await _unitOfWork.Users.GetByIdAsync(userId);
 				if (user == null)
 				{
-					return Response<PostDTO>.Failure(new PostDTO(),"User not found.", 404);
+					return Response<PostDTO>.Failure(new PostDTO(), "User not found.", 404);
 				}
 
 				var post = new Post
@@ -460,7 +488,7 @@
 
 				if (post.CreatorId != userId)
 				{
-					return Response<string>.Failure("","You are not authorized to delete this post", 403);
+					return Response<string>.Failure("", "You are not authorized to delete this post", 403);
 				}
 
 				await _unitOfWork.Posts.DeleteAsync(post);
@@ -585,8 +613,8 @@
 					EditedDate = post.EditedDate,
 					ProfilePicture = post.Creator?.ProfilePicture ?? string.Empty,
 					CreatorName = $"{post.Creator?.FirstName ?? ""} {post.Creator?.LastName ?? ""}",
-					ReactsCount = post.Reacts?.Count() ?? 0, 
-					CommentsCount = post.Comments?.Count() ?? 0  
+					ReactsCount = post.Reacts?.Count() ?? 0,
+					CommentsCount = post.Comments?.Count() ?? 0
 				};
 
 				return Response<PostDTO>.Success(postDTO, "Post edited successfully.", 200);
@@ -605,7 +633,7 @@
 
 		#endregion
 
-		
+
 
 
 

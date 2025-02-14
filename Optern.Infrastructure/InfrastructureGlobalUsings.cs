@@ -97,7 +97,7 @@ global using Optern.Application.DTOs.TaskActivity;
 global using Optern.Application.DTOs.Task;
 global using Optern.Application.Interfaces.ITaskService;
 global using Optern.Domain.Specifications;
-global using Optern.Domain.Specifications.RoomSpecifications;
+global using Optern.Domain.Specifications.TaskSpecifications;
 
 global using Optern.Application.DTOs.WorkSpace;
 global using Optern.Application.Interfaces.IWorkSpaceService;

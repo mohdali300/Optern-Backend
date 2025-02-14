@@ -94,6 +94,19 @@ global using Optern.Infrastructure.Helpers;
 global using Optern.Domain.Entities;
 
 
+global using Serilog;
+global using Optern.Presentation.GraphQlApi.Message.Mutation;
+//GraphQLAPI/ Notification
+
+global using Optern.Presentation.GraphQlApi.Notification.Mutation;
+global using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
+global using Optern.Presentation.GraphQlApi.UserNotification.Query;
+global using Optern.Application.DTOs.UserNotification;
+global using Optern.Application.Interfaces.IUserNotificationService;
+
+
+
+
 
 
 
