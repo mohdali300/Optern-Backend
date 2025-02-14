@@ -72,9 +72,9 @@ namespace Optern.Infrastructure.UnitOfWork
             RepositoryFile= new GenericRepository<RepositoryFile>(context);
             Chats= new GenericRepository<Chat>(context);
             ChatParticipants= new GenericRepository<ChatParticipants>(context);
-            Messages= new GenericRepository<Message>(context);
             UserNotification= new GenericRepository<UserNotification>(context);
             Notifications= new GenericRepository<Notifications>(context);
+            Messages= new GenericRepository<Message>(context);
         }
 
         public async Task<int> SaveAsync()
