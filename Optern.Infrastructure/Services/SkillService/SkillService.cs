@@ -22,7 +22,6 @@ namespace Optern.Infrastructure.Services.SkillService
                 {
                     return Response<List<string>>.Success(suggestions, "No Suggestions Skills Found FOr This Skill Name", 200);
                 }
-
                 return Response<List<string>>.Success(suggestions, "Matched Skills Fetched Fetched Successfully", 200);
             }
             catch (Exception ex) 

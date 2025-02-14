@@ -30,7 +30,7 @@ namespace Optern.Infrastructure.ExternalServices.CacheService
 			}
 			else
 			{
-				options.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1);
+				options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
 			}
 			
 			_cache?.SetString(key, JsonSerializer.Serialize(value),options);
