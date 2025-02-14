@@ -107,7 +107,7 @@ namespace Optern.Infrastructure.Services.RoomService
 		#endregion
 
 		#region GetCreatedRooms
-		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetCreatedRooms(string id, int lastIdx = 0, int limit = 10)
+		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetCreatedRooms(string id, int lastIdx = 0, int limit = 1)
 		{
 			try
 			{
@@ -130,7 +130,7 @@ namespace Optern.Infrastructure.Services.RoomService
 
 
 
-				return createdRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(createdRooms, "", 200) :
+				return createdRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(createdRooms, "", 200,_context.Rooms.Where(r=>r.CreatorId == id).Count()) :
 											Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "There is no Created Rooms Until Now", 404);
 
 			}
@@ -163,7 +163,7 @@ namespace Optern.Infrastructure.Services.RoomService
 					 })
 					.ToListAsync();
 
-				return joinedRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(joinedRooms, "", 200) :
+				return joinedRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(joinedRooms, "", 200,_context.Rooms.Include(r=>r.UserRooms).Where(r=>r.UserRooms.Any(r=>r.UserId == id && r.IsAccepted)).Count()) :
 										   Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "You have not joined any room yet.", 404);
 			}
 			catch (Exception ex)
