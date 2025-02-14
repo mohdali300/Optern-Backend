@@ -10,6 +10,7 @@ namespace Optern.Application.DTOs.Room
 		public List<TrackDTO>? Tracks { get; set; }
 		public List<PositionDTO>? Position { get; set; }
 		public UserRoomStatus UserStatus { get; set; }
+		
 		public ResponseRoomDTO()
 		{
 			Id = string.Empty;
