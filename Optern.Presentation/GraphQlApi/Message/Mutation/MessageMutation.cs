@@ -8,7 +8,15 @@ namespace Optern.Presentation.GraphQlApi.Message.Mutation
     {
         [GraphQLDescription("Send Message To Room")]
         public async Task<Response<MessageDTO>> SendMessageToRoomAsync([Service] IMessageService _messageService ,int chatId, string senderId, string? content = null, IFile? file = null)=>
-            await _messageService.SendMessageToRoomAsync(chatId, senderId, content, file);  
+            await _messageService.SendMessageToRoomAsync(chatId, senderId, content, file);
+
+        [GraphQLDescription("Delete Message From Room")]
+        public async Task<Response<int>> DeleteMessageAsync([Service] IMessageService _messageService, int messageId, string userId)=>
+            await _messageService.DeleteMessageAsync(messageId, userId);
+
+
+
+
 
     }
 }

@@ -1,12 +1,19 @@
 ﻿
+using MimeKit;
+using Optern.Application.DTOs.Message;
+using Optern.Domain.Entities;
+using static HotChocolate.Language.Utf8GraphQLParser;
+
 namespace Optern.Infrastructure.Services.MessageService
 {
-    public class MessageService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,ICloudinaryService cloudinaryService) :IMessageService
+    public class MessageService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,ICloudinaryService cloudinaryService, ICacheService cacheService) :IMessageService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
+        private readonly ICacheService _cacheService = cacheService;
+
 
         #region Send Message To Room
         public async Task<Response<MessageDTO>> SendMessageToRoomAsync(int chatId,string senderId,string? content = null,IFile? file = null)
@@ -74,6 +81,7 @@ namespace Optern.Infrastructure.Services.MessageService
 
                     _context.Messages.Add(message);
                     await _context.SaveChangesAsync();
+                    await _cacheService.RemoveDataAsync($"chat_{message.ChatId}_messages");
                     await transaction.CommitAsync();
 
                     var messageDto = _mapper.Map<MessageDTO>(message);
@@ -106,5 +114,114 @@ namespace Optern.Infrastructure.Services.MessageService
 
         #endregion
 
+        #region Delete Message From Room
+
+        public async Task<Response<int>> DeleteMessageAsync(int messageId, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var message = await _context.Messages.FindAsync(messageId);
+
+                if (message == null)
+                {
+                    return Response<int>.Failure(0,"Message not found.", 404);
+                }
+                if (message.SenderId != userId)
+                {
+                    return Response<int>.Failure(0,"You can only delete your own messages.", 403);
+                }
+                if (message.IsDeleted)
+                {
+                    return Response<int>.Failure(0, "The message already Deleted", 404);
+                }
+
+                if (!string.IsNullOrEmpty(message.AttachmentUrl))
+                {
+                    try
+                    {
+                        string publicId = ExtractPublicIdFromUrl(message.AttachmentUrl);
+                        await _cloudinaryService.DeleteFileAsync(publicId);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Response<int>.Failure(0,"Failed to delete file from cloud storage.", 500);
+                    }
+                }
+
+                message.IsDeleted = true;
+                _context.Messages.Update(message);
+
+                await _context.SaveChangesAsync();
+                await _cacheService.RemoveDataAsync($"chat_{message.ChatId}_messages");
+                await transaction.CommitAsync();
+
+                return Response<int>.Success(message.ChatId,"Message deleted successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<int>.Failure(0,"Failed to delete message. Please try again.", 500);
+            }
+        }
+
+
+        #endregion
+
+        public async Task<Response<List<MessageDTO>>> GetChatMessagesAsync(int chatId)
+        {
+            try
+            {
+                string cacheKey = $"chat_{chatId}_messages";
+
+                var cachedMessages = _cacheService.GetData<List<MessageDTO>>(cacheKey);
+                if (cachedMessages != null)
+                {
+                    return Response<List<MessageDTO>>.Success(cachedMessages, "Messages retrieved from cache.", 200);
+                }
+
+                var messages = await _context.Messages
+                    .Include(m=>m.Sender)
+                    .Where(m => m.ChatId == chatId && !m.IsDeleted)
+                    .OrderBy(m => m.SentAt)
+                    .ToListAsync();
+                if (!messages.Any())
+                {
+                    return Response<List<MessageDTO>>.Success(new List<MessageDTO>(),"No messages found",200);
+                }
+
+                var messageDTOs = _mapper.Map<List<MessageDTO>>(messages);
+
+                _cacheService.SetData(cacheKey, messageDTOs, TimeSpan.FromMinutes(10));
+
+                return Response<List<MessageDTO>>.Success(messageDTOs, "Messages retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<MessageDTO>>.Failure(new List<MessageDTO>(), $"An error occurred while retrieving messages: {ex.Message}", 500);
+            }
+        }
+
+        #region helpers
+        private string ExtractPublicIdFromUrl(string url)
+        {
+            var uri = new Uri(url);
+            var segments = uri.AbsolutePath.Split('/');
+
+            var uploadIndex = Array.IndexOf(segments, "upload");
+            if (uploadIndex == -1 || uploadIndex + 1 >= segments.Length)
+            {
+                throw new Exception("Invalid Cloudinary URL format.");
+            }
+
+            string publicIdWithExtension = string.Join("/", segments.Skip(uploadIndex + 1));
+            string publicId = Path.ChangeExtension(publicIdWithExtension, null); // Remove extension
+            return publicId;
+        }
+
+
+        #endregion
+
     }
 }
+

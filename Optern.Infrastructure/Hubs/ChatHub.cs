@@ -11,14 +11,16 @@ namespace Optern.Infrastructure.Hubs
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
         private readonly IChatService _chatService;
+        private readonly IMessageService _messageService;
         private static readonly ConcurrentDictionary<string, string> _userConnectionMap = new();
 
-        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService)
+        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService,IMessageService messageService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _userService = userService;
             _chatService = chatService;
+            _messageService = messageService;
         }
 
         public override async Task OnConnectedAsync()
@@ -59,6 +61,47 @@ namespace Optern.Infrastructure.Hubs
             _logger.LogInformation($"{userName} left the {roomName}{chatId} group.");
         }
 
+        [HubMethodName("SendMessageToRoom")]
+        public async Task SendMessageToRoom(string roomName,int chatId, string senderId, string? content = null, IFile? file = null)
+        {
+            //var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var messageResult = await _messageService.SendMessageToRoomAsync(chatId,senderId,content,file);
+
+            if (messageResult.IsSuccess)
+            {
+                await Clients.Group($"{roomName}{chatId}").SendAsync("ReceiveMessage", messageResult.Data);
+            }
+        }
+        [HubMethodName("DeleteMessage")]
+        public async Task DeleteMessage(string roomName, int messageId)
+        {
+            try
+            {
+                var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    await Clients.Caller.SendAsync("DeleteMessageFailed", "Unauthorized");
+                    return;
+                }
+
+                var result = await _messageService.DeleteMessageAsync(messageId, userId);
+
+                if (result.IsSuccess)
+                {
+                    await Clients.Group($"{roomName}{result.Data}").SendAsync("MessageDeleted", messageId);
+
+                    await Clients.Caller.SendAsync("MessageDeleted", messageId);
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("DeleteMessageFailed", result.Errors);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("DeleteMessageFailed", "Internal server error");
+            }
+        }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var user=await _userService.GetCurrentUserAsync();
