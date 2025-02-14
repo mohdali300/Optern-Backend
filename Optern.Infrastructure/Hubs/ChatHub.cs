@@ -11,14 +11,18 @@ namespace Optern.Infrastructure.Hubs
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
         private readonly IChatService _chatService;
+        private readonly IRoomUserService _roomUserService;
+        private readonly IRoomSettingService _roomSettingService;
         private static readonly ConcurrentDictionary<string, string> _userConnectionMap = new();
 
-        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService)
+        public ChatHub(ILogger<ChatHub> logger, IUnitOfWork unitOfWork, IUserService userService, IChatService chatService, IRoomUserService roomUserService, IRoomSettingService roomSettingService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _userService = userService;
             _chatService = chatService;
+            _roomUserService = roomUserService;
+            _roomSettingService = roomSettingService;
         }
 
         public override async Task OnConnectedAsync()
@@ -44,19 +48,36 @@ namespace Optern.Infrastructure.Hubs
         }
 
         [HubMethodName("jointoroomchat")]
-        public async Task JoinToRoomChat(string roomName,int chatId,string userName)
+        public async Task<Response<List<RoomUserDTO>>> JoinToRoomChat(string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomName}{chatId}");
-            await Clients.OthersInGroup($"{roomName}{chatId}").SendAsync("New Member", $"{userName} joined to Room.");
-            _logger.LogInformation($"{userName} joined to {roomName}{chatId} group.");
+            var response=await _roomUserService.AcceptRequestsAsync(roomId,leaderId,userRoomId,approveAll);
+            if (response.IsSuccess)
+            {
+                foreach(var user in response.Data)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomId}");
+                    await Clients.OthersInGroup($"{roomId}").SendAsync("New Member", $"{user.UserName} joined to Room.");
+                    _logger.LogInformation($"{user.UserName} joined to {roomId} room.");
+                }
+                return Response<List<RoomUserDTO>>.Success(response.Data,response.Message);
+            }
+            return Response<List<RoomUserDTO>>.Failure(response.Data, response.Message, response.StatusCode);
         }
 
         [HubMethodName("leaveroomchat")]
-        public async Task LeaveRoomChat(string roomName, int chatId, string userName)
+        public async Task<Response<bool>> LeaveRoomChat(string roomId, string userId)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomName}{chatId}");
-            await Clients.OthersInGroup($"{roomName}{chatId}").SendAsync("Member Left", $"{userName} left the Room.");
-            _logger.LogInformation($"{userName} left the {roomName}{chatId} group.");
+            var response=await _roomSettingService.LeaveRoomAsync(roomId, userId);
+            if (response.IsSuccess)
+            {
+                var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomId}");
+                await Clients.OthersInGroup($"{roomId}").SendAsync("Member Left", $"{userName} left the Room.");
+                _logger.LogInformation($"{userName} left the {roomId} room.");
+
+                return Response<bool>.Success(response.Data,response.Message,response.StatusCode);
+            }
+            return Response<bool>.Failure(response.Data, response.Message, response.StatusCode);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
