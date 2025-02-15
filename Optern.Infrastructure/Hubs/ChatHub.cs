@@ -46,7 +46,7 @@ namespace Optern.Infrastructure.Hubs
                 var userChats = await _chatService.GetChatParticipantsAsync(null,userId);
                 foreach (var chat in userChats.Data)
                 {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, $"{chat.Chat.Room.Id}");
+                    await Groups.AddToGroupAsync(Context.ConnectionId, chat.Chat.Room.Id);
                     await GetUnreadMessages(chat.Id);
                 }
             }
@@ -58,8 +58,8 @@ namespace Optern.Infrastructure.Hubs
         public async Task JoinToRoomChat(string roomId)
         {
             var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "New Collaborator";
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"{roomId}");
-            await Clients.OthersInGroup($"{roomId}").SendAsync("New Member", $"{userName} joined to Room.");
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+            await Clients.OthersInGroup(roomId).SendAsync("New Member", $"{userName} joined to Room.");
             _logger.LogInformation($"{userName} joined to {roomId} room.");
         }
 
@@ -67,8 +67,8 @@ namespace Optern.Infrastructure.Hubs
         public async Task LeaveRoomChat(string roomId)
         {
             var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "Collaborator";
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{roomId}");
-            await Clients.OthersInGroup($"{roomId}").SendAsync("Member Left", $"{userName} left the Room.");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+            await Clients.OthersInGroup(roomId).SendAsync("Member Left", $"{userName} left the Room.");
             _logger.LogInformation($"{userName} left the {roomId} room.");
         }
 
@@ -87,7 +87,7 @@ namespace Optern.Infrastructure.Hubs
 
                 if (messageResult.IsSuccess)
                 {
-                    await Clients.Group($"{roomId}").SendAsync("ReceiveMessage", messageResult.Data);
+                    await Clients.Group(roomId).SendAsync("ReceiveMessage", messageResult.Data);
                 }
                 else
                 {
@@ -115,7 +115,7 @@ namespace Optern.Infrastructure.Hubs
 
                 if (result.IsSuccess)
                 {
-                    await Clients.Group($"{roomId}").SendAsync("MessageDeleted", messageId);
+                    await Clients.Group(roomId).SendAsync("MessageDeleted", messageId);
 
                     //await Clients.Caller.SendAsync("MessageDeleted", messageId);
                 }
