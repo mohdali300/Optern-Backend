@@ -17,6 +17,7 @@ namespace Optern.Application.DTOs.Message
             UserName=string.Empty;
             ProfilePicture=string.Empty;
             AttachmentUrl=string.Empty;
+            
         }
         public int? Id { get; set; }
         public string? Content { get; set; }
@@ -27,6 +28,8 @@ namespace Optern.Application.DTOs.Message
         public string? ProfilePicture { get; set; }
         public string? AttachmentUrl { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public bool IsRead { get; set; } = false;
         public string SentHour => SentAt.ToLocalTime().ToString("hh:mm tt");
+        
     }
 }
