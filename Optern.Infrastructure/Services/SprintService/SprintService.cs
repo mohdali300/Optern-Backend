@@ -154,7 +154,7 @@ namespace Optern.Infrastructure.Services.SprintService
                 var roomUsers = await _roomUserService.GetAllCollaboratorsAsync(sprint.WorkSpace.RoomId);
                 foreach(var roomUser in roomUsers.Data)
                 {   //remove deleted sprint from recent sprints cache
-                    await RemoveRecentSprintFromCache(roomUser.UserId, roomUser.RoomId, id);
+                    await RemoveRecentSprintFromCache(roomUser.UserId!, roomUser.RoomId!, id);
                 }
 
                 await transaction.CommitAsync();
