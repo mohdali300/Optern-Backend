@@ -7,7 +7,24 @@ namespace Optern.Infrastructure.Services.WorkSpaceService
 		private readonly OpternDbContext _context = context;
 		private readonly IMapper _mapper = mapper;
 
-
+		#region Get WorkSpace Title
+		public async Task<Response<WorkSpace>> GetWorkSpace(int id)
+		{
+			try
+			{
+				var workSpace = await _unitOfWork.WorkSpace.GetByIdAsync(id);
+				if (workSpace == null)
+				{
+					return Response<WorkSpace>.Failure(new WorkSpace(), "Room Not Found!", 404);
+				}
+				return Response<WorkSpace>.Success(workSpace, "Workspace Fetched Successfully", 201);
+			}
+			catch (Exception ex)
+			{
+				return Response<WorkSpace>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+			}
+		}
+		#endregion
 
 		#region Create New WorkSpace
 		public async Task<Response<WorkSpaceDTO>> CreateWorkSpace(WorkSpaceDTO model)
