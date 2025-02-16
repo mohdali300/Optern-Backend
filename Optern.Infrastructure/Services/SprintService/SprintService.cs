@@ -23,17 +23,31 @@ namespace Optern.Infrastructure.Services.SprintService
 					finishedTasks = s.Tasks.Count(t => t.Status == TaskState.Completed)
 				}).OrderBy(s => s.EndDate).ThenBy(s => s.StartDate).ToListAsync();
 				
-				if (sprints == null || !sprints.Any())
-				{
-					return Response<IEnumerable<SprintResponseDTO>>.Failure("No Sprints Found", 404);
-				}
-				
 				return Response<IEnumerable<SprintResponseDTO>>.Success(sprints, "WorkSpace Fetched Successfully!", 200);
 			}
 			catch (Exception ex)
 			{
 
 				return Response<IEnumerable<SprintResponseDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
+			}
+		}
+		
+		public async Task<Response<Sprint>> GetSprint(int id)
+		{
+			try
+			{
+				var sprint = await _unitOfWork.Sprints.GetByIdAsync(id);
+				if (sprint == null)
+				{
+					return Response<Sprint>.Failure("No Sprints Found", 404);
+				}
+				
+				return Response<Sprint>.Success(sprint, "WorkSpace Fetched Successfully!", 200);
+			}
+			catch (Exception ex)
+			{
+
+				return Response<Sprint>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
 			}
 		}
 		public async Task<Response<SprintResponseDTO>> AddSprint(AddSprintDTO model)
