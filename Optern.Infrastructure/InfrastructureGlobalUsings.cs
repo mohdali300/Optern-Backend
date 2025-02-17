@@ -1,5 +1,4 @@
-﻿
-global using Microsoft.EntityFrameworkCore;
+﻿global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Optern.Domain.Entities;
 global using System.Text;
@@ -72,7 +71,6 @@ global using Optern.Infrastructure.Helpers;
 global using Optern.Application.Interfaces.IRepositoryService;
 global using Optern.Application.DTOs.Room;
 global using Optern.Application.Interfaces.IRoomTrackService;
-
 global using Optern.Application.DTOs.Skills;
 global using Optern.Application.DTOs.Track;
 global using Optern.Application.Interfaces.IRoomService;
@@ -80,38 +78,56 @@ global using Optern.Application.Interfaces.IRoomSkillService;
 global using Optern.Application.Interfaces.ISkillService;
 global using Optern.Application.Interfaces.IUserService;
 global using Optern.Application.Interfaces.IRoomSettingService;
-
-
 global using Optern.Application.DTOs.RoomUser;
 global using Optern.Application.Interfaces.IRoomUserService;
-
 global using Optern.Application.DTOs.Sprint;
 global using Optern.Application.Interfaces.ISprintService;
-
 global using Optern.Application.Interfaces.ITagService;
-
 global using Optern.Application.Interfaces.ITaskActivityService;
 global using Optern.Application.DTOs.TaskActivity;
-
-
 global using Optern.Application.DTOs.Task;
 global using Optern.Application.Interfaces.ITaskService;
 global using Optern.Domain.Specifications;
 global using Optern.Domain.Specifications.TaskSpecifications;
-
 global using Optern.Application.DTOs.WorkSpace;
 global using Optern.Application.Interfaces.IWorkSpaceService;
-
 global using Optern.Application.Interfaces.ITrackService;
 global using Microsoft.Extensions.Logging;
-
-
-
-
-
-
-
-
-
-
+global using Hangfire.PostgreSql;
+global using Microsoft.Extensions.DependencyInjection;
+global using Optern.Application.Interfaces.IUserNotificationService;
+global using Optern.Application.Mappings;
+global using Optern.Application.Services.NotificationService;
+global using Optern.Application.Services.UserNotificationService;
+global using Optern.Infrastructure.ExternalServices.AutoCompleteService;
+global using Optern.Infrastructure.ExternalServices.BackgroundJobs;
+global using Optern.Infrastructure.ExternalServices.CacheService;
+global using Optern.Infrastructure.ExternalServices.FileService;
+global using Optern.Infrastructure.ExternalServices.JWTService;
+global using Optern.Infrastructure.ExternalServices.MailService;
+global using Optern.Infrastructure.Services.AuthService;
+global using Optern.Infrastructure.Services.BookMarkedTaskService;
+global using Optern.Infrastructure.Services.ChatService;
+global using Optern.Infrastructure.Services.CommentService;
+global using Optern.Infrastructure.Services.FavoritePostsService;
+global using Optern.Infrastructure.Services.MessageService;
+global using Optern.Infrastructure.Services.PositionService;
+global using Optern.Infrastructure.Services.PostService;
+global using Optern.Infrastructure.Services.ReactService;
+global using Optern.Infrastructure.Services.RepositoryFileService;
+global using Optern.Infrastructure.Services.RepositoryService;
+global using Optern.Infrastructure.Services.RoomService;
+global using Optern.Infrastructure.Services.RoomSettings;
+global using Optern.Infrastructure.Services.RoomSkillService;
+global using Optern.Infrastructure.Services.RoomTrackService;
+global using Optern.Infrastructure.Services.RoomTracksService;
+global using Optern.Infrastructure.Services.RoomUserService;
+global using Optern.Infrastructure.Services.SkillService;
+global using Optern.Infrastructure.Services.SprintService;
+global using Optern.Infrastructure.Services.TagService;
+global using Optern.Infrastructure.Services.TaskActivityService;
+global using Optern.Infrastructure.Services.TaskService;
+global using Optern.Infrastructure.Services.TrackService;
+global using Optern.Infrastructure.Services.UserService;
+global using Optern.Infrastructure.Services.WorkSpaceService;
 

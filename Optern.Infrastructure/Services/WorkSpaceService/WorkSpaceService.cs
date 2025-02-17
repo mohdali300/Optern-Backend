@@ -15,7 +15,7 @@ namespace Optern.Infrastructure.Services.WorkSpaceService
 				var workSpace = await _unitOfWork.WorkSpace.GetByIdAsync(id);
 				if (workSpace == null)
 				{
-					return Response<WorkSpace>.Failure(new WorkSpace(), "Room Not Found!", 404);
+					return Response<WorkSpace>.Failure(new WorkSpace(), "WorkSpace Not Found!", 404);
 				}
 				return Response<WorkSpace>.Success(workSpace, "Workspace Fetched Successfully", 201);
 			}

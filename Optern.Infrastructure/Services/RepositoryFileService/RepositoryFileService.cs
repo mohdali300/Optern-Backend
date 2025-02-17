@@ -98,7 +98,7 @@ namespace Optern.Infrastructure.Services.RepositoryFileService
                 }
                 repositoryFiles = sortType switch
                 {
-                    RepositoryFileSortType.Name => repositoryFiles.OrderByDescending(r => r.FilePath.Split('/').Last()),
+                    RepositoryFileSortType.Name => repositoryFiles.OrderBy(r => Path.GetFileName(r.FilePath)),
                     RepositoryFileSortType.Oldest => repositoryFiles.OrderBy(r => r.CreatedAt),
                     RepositoryFileSortType.Latest => repositoryFiles.OrderByDescending(r => r.CreatedAt),
                     _ => repositoryFiles 
@@ -125,10 +125,12 @@ namespace Optern.Infrastructure.Services.RepositoryFileService
                     .ToListAsync();
 
                 // publicId include FileName but may Be inclde extension of this file so we extract only  file name to return correct data for search
-                var filteredFiles = repositoryFiles
-                    .Where(f => Path.GetFileNameWithoutExtension(f.PublicId).ToLower().Contains(pattern.ToLower()) ||
-                                f.Description.ToLower().Contains(pattern.ToLower()))
-                                .ToList();
+                var filteredFiles = await _context.RepositoryFiles
+                    .Where(f => f.RepositoryId == repositoryId &&
+                                (EF.Functions.Like(f.PublicId.ToLower(), $"%{pattern.ToLower()}%") ||
+                                 EF.Functions.Like(f.Description.ToLower(), $"%{pattern.ToLower()}%")))
+                    .ToListAsync();
+
                 if (!filteredFiles.Any())
                 {
                     return Response<IEnumerable<RepositoryFileResponseDTO>>.Success(new List<RepositoryFileResponseDTO>(), "No Files Matches Your Search!", 204);
@@ -139,7 +141,6 @@ namespace Optern.Infrastructure.Services.RepositoryFileService
             }
             catch (Exception ex) { 
                             return Response<IEnumerable<RepositoryFileResponseDTO>>.Failure($"An error occurred: {ex.Message}", 500);
-
             }
         }
         #endregion
