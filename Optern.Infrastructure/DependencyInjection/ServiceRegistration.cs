@@ -1,40 +1,4 @@
-﻿using Hangfire.PostgreSql;
-using Microsoft.Extensions.DependencyInjection;
-using Optern.Application.Interfaces.IUserNotificationService;
-using Optern.Application.Mappings;
-using Optern.Application.Services.NotificationService;
-using Optern.Application.Services.UserNotificationService;
-using Optern.Infrastructure.ExternalServices.AutoCompleteService;
-using Optern.Infrastructure.ExternalServices.BackgroundJobs;
-using Optern.Infrastructure.ExternalServices.CacheService;
-using Optern.Infrastructure.ExternalServices.FileService;
-using Optern.Infrastructure.ExternalServices.JWTService;
-using Optern.Infrastructure.ExternalServices.MailService;
-using Optern.Infrastructure.Services.AuthService;
-using Optern.Infrastructure.Services.BookMarkedTaskService;
-using Optern.Infrastructure.Services.ChatService;
-using Optern.Infrastructure.Services.CommentService;
-using Optern.Infrastructure.Services.FavoritePostsService;
-using Optern.Infrastructure.Services.MessageService;
-using Optern.Infrastructure.Services.PositionService;
-using Optern.Infrastructure.Services.PostService;
-using Optern.Infrastructure.Services.ReactService;
-using Optern.Infrastructure.Services.RepositoryFileService;
-using Optern.Infrastructure.Services.RepositoryService;
-using Optern.Infrastructure.Services.RoomService;
-using Optern.Infrastructure.Services.RoomSettings;
-using Optern.Infrastructure.Services.RoomSkillService;
-using Optern.Infrastructure.Services.RoomTrackService;
-using Optern.Infrastructure.Services.RoomTracksService;
-using Optern.Infrastructure.Services.RoomUserService;
-using Optern.Infrastructure.Services.SkillService;
-using Optern.Infrastructure.Services.SprintService;
-using Optern.Infrastructure.Services.TagService;
-using Optern.Infrastructure.Services.TaskActivityService;
-using Optern.Infrastructure.Services.TaskService;
-using Optern.Infrastructure.Services.TrackService;
-using Optern.Infrastructure.Services.UserService;
-using Optern.Infrastructure.Services.WorkSpaceService;
+﻿
 
 namespace Optern.Infrastructure.DependencyInjection
 {
