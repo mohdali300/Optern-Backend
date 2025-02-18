@@ -9,6 +9,8 @@
 		public List<string> Roles { get; set; }
 		
 		public string? ProfilePicture { get; set; }
+		public PositionDTO? Position { get; set; }
+		public List<SkillDTO>? Skills { get; set; }
 
 		public LogInResponseDTO()
 		{
@@ -18,6 +20,8 @@
 			Roles = new List<string>();
 			Token = string.Empty;
 			ProfilePicture = string.Empty;
+			Position = new PositionDTO();
+			Skills = new List<SkillDTO>();
 		}
 	}
 }
