@@ -3,7 +3,7 @@ using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.Services.TaskService
 {
-	public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper , ICloudinaryService cloudinaryService) : ITaskService
+	public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICloudinaryService cloudinaryService) : ITaskService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
@@ -14,7 +14,7 @@ namespace Optern.Infrastructure.Services.TaskService
 
 		public async Task<Response<TaskResponseDTO>> AddTaskAsync(AddTaskDTO taskDto, string userId)
 		{
-		   using var transaction = await _context.Database.BeginTransactionAsync();
+			using var transaction = await _context.Database.BeginTransactionAsync();
 			try
 			{
 				var isAdmin = await _unitOfWork.UserRoom.AnyAsync(ur => ur.UserId == userId && ur.RoomId == taskDto.RoomId && ur.IsAdmin);
@@ -43,7 +43,7 @@ namespace Optern.Infrastructure.Services.TaskService
 				}
 
 				var task = _mapper.Map<Task>(taskDto);
-				task.AssignedTasks = taskDto.AssignedUserIds.Select(uid => new UserTasks { TaskId = task.Id, UserId = uid , Assignedat=task.CreatedAt }).ToList();
+				task.AssignedTasks = taskDto.AssignedUserIds.Select(uid => new UserTasks { TaskId = task.Id, UserId = uid, Assignedat = task.CreatedAt }).ToList();
 
 				var validate = new TaskValidator().Validate(task);
 				if (!validate.IsValid)
@@ -54,18 +54,18 @@ namespace Optern.Infrastructure.Services.TaskService
 
 				await _unitOfWork.Tasks.AddAsync(task);
 				await _unitOfWork.SaveAsync();
-			   await transaction.CommitAsync();
+				await transaction.CommitAsync();
 
 				var user = await _unitOfWork.Users.GetByIdAsync(userId);
 
 				var now = DateTime.Now;
-				DateTime targetDate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Local); 
-				var targetUtcDate = targetDate.ToUniversalTime(); 
+				DateTime targetDate = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Local);
+				var targetUtcDate = targetDate.ToUniversalTime();
 
 				var taskActivity = new TaskActivity
 				{
 					Content = $" {user.FirstName} {user.LastName} Created this Task at {targetUtcDate:MMMM dd, yyyy hh:mm tt}",
-					CreatedAt = DateTime.UtcNow, 
+					CreatedAt = DateTime.UtcNow,
 					CouldDelete = false,
 					TaskId = task.Id,
 				};
@@ -109,7 +109,7 @@ namespace Optern.Infrastructure.Services.TaskService
 			}
 			catch (Exception ex)
 			{
-			   await transaction.RollbackAsync();
+				await transaction.RollbackAsync();
 				return Response<TaskResponseDTO>.Failure($"Server error: {ex.Message}", 500);
 			}
 		}
@@ -129,19 +129,19 @@ namespace Optern.Infrastructure.Services.TaskService
 					.FirstOrDefaultAsync();
 
 				if (task == null)
-					return Response<TaskResponseDTO>.Failure( new TaskResponseDTO(), "Task not found.", 404);
+					return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "Task not found.", 404);
 
 				var isAdmin = await _unitOfWork.UserRoom.AnyAsync(ur => ur.UserId == userId && ur.RoomId == editTaskDto.RoomId && ur.IsAdmin);
 
 				if (!isAdmin)
-					return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(),"You are not authorized to edit this task.", 403);
+					return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "You are not authorized to edit this task.", 403);
 
 				if (editTaskDto.WorkspaceId.HasValue)
 				{
 					var workspace = await _unitOfWork.WorkSpace.GetByIdAsync((int)editTaskDto.WorkspaceId);
 					if (workspace == null || workspace.RoomId != editTaskDto.RoomId)
 					{
-						return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(),"Invalid workspace selection.",404);
+						return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "Invalid workspace selection.", 404);
 					}
 				}
 
@@ -151,7 +151,7 @@ namespace Optern.Infrastructure.Services.TaskService
 						.AnyAsync(s => s.Id == editTaskDto.SprintId.Value && s.WorkSpaceId == (editTaskDto.WorkspaceId ?? task.Sprint.WorkSpaceId));
 
 					if (!isValidSprint)
-						return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(),"Invalid sprint.", 400);
+						return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "Invalid sprint.", 400);
 				}
 
 				// incase user remain the value as same or empty
@@ -190,7 +190,7 @@ namespace Optern.Infrastructure.Services.TaskService
 					taskActivityContents.Add($"Changed Due Date to {editTaskDto.DueDate}");
 				}
 
-					if (editTaskDto.AssignedUserIds != null)
+				if (editTaskDto.AssignedUserIds != null)
 				{
 					var validUserIds = await _context.Users
 						.Where(u => editTaskDto.AssignedUserIds.Contains(u.Id))
@@ -200,7 +200,7 @@ namespace Optern.Infrastructure.Services.TaskService
 					var invalidUserIds = editTaskDto.AssignedUserIds.Except(validUserIds).ToList();
 
 					if (invalidUserIds.Any())
-						return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(),$"Invalid user IDs: {string.Join(", ", invalidUserIds)}", 400);
+						return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), $"Invalid user IDs: {string.Join(", ", invalidUserIds)}", 400);
 
 					// Remove users who are no longer assigned
 					var usersToRemove = task.AssignedTasks
@@ -217,7 +217,7 @@ namespace Optern.Infrastructure.Services.TaskService
 					var existingUserIds = task.AssignedTasks.Select(at => at.UserId).ToList();
 					var usersToAdd = editTaskDto.AssignedUserIds
 						.Where(uid => !existingUserIds.Contains(uid))
-						.Select(uid => new UserTasks { TaskId = (int)editTaskDto.TaskId!, UserId = uid , Assignedat=DateTime.UtcNow })
+						.Select(uid => new UserTasks { TaskId = (int)editTaskDto.TaskId!, UserId = uid, Assignedat = DateTime.UtcNow })
 						.ToList();
 
 					await _unitOfWork.UserTasks.AddRangeAsync(usersToAdd);
@@ -259,7 +259,7 @@ namespace Optern.Infrastructure.Services.TaskService
 				await _unitOfWork.SaveAsync();
 
 				var taskResponseDto = _mapper.Map<TaskResponseDTO>(task);
-				return Response<TaskResponseDTO>.Success(taskResponseDto, "Task updated successfully.",200);
+				return Response<TaskResponseDTO>.Success(taskResponseDto, "Task updated successfully.", 200);
 			}
 			catch (DbUpdateException ex)
 			{
@@ -313,7 +313,7 @@ namespace Optern.Infrastructure.Services.TaskService
 		}
 		#endregion
 
-			
+
 		#region Submit Task (upload Attachment and change status)
 		public async Task<Response<string>> SubmitTaskAsync(int taskId, string userId, IFile? file, TaskState? newStatus)
 		{
@@ -321,24 +321,24 @@ namespace Optern.Infrastructure.Services.TaskService
 			try
 			{
 				var userTaskWithStatus = await _context.UserTasks
-				   .Include(ut => ut.Task) 
+				   .Include(ut => ut.Task)
 				   .FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId);
 
 
 				if (userTaskWithStatus == null)
 				{
-					await transaction.RollbackAsync(); 
+					await transaction.RollbackAsync();
 					return Response<string>.Failure("", "Task not found for this user task.", 404);
 				}
 				bool isUpdated = false;
 				string activityMessage = "";
 				if (file != null && file.Length > 0)
 				{
-					var (publicId,fileUrl) = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
+					var (publicId, fileUrl) = await _cloudinaryService.UploadFileAsync(file, "task_attachments");
 
 					if (string.IsNullOrEmpty(fileUrl))
 					{
-						await transaction.RollbackAsync(); 
+						await transaction.RollbackAsync();
 						return Response<string>.Failure("", "File upload failed.", 500);
 					}
 
@@ -364,7 +364,7 @@ namespace Optern.Infrastructure.Services.TaskService
 
 					if (userTaskWithStatus.Task.Status == TaskState.Completed)
 					{
-						userTaskWithStatus.Task.EndDate = DateTime.Now.ToString(); 
+						userTaskWithStatus.Task.EndDate = DateTime.Now.ToString();
 					}
 
 					await _unitOfWork.UserTasks.UpdateAsync(userTaskWithStatus);
@@ -392,8 +392,8 @@ namespace Optern.Infrastructure.Services.TaskService
 					var taskActivity = new TaskActivity
 					{
 						TaskId = taskId,
-						Content = $"{activityMessage } by by {user.FirstName} {user.LastName} at {targetUtcDate:MMMM dd, yyyy hh:mm tt} ",
-						CouldDelete=false,
+						Content = $"{activityMessage} by by {user.FirstName} {user.LastName} at {targetUtcDate:MMMM dd, yyyy hh:mm tt} ",
+						CouldDelete = false,
 						CreatedAt = DateTime.UtcNow
 					};
 
@@ -405,7 +405,7 @@ namespace Optern.Infrastructure.Services.TaskService
 			}
 			catch (DbUpdateException ex)
 			{
-				await transaction.RollbackAsync(); 
+				await transaction.RollbackAsync();
 				return Response<string>.Failure($"Database error: {ex.Message}", 500);
 			}
 			catch (Exception ex)
@@ -423,7 +423,7 @@ namespace Optern.Infrastructure.Services.TaskService
 			try
 			{
 
-		
+
 				var specifications = new List<Specification<Domain.Entities.Task>>
 				{
 					new WorkspaceSpecification(request.WorkspaceId),
@@ -439,7 +439,7 @@ namespace Optern.Infrastructure.Services.TaskService
 
 				var query = _context.Tasks
 					.Where(t => t.Sprint.WorkSpace.RoomId == request.RoomId)
-					.AsNoTracking() 
+					.AsNoTracking()
 					.Include(t => t.AssignedTasks)
 					.ThenInclude(ut => ut.User)
 					.Include(t => t.Sprint)
@@ -448,7 +448,7 @@ namespace Optern.Infrastructure.Services.TaskService
 
 				query = combinedSpec.Apply(query);
 
-				query = query.OrderByDescending(t => t.CreatedAt); 
+				query = query.OrderByDescending(t => t.CreatedAt);
 
 				var tasks = await query.ToListAsync();
 
@@ -471,26 +471,26 @@ namespace Optern.Infrastructure.Services.TaskService
 
 		#region Get Task Data
 
-		public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId,string?userId=null)
+		public async Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId, string? userId = null)
 		{
 			try
 			{
 				bool taskExists = await _unitOfWork.Tasks.AnyAsync(t => t.Id == taskId);
-			if (!taskExists)
-			{
-				return Response<TaskDTO>.Failure(new TaskDTO(), "Task not found.", 404);
-			}
+				if (!taskExists)
+				{
+					return Response<TaskDTO>.Failure(new TaskDTO(), "Task not found.", 404);
+				}
 
-			var task = await _context.Tasks
-				.Include(t => t.AssignedTasks)
-					.ThenInclude(ut => ut.User)
-				.Include(t => t.Activities)
-					.ThenInclude(a => a.Creator)
-				.FirstOrDefaultAsync(t => t.Id == taskId);
+				var task = await _context.Tasks
+					.Include(t => t.AssignedTasks)
+						.ThenInclude(ut => ut.User)
+					.Include(t => t.Activities)
+						.ThenInclude(a => a.Creator)
+					.FirstOrDefaultAsync(t => t.Id == taskId);
 
-			var taskDto = _mapper.Map<TaskDTO>(task);
+				var taskDto = _mapper.Map<TaskDTO>(task);
 
-			taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
+				taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
 
 				taskDto.Attachments = task.AssignedTasks
 			   .SelectMany(ut => ut.AttachmentUrlsList.Select(att => new AttachmentDTO
@@ -509,7 +509,7 @@ namespace Optern.Infrastructure.Services.TaskService
 				 .Where(b => b.UserId == userId && b.TaskId == taskId)
 				 .FirstOrDefaultAsync()) != null ? true : false;
 
-				return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.",200);
+				return Response<TaskDTO>.Success(taskDto, "Task details retrieved successfully.", 200);
 			}
 			catch (Exception ex)
 			{
@@ -553,13 +553,13 @@ namespace Optern.Infrastructure.Services.TaskService
 		{
 			try
 			{
-				if(string.IsNullOrEmpty(roomId) && !sprintId.HasValue)
+				if (string.IsNullOrEmpty(roomId) && !sprintId.HasValue)
 				{
 					return Response<TasksSummaryDTO>.Failure(new TasksSummaryDTO(), "Enter roomId or sprintId to get the summary for it.", 400);
 				}
 
-				var query = _context.Tasks.Include(t=>t.Sprint)
-					.ThenInclude(s=>s.WorkSpace).AsQueryable();
+				var query = _context.Tasks.Include(t => t.Sprint)
+					.ThenInclude(s => s.WorkSpace).AsQueryable();
 				if (!string.IsNullOrEmpty(roomId))
 				{
 					query = query.Where(t => t.Sprint.WorkSpace.RoomId == roomId);
@@ -594,7 +594,7 @@ namespace Optern.Infrastructure.Services.TaskService
 			{
 				return Response<TasksSummaryDTO>.Failure($"Server error: {ex.Message}", 500);
 			}
-		} 
+		}
 		#endregion
 
 		#region Helpers
@@ -625,9 +625,9 @@ namespace Optern.Infrastructure.Services.TaskService
 				.Where(ut => ut.UserTask.UserId == userId)
 				.Select(ut => ut.Task).OrderByDescending(t => t.CreatedAt)
 				.Take(8).ToListAsync();
-		} 
+		}
 
-		private async Task<IQueryable<Task>> GetTasksbyFilterAsync(IQueryable<Task> query,string filterBy)
+		private async Task<IQueryable<Task>> GetTasksbyFilterAsync(IQueryable<Task> query, string filterBy)
 		{
 			switch (filterBy)
 			{
@@ -636,30 +636,30 @@ namespace Optern.Infrastructure.Services.TaskService
 				case "month":
 					return query.Where(t => t.CreatedAt >= DateTime.UtcNow.AddMonths(-1) && t.CreatedAt <= DateTime.UtcNow);
 				case "all":
-				default: 
+				default:
 					return query;
 			}
 		}
 
 		private async Task<bool> IsUserMemberOfRoomAsync(string userId, string roomId)
-		 {
-		   return await _unitOfWork.UserRoom.AnyAsync(ur => ur.UserId == userId && ur.RoomId == roomId);
-		 }
+		{
+			return await _unitOfWork.UserRoom.AnyAsync(ur => ur.UserId == userId && ur.RoomId == roomId);
+		}
 
-	
 
-	 private TaskStatusGroupedDTO GroupTasksByStatus(List<TaskResponseDTO> tasks)
-	 {
-	return new TaskStatusGroupedDTO
-	{
-		ToDo = tasks.Where(t => t.Status == TaskState.ToDo).ToList(),
-		InProgress = tasks.Where(t => t.Status == TaskState.InProgress).ToList(),
-		Completed = tasks.Where(t => t.Status == TaskState.Completed).ToList(),
-		ToDoCount = tasks.Count(t => t.Status == TaskState.ToDo),
-		InProgressCount = tasks.Count(t => t.Status == TaskState.InProgress),
-		CompletedCount = tasks.Count(t => t.Status == TaskState.Completed)
-	};
-	 }
+
+		private TaskStatusGroupedDTO GroupTasksByStatus(List<TaskResponseDTO> tasks)
+		{
+			return new TaskStatusGroupedDTO
+			{
+				ToDo = tasks.Where(t => t.Status == TaskState.ToDo).ToList(),
+				InProgress = tasks.Where(t => t.Status == TaskState.InProgress).ToList(),
+				Completed = tasks.Where(t => t.Status == TaskState.Completed).ToList(),
+				ToDoCount = tasks.Count(t => t.Status == TaskState.ToDo),
+				InProgressCount = tasks.Count(t => t.Status == TaskState.InProgress),
+				CompletedCount = tasks.Count(t => t.Status == TaskState.Completed)
+			};
+		}
 		#endregion
 	}
 }
