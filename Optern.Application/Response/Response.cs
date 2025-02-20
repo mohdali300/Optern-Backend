@@ -1,4 +1,5 @@
-﻿namespace Optern.Application.Response
+﻿
+namespace Optern.Application.Response
 {
 	public class Response<T>
 	{
@@ -27,5 +28,7 @@
 
 		public static Response<T> Failure(T data,string message, int statusCode = 400, List<string> errors = null)
 		   => new Response<T>(false, data, message, statusCode, errors);
-	}
+
+     
+    }
 }
