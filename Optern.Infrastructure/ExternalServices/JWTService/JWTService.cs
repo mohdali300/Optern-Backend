@@ -65,7 +65,10 @@ namespace Optern.Infrastructure.ExternalServices.JWTService
 			var RefreshToken = refresh.RefreshToken;
 			try
 			{
-				var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == RefreshToken));
+				var user = await _userManager.Users
+					.Include(u=>u.Position)
+					.Include(u=>u.UserSkills).ThenInclude(us=>us.Skill)
+					.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == RefreshToken));
 				if (user == null)
 				{
 					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Not Authenticated User", 400);
@@ -85,16 +88,24 @@ namespace Optern.Infrastructure.ExternalServices.JWTService
 				await _userManager.UpdateAsync(user);
 				var Roles = await _userManager.GetRolesAsync(user);
 				var jwtToken = await GenerateJwtToken(user);
-			
-				
+
+
 				return Response<LogInResponseDTO>.Success(new LogInResponseDTO
 				{
 					UserId = user.Id,
-					Name = $"{user.FirstName ?? string.Empty} {user.LastName ?? string.Empty}",  
+					Name = $"{user.FirstName ?? string.Empty} {user.LastName ?? string.Empty}",
 					IsAuthenticated = true,
-					Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),  
+					Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
 					ProfilePicture = user.ProfilePicture,
-					Roles = Roles?.ToList() ?? new List<string>(),  
+					Roles = Roles?.ToList() ?? new List<string>(),
+					Position = user.Position != null
+							? new PositionDTO { Id = user.Position.Id, Name = user.Position.Name }
+							: new PositionDTO(),
+					Skills = user.UserSkills?.Select(us => new SkillDTO
+					{
+						Id = us.Skill.Id,
+						Name = us.Skill.Name
+					}).ToList()
 				}, "Active Token", 200);
 
 		   }

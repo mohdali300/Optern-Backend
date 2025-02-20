@@ -244,7 +244,11 @@ namespace Optern.Infrastructure.Services.AuthService
 					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Invalid Data in Model", 400);
 				}
 
-				var user = await _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.Users
+					.Include(u => u.Position)
+					.Include(u=>u.UserSkills).ThenInclude(us=>us.Skill)
+					.FirstOrDefaultAsync(u => u.Email == model.Email);
+
 				if (user == null || !user.EmailConfirmed)
 				{
 					return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "Invalid Email or Password", 404);
@@ -276,7 +280,15 @@ namespace Optern.Infrastructure.Services.AuthService
 						IsAuthenticated = true,
 						Token = new JwtSecurityTokenHandler().WriteToken(token),
 						Roles = userRoles?.ToList() ?? new List<string>(),
-						ProfilePicture = user.ProfilePicture
+						ProfilePicture = user.ProfilePicture,
+						Position = user.Position != null
+							? new PositionDTO { Id = user.Position.Id, Name = user.Position.Name }
+							: new PositionDTO(),
+						Skills = user.UserSkills?.Select(us => new SkillDTO
+						{
+							Id = us.Skill.Id,
+							Name = us.Skill.Name
+						}).ToList()
 					},
 					"User login successfully", 200);
 			}

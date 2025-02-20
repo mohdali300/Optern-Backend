@@ -10,6 +10,6 @@ namespace Optern.Application.DTOs.Task
         public string? AssigneeId { get; set; }
         public string? DueDate { get; set; }
         public string? StartDate { get; set; }
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
     }
 }
