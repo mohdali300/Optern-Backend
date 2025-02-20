@@ -1,5 +1,9 @@
 ﻿
 
+using Microsoft.AspNetCore.Identity;
+using Optern.Infrastructure.ExternalInterfaces.IExternalAuth.IGoogleAuthService;
+using Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService;
+
 namespace Optern.Infrastructure.DependencyInjection
 {
     public static class ServiceRegistration
@@ -38,12 +42,14 @@ namespace Optern.Infrastructure.DependencyInjection
             // Auto Mapper
             services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
+
             // Custom injection for External services
             services.AddScoped<IJWTService, JWTService>();
             services.AddScoped<OTP>();
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IAutoCompleteService, AutoCompleteService>();
+            services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
 
 

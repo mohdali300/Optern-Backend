@@ -19,8 +19,6 @@ namespace Optern.Infrastructure.Validations
             RuleFor(x => x.StartDate)
                 .NotEmpty()
                 .WithMessage("StartDate is required.")
-                .Must(startDate => DateTime.TryParse(startDate, out var parsedDate) && parsedDate.Date >= DateTime.UtcNow.Date)
-                .WithMessage("StartDate must be today or later.")
                 .LessThan(x => x.DueDate)
                 .WithMessage("StartDate must be earlier than DueDate.");
 
