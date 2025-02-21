@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optern.Application", "Opter
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optern.Infrastructure", "Optern.Infrastructure\Optern.Infrastructure.csproj", "{366FE850-7F28-4B4E-AEB9-06F6D6854628}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optern.Test", "Optern.Test\Optern.Test.csproj", "{DD0273D8-6319-4A62-9E39-476062CA7F9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{366FE850-7F28-4B4E-AEB9-06F6D6854628}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{366FE850-7F28-4B4E-AEB9-06F6D6854628}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{366FE850-7F28-4B4E-AEB9-06F6D6854628}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD0273D8-6319-4A62-9E39-476062CA7F9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD0273D8-6319-4A62-9E39-476062CA7F9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD0273D8-6319-4A62-9E39-476062CA7F9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD0273D8-6319-4A62-9E39-476062CA7F9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +50,7 @@ Global
 		{B8EA0CF7-B3C5-4FD8-90DB-870AF4BFF51F} = {6E6FDFC2-5770-4821-8BFB-6F33DE1B9F96}
 		{2E5D0441-3787-4EE6-AE58-D01A0AD1F0C5} = {6E6FDFC2-5770-4821-8BFB-6F33DE1B9F96}
 		{366FE850-7F28-4B4E-AEB9-06F6D6854628} = {6E6FDFC2-5770-4821-8BFB-6F33DE1B9F96}
+		{DD0273D8-6319-4A62-9E39-476062CA7F9F} = {6E6FDFC2-5770-4821-8BFB-6F33DE1B9F96}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C348B8A6-1513-428D-A0FE-E1A808A314EA}
