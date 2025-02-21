@@ -39,7 +39,7 @@ namespace Optern.Infrastructure.Services.SprintService
         {
             try
             {
-                var sprint = await _unitOfWork.Sprints.GetByIdAsync(id);
+                var sprint = await _context.Sprints.Include(s=>s.WorkSpace).FirstOrDefaultAsync(s=>s.Id == id);
                 if (sprint == null)
                 {
                     return Response<Sprint>.Failure("No Sprints Found", 404);

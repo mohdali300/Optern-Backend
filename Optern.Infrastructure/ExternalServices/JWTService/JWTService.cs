@@ -1,4 +1,7 @@
-﻿namespace Optern.Infrastructure.ExternalServices.JWTService
+﻿using Optern.Infrastructure.ExternalInterfaces.IExternalAuth.IGoogleAuthService;
+using Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService;
+
+namespace Optern.Infrastructure.ExternalServices.JWTService
 {
 	public class JWTService : IJWTService
 	{
@@ -7,7 +10,8 @@
 		private readonly IConfiguration _configuration;
 		private readonly IHttpContextAccessor _httpContextAccessor;
 
-		public JWTService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager, IHttpContextAccessor _httpContextAccessor,IConfiguration _configuration)
+
+        public JWTService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager, IHttpContextAccessor _httpContextAccessor,IConfiguration _configuration)
 		{
 			this._userManager = _userManager;
 			this._roleManager = _roleManager;
@@ -41,7 +45,9 @@
 				);
 			return Token;
 		}
-		public RefreshToken CreateRefreshToken()
+
+
+        public RefreshToken CreateRefreshToken()
 		{
 			var randomNumber = new byte[32];
 			RandomNumberGenerator.Fill(randomNumber);
