@@ -8,7 +8,7 @@
 
 
         [GraphQLDescription("GetCreatedRooms")]
-        public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetCreatedRooms([Service] IRoomService _roomService, string id, int lastIdx = 0, int limit = 10) =>
+        public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetCreatedRooms([Service] IRoomService _roomService, string id, int lastIdx = 0, int limit = 8) =>
                   await _roomService.GetCreatedRooms(id,lastIdx,limit);
 
         [GraphQLDescription("GetPopularRooms")]
@@ -16,7 +16,7 @@
                   await _roomService.GetPopularRooms();
 
         [GraphQLDescription("GetJoinedRooms")]
-        public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetJoinedRooms([Service] IRoomService _roomService, string id, int lastIdx = 0, int limit = 10) =>
+        public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetJoinedRooms([Service] IRoomService _roomService, string id, int lastIdx = 0, int limit = 8) =>
                   await _roomService.GetJoinedRooms(id,lastIdx,limit);
 
 
