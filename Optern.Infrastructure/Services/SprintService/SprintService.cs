@@ -35,17 +35,18 @@ namespace Optern.Infrastructure.Services.SprintService
             }
         }
 
-        public async Task<Response<Sprint>> GetSprint(int id)
+        public async Task<Response<Sprint>> GetSprint(string userId, string roomId, int id)
         {
             try
             {
-                var sprint = await _context.Sprints.Include(s=>s.WorkSpace).FirstOrDefaultAsync(s=>s.Id == id);
+                var sprint = await _context.Sprints.Include(s => s.WorkSpace).FirstOrDefaultAsync(s => s.Id == id);
                 if (sprint == null)
                 {
                     return Response<Sprint>.Failure("No Sprints Found", 404);
                 }
 
-                return Response<Sprint>.Success(sprint, "WorkSpace Fetched Successfully!", 200);
+                await SetRecentOpenedSprintAsync(userId, roomId, id);
+                return Response<Sprint>.Success(sprint, "Sprint Fetched Successfully!", 200);
             }
             catch (Exception ex)
             {
@@ -152,10 +153,6 @@ namespace Optern.Infrastructure.Services.SprintService
                 await _unitOfWork.SaveAsync();
 
                 var roomUsers = await _roomUserService.GetAllCollaboratorsAsync(sprint.WorkSpace.RoomId);
-                foreach(var roomUser in roomUsers.Data)
-                {   //remove deleted sprint from recent sprints cache
-                    await RemoveRecentSprintFromCache(roomUser.UserId!, roomUser.RoomId!, id);
-                }
 
                 await transaction.CommitAsync();
                 return Response<bool>.Success(true, "Sprint Deleted Successfully", 200);
@@ -187,8 +184,7 @@ namespace Optern.Infrastructure.Services.SprintService
                         Title = sprint.Title
                     };
 
-                    var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
-                    var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey) ?? new List<RecentSprintDTO>();
+                    var recentSprints = new List<RecentSprintDTO>();
 
                     if (!recentSprints.Any(s => s.Id == sprintId))
                     {
@@ -198,7 +194,6 @@ namespace Optern.Infrastructure.Services.SprintService
                             recentSprints = recentSprints.Take(10).ToList();
                         }
 
-                        _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
                     }
                     else
                     {
@@ -207,7 +202,6 @@ namespace Optern.Infrastructure.Services.SprintService
                         {
                             recentSprints.RemoveAt(existingIndex);
                             recentSprints.Insert(0, recent);
-                            _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
                         }
                     }
                     return true;
@@ -231,12 +225,7 @@ namespace Optern.Infrastructure.Services.SprintService
                     return Response<IEnumerable<RecentSprintDTO>>.Failure(new List<RecentSprintDTO>(), "User doesn’t exist in this room, or Room id is incorrect.", 400);
                 }
 
-                var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
-
-                var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey);
-                if (recentSprints == null || !recentSprints.Any())
-                {
-                    recentSprints = await _context.Sprints.Include(s => s.WorkSpace)
+                var recentSprints = await _context.Sprints.Include(s => s.WorkSpace)
                         .Where(s => s.WorkSpace.RoomId == roomId)
                         .OrderByDescending(s => s.StartDate).Take(5)
                         .Select(s => new RecentSprintDTO
@@ -244,14 +233,7 @@ namespace Optern.Infrastructure.Services.SprintService
                             Id = s.Id,
                             Title = s.Title,
                         }).ToListAsync();
-                    if (recentSprints.Any())
-                    {
-                        _cacheService.SetData(cacheKey, recentSprints, TimeSpan.FromDays(30));
 
-                        return Response<IEnumerable<RecentSprintDTO>>.Success(recentSprints);
-                    }
-                    return Response<IEnumerable<RecentSprintDTO>>.Success(new List<RecentSprintDTO>(), "There is no recent sprints", 204);
-                }
 
                 return Response<IEnumerable<RecentSprintDTO>>.Success(recentSprints);
             }
@@ -262,29 +244,6 @@ namespace Optern.Infrastructure.Services.SprintService
         }
         #endregion
 
-        #region Remove Recent Sprint From Cache
-        private async Task RemoveRecentSprintFromCache(string userId, string roomId, int sprintId)
-        {
-            try
-            {
-                var cacheKey = $"recent-opened-sprints:{userId},{roomId}";
-                var recentSprints = _cacheService.GetData<List<RecentSprintDTO>>(cacheKey) ?? new List<RecentSprintDTO>();
 
-                if (recentSprints.Any())
-                {
-                    var updatedSprints = recentSprints.Where(s => s.Id != sprintId).ToList();
-                    if (updatedSprints.Count != recentSprints.Count)
-                    {
-                        _cacheService.SetData(cacheKey, updatedSprints, TimeSpan.FromDays(30));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-
-        } 
-        #endregion
     }
 }
