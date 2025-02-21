@@ -313,7 +313,7 @@ namespace Optern.Infrastructure.Services.TaskService
 		}
 		#endregion
 
-            
+			
 		#region Submit Task (upload Attachment and change status)
 		public async Task<Response<string>> SubmitTaskAsync(int taskId, string userId, IFile? file, TaskState? newStatus)
 		{
@@ -521,8 +521,9 @@ namespace Optern.Infrastructure.Services.TaskService
 		#endregion
 
 		#region Recent Tasks
-		public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
+		public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId)
 		{
+			bool isAdmin = _context.Rooms.Any(r => r.Id == roomId && r.CreatorId == userId);
 			try
 			{
 				var tasks = await GetRecentTasksForUserAsync(userId, roomId, isAdmin);
@@ -535,7 +536,7 @@ namespace Optern.Infrastructure.Services.TaskService
 						Title = t.Title,
 						Status = t.Status,
 						DueDate = t.DueDate,
-					});
+					}).Take(5);
 					return Response<IEnumerable<RecentTaskDTO>>.Success(dto);
 				}
 
