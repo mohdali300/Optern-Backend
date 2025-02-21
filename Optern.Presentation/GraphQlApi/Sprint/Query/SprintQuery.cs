@@ -11,7 +11,7 @@ public class SprintQuery
 		=> await _sprintService.GetRecentOpenedSprintsAsync(userId, roomId);
 
 	[GraphQLDescription("Get Sprint by id")]
-	public async Task<Response<Sprint>> GetSprint([Service] ISprintService _sprintService, int Id)
-		=> await _sprintService.GetSprint(Id);
+	public async Task<Response<Sprint>> GetSprint([Service] ISprintService _sprintService, string userId, string roomId, int sprintId)
+		=> await _sprintService.GetSprint(userId,roomId,sprintId);
 }
 
