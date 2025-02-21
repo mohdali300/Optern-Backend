@@ -10,17 +10,6 @@
 		#region Get Latest
 		public async Task<Response<IEnumerable<PostDTO>>> GetLatestPostsAsync(string? userId = null, int lastIdx = 0, int limit = 10)
 		{
-			var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("LatestPosts");
-
-			if (cachedPosts is not null)
-			{
-
-				return Response<IEnumerable<PostDTO>>.Success(
-					cachedPosts,
-					"Posts retrieved successfully.",
-					200
-				);
-			}
 
 			try
 			{
@@ -66,7 +55,6 @@
 
 				posts = posts.Skip(lastIdx).Take(limit).ToList();
 
-				_cacheService.SetData("LatestPosts", posts, TimeSpan.FromMinutes(5));
 
 				return Response<IEnumerable<PostDTO>>.Success(
 					posts,
@@ -137,8 +125,8 @@
 					UserName = $"{parent.User?.FirstName} {parent.User?.LastName}",
 					ProfilePicture = parent.User?.ProfilePicture,
 					ReactCommentCount = parent.CommentReacts.Count(r => r.ReactType == ReactType.VOTEUP) - parent.CommentReacts.Count(r => r.ReactType == ReactType.VOTEDOWN),
-					UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId && r.CommentId == parent.Id)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
-
+					UserVote = userId != null ? parent.CommentReacts.FirstOrDefault(r => r.UserId == userId && r.CommentId == parent.Id)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET,
+					ReplyCommentCount = _context.Comments.Count(c => c.ParentId == parent.Id)
 
 				}).ToList();
 

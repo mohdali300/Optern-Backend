@@ -8,7 +8,7 @@ namespace Optern.Infrastructure.Services.CommentService
         }
 
         #region Get Replies For Comment
-        public async Task<Response<List<CommentDTO>>> GetRepliesForCommentAsync(int commentId)
+        public async Task<Response<List<CommentDTO>>> GetRepliesForCommentAsync(int commentId,string userId)
         {
             try
             {
@@ -26,15 +26,17 @@ namespace Optern.Infrastructure.Services.CommentService
                     .OrderBy(comment => comment.CommentDate)
                     .ToListAsync();
 
-                var commentDTOs = allComments.Select(comment => new CommentDTO
-                {
-                    Id = comment.Id,
-                    Content = comment.Content,
-                    CommentDate = comment.CommentDate,
-                    UserName = $"{comment.User?.FirstName} {comment.User?.LastName}",
-                    ProfilePicture=comment.User?.ProfilePicture,
-                    ReactCommentCount = comment.CommentReacts?.Count() ?? 0, 
-                }).ToList();
+				var commentDTOs = allComments.Select(comment => new CommentDTO
+				{
+					Id = comment.Id,
+					Content = comment.Content,
+					CommentDate = comment.CommentDate,
+					UserName = $"{comment.User?.FirstName} {comment.User?.LastName}",
+					ProfilePicture=comment.User?.ProfilePicture,
+					ReplyCommentCount = _dbContext.Comments.Count(comment => comment.ParentId == commentId),
+					ReactCommentCount = comment.CommentReacts.Count(r => r.ReactType == ReactType.VOTEUP) - comment.CommentReacts.Count(r => r.ReactType == ReactType.VOTEDOWN),
+					UserVote = userId != null ? comment.CommentReacts.FirstOrDefault(r => r.UserId == userId && r.CommentId == comment.Id)?.ReactType ?? ReactType.NOTVOTEYET : ReactType.NOTVOTEYET
+				}).ToList();
 
                 return Response<List<CommentDTO>>.Success(commentDTOs, "Replies for the comment fetched successfully.");
             }
