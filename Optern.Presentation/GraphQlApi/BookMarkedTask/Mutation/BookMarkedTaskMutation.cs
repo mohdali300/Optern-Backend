@@ -10,7 +10,7 @@ namespace Optern.Presentation.GraphQlApi.BookMarkedTask.Mutation
             => await _bookMarkedTask.Add(userId, taskId);
 
         [GraphQLDescription("Delete Bookmarked Task")]
-        public async Task<Response<string>> DeleteBookMark([Service] IBookMarkedTaskService _bookMarkedTask, int bookMarkId)
-            => await _bookMarkedTask.Delete(bookMarkId);
+        public async Task<Response<string>> DeleteBookMark([Service] IBookMarkedTaskService _bookMarkedTask, string userId,int taskId)
+            => await _bookMarkedTask.Delete(userId,taskId);
     }
 }

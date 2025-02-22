@@ -53,7 +53,7 @@ namespace Optern.Infrastructure.Services.ChatService
                 {
                     var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
                     var user = await _unitOfWork.Users.GetByIdAsync(participantId);
-                    if (room != null && user != null)
+                    if (room != null && user != null && !_context.ChatParticipants.Any(p => p.UserId == participantId && p.ChatId == room.ChatId))
                     {
                         var chatParticipant = new ChatParticipants
                         {

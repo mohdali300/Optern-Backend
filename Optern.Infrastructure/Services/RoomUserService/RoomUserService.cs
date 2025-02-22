@@ -305,7 +305,8 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     userRoom.IsAccepted = true;
                     userRoom.JoinedAt = DateTime.UtcNow;
                     userRoom.IsAdmin = false;
-                    requestsToApprove.Add(userRoom);
+                    _context.UserRooms.Attach(userRoom);
+                    _context.Entry(userRoom).State = EntityState.Modified;
                 }
                 else
                 {
@@ -324,8 +325,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
                         ur.IsAdmin = false;
                     });
                 }
-
-                _context.UserRooms.UpdateRange(requestsToApprove);
+                
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
