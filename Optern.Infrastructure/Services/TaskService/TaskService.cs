@@ -486,9 +486,14 @@ namespace Optern.Infrastructure.Services.TaskService
 						.ThenInclude(ut => ut.User)
 					.Include(t => t.Activities)
 						.ThenInclude(a => a.Creator)
+					.Include(t=>t.Sprint)
+						.ThenInclude(s=>s.WorkSpace)
 					.FirstOrDefaultAsync(t => t.Id == taskId);
 
 				var taskDto = _mapper.Map<TaskDTO>(task);
+
+				taskDto.SprintName = task.Sprint.Title;
+				taskDto.WorkSpaceName = task.Sprint.WorkSpace.Title;
 
 				taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
 
