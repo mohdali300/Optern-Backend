@@ -163,17 +163,17 @@
 		public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync(int topN)
 		{
 			
-			var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("RecomendedPosts");
+			// var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("RecomendedPosts");
 
-			if (cachedPosts is not null)
-			{
+			// if (cachedPosts is not null)
+			// {
 
-				return Response<IEnumerable<PostDTO>>.Success(
-					cachedPosts,
-					"Posts retrieved successfully.",
-					200
-				);
-			}
+				// return Response<IEnumerable<PostDTO>>.Success(
+					// cachedPosts,
+					// "Posts retrieved successfully.",
+					// 200
+				// );
+			// }
 			try
 			{
 				var recommendedPosts = await _context.Posts
@@ -183,7 +183,7 @@
 					.ToListAsync();
 
 
-				_cacheService.SetData("RecomendedPosts", recommendedPosts, TimeSpan.FromMinutes(50));
+				// _cacheService.SetData("RecomendedPosts", recommendedPosts, TimeSpan.FromMinutes(50));
 
 				if (recommendedPosts.Any())
 				{

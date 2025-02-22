@@ -182,6 +182,7 @@ namespace Optern.Infrastructure.Services.SprintService
 						{
 							Id = s.Id,
 							Title = s.Title,
+							WorkSpaceId = s.WorkSpaceId
 						}).ToListAsync();
 
 
