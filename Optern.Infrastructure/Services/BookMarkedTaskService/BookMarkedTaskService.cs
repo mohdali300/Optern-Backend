@@ -75,8 +75,7 @@ namespace Optern.Infrastructure.Services.BookMarkedTaskService
                 {
                     var dto = bookMarks.Select(b => new BookMarkedTaskDTO
                     {
-                        Id = b.Id,
-                        TaskId = b.TaskId,
+                        Id = b.TaskId,
                         Title = b.Task.Title,
                         Status = b.Task.Status,
                         DueDate = b.Task.DueDate,
