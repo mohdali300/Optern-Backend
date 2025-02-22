@@ -2,32 +2,20 @@
 
 namespace Optern.Infrastructure.Services.SkillService
 {
-    public class SkillService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IAutoCompleteService autocompleteService) : ISkillService
+    public class SkillService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : ISkillService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
-        private readonly IAutoCompleteService _autocompleteService= autocompleteService;
 
 
 
         public async Task<Response<List<string>>> GetSkillSuggestions(string word)
         {
-            try
-            {
-                var existingSkills = await _unitOfWork.Skills.GetAllAsync();
-                _autocompleteService.LoadWords(existingSkills.Select(s => s.Name.ToLower()).ToList());
-                var suggestions = _autocompleteService.GetSuggestions(word.ToLower());
-                if (!suggestions.Any())
-                {
-                    return Response<List<string>>.Success(suggestions, "No Suggestions Skills Found FOr This Skill Name", 200);
-                }
-                return Response<List<string>>.Success(suggestions, "Matched Skills Fetched Fetched Successfully", 200);
-            }
-            catch (Exception ex) 
-            {
-                return Response<List<string>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
-            }
+            
+          
+        return Response<List<string>>.Failure($"There is a server error. Please try again later.", 500);
+            
         }
         public async Task<Response<IEnumerable<SkillDTO>>> AddSkills(IEnumerable<SkillDTO> models)
         {
