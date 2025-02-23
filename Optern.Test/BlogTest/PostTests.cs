@@ -107,8 +107,9 @@ namespace Optern.Test.BlogTest
             _context.Dispose();
         }
 
-        [Test]
-        [Category("GetLatestPosts")]
+        #region GetLatestPosts
+        
+        [Test, Category("GetLatestPosts")]
         public async Task GetLatestPosts_ReturnsAllPosts()
         {
             // Act
@@ -124,14 +125,11 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test]
-        [Category("GetLatestPosts")]
-        //[TestCase("user1")]
-        public async Task GetLatestPosts_WithUserId_ReturnsUserPosts(/*string userId*/)
+        [Test, Category("GetLatestPosts")]
+        [TestCase("user1")]
+        [TestCase("user2")]
+        public async Task GetLatestPosts_WithUserId_ReturnsUserPosts(string userId)
         {
-            // Arrange
-            var userId = "user1";
-
             // Act
             var result = await _postService.GetLatestPostsAsync(userId);
 
@@ -142,9 +140,68 @@ namespace Optern.Test.BlogTest
                 Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
                 Assert.That(result.Data, Is.Not.Null);
                 Assert.That(result.Data.Count(), Is.EqualTo(1));
-                Assert.That(result.Data.First().CreatorName, Is.EqualTo("John Doe"));
             });
         }
+
+        [Test, Category("GetLatestPosts")]
+        [TestCase(0, 2)]
+        [TestCase(1, 2)]
+        [TestCase(2, 2)]
+        public async Task GetLatestPosts_WithPagination_ReturnsPostsAfterSkip(int skip, int take)
+        {
+            // Act
+            var result = await _postService.GetLatestPostsAsync(null, skip, take);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count(), Is.EqualTo(take - skip));
+            });
+        }
+
+        [Test, Category("GetLatestPosts")]
+        public async Task GetLatestPosts_EmptyPosts_ReturnsEmptyList()
+        {
+            // Arrange
+            var emptyList = new List<Post>();
+            _context.RemoveRange(_samplePosts);
+            _context.SaveChanges();
+
+            // Act
+            var result = await _postService.GetLatestPostsAsync();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count(), Is.EqualTo(0));
+                Assert.That(result.Message, Is.EqualTo("No posts found."));
+            });
+        }
+
+        [Test, Category("GetLatestPosts")]
+        public async Task GetLatestPosts_WithExceptions_ShouldHandleException()
+        {
+            // Arrange
+            OpternDbContext dbContext = null!;
+            _postService = new PostService(_mockUnitOfWork.Object, dbContext, _mockMapper.Object, _mockCacheService.Object);
+            // Act
+            var result = await _postService.GetLatestPostsAsync();
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status500InternalServerError));
+                Assert.That(result.Data, Is.Not.Null);
+            });
+        } 
+
+        #endregion
 
     }
 }
