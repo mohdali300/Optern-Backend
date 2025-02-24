@@ -26,6 +26,8 @@ namespace Optern.Test.BlogTest
         private List<Post> _samplePosts = null!;
         private List<FavoritePosts> _sampleFavoritePosts = null!;
         private List<Reacts> _sampleReacts = null!;
+        private List<Tags> _sampleTags = null!;
+        private List<PostTags> _samplePostTags = null!;
 
         [SetUp]
         public void SetUp()
@@ -154,6 +156,7 @@ namespace Optern.Test.BlogTest
 
         #endregion
 
+        #region GetPostById
         [Test, Category("GetPostById")]
         [TestCase(1)]
         public async Task GetPostById_WithPostId_ReturnsPost(int postId)
@@ -173,12 +176,12 @@ namespace Optern.Test.BlogTest
         }
 
         [Test, Category("GetPostById")]
-        [TestCase(1,"user1")]
-        [TestCase(1,"user2")]
-        public async Task GetPostById_WithUserId_ReturnsIsFavPost(int postId,string userId)
+        [TestCase(1, "user1")]
+        [TestCase(1, "user2")]
+        public async Task GetPostById_WithUserId_ReturnsIsFavPost(int postId, string userId)
         {
             // Act
-            var result = await _postService.GetPostByIdAsync(postId,userId);
+            var result = await _postService.GetPostByIdAsync(postId, userId);
 
             // Assert
             Assert.Multiple(() =>
@@ -212,7 +215,7 @@ namespace Optern.Test.BlogTest
 
         [Test, Category("GetPostById")]
         [TestCase(3)]
-        [TestCase(null)]
+        [TestCase(0)]
         public async Task GetPostById_WithNonExistentPost_ReturnsNotFound(int postId)
         {
             // Act
@@ -224,6 +227,24 @@ namespace Optern.Test.BlogTest
                 Assert.That(result.IsSuccess, Is.False);
                 Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
                 Assert.That(result.Data, Is.Not.Null);
+            });
+        }
+        #endregion
+
+        [Test, Category("GetRecommendedPosts")]
+        [TestCase(2)]
+        public async Task GetRecommendedPosts_WithTopN_ReturnsTopPosts(int topN)
+        {
+            // Act
+            var result = await _postService.GetRecommendedPostsAsync(topN);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count, Is.EqualTo(topN));
             });
         }
 
@@ -317,11 +338,49 @@ namespace Optern.Test.BlogTest
                 }
             };
 
+            _sampleTags = new List<Tags>
+            {
+                new Tags
+                {
+                    Id=5,
+                    Name="DotNet"
+                },
+
+                new Tags
+                {
+                    Id=6,
+                    Name="GraphQL"
+                },
+
+                new Tags
+                {
+                    Id=7,
+                    Name="PostgreSQL"
+                }
+            };
+
+            _samplePostTags = new List<PostTags>
+            {
+                new PostTags
+                {
+                    Id= 8,
+                    PostId=1,
+                    TagId=5
+                },
+                new PostTags
+                {
+                    Id= 9,
+                    PostId=2,
+                    TagId=6
+                },
+            };
 
             // add to the in memory database
             _context.Posts.AddRange(_samplePosts);
             _context.FavoritePosts.AddRange(_sampleFavoritePosts);
             _context.Reacts.AddRange(_sampleReacts);
+            _context.Tags.AddRange(_sampleTags);
+            _context.PostTags.AddRange(_samplePostTags);
             _context.SaveChanges();
         }
         #endregion
