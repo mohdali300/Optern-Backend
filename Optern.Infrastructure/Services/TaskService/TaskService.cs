@@ -133,9 +133,6 @@ namespace Optern.Infrastructure.Services.TaskService
 
 				var isAdmin = await _unitOfWork.UserRoom.AnyAsync(ur => ur.UserId == userId && ur.RoomId == editTaskDto.RoomId && ur.IsAdmin);
 
-				if (!isAdmin)
-					return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "You are not authorized to edit this task.", 403);
-
 				if (editTaskDto.WorkspaceId.HasValue)
 				{
 					var workspace = await _unitOfWork.WorkSpace.GetByIdAsync((int)editTaskDto.WorkspaceId);
