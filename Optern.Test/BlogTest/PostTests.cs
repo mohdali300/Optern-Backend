@@ -6,6 +6,7 @@ using NUnit.Framework;
 using Optern.Application.Interfaces.IPostService;
 using Optern.Application.Response;
 using Optern.Domain.Entities;
+using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.ExternalInterfaces.ICacheService;
 using Optern.Infrastructure.Services.PostService;
@@ -23,6 +24,8 @@ namespace Optern.Test.BlogTest
         private Mock<ICacheService> _mockCacheService = null!;
         private IPostService _postService = null!;
         private List<Post> _samplePosts = null!;
+        private List<FavoritePosts> _sampleFavoritePosts = null!;
+        private List<Reacts> _sampleReacts = null!;
 
         [SetUp]
         public void SetUp()
@@ -38,60 +41,8 @@ namespace Optern.Test.BlogTest
             _mockMapper = new Mock<IMapper>();
             _mockCacheService = new Mock<ICacheService>();
 
-            // sample data
-            _samplePosts = new List<Post>
-            {
-                new Post
-                {
-                    Id = 1,
-                    Title = "Post 1",
-                    Content = "Content 1",
-                    Creator = new ApplicationUser
-                    {
-                        Id = "user1",
-                        UserName = "john.doe",
-                        FirstName = "John",
-                        LastName = "Doe",
-                        Email = "john.doe@example.com",
-                        ProfilePicture = "profile1.jpg",
-                        JobTitle = "Developer",
-                        Gender = "Male",
-                        Country = "USA",
-                        CreatedAt = DateTime.UtcNow.AddDays(-30)
-                    },
-                    CreatedDate = DateTime.UtcNow.AddMinutes(-10),
-                    PostTags = new List<PostTags>(),
-                    Reacts = new List<Reacts>(),
-                    Comments = new List<Comment>()
-                },
-                new Post
-                {
-                    Id = 2,
-                    Title = "Post 2",
-                    Content = "Content 2",
-                    Creator = new ApplicationUser
-                    {
-                        Id = "user2",
-                        UserName = "alice.smith",
-                        FirstName = "Alice",
-                        LastName = "Smith",
-                        Email = "alice.smith@example.com",
-                        ProfilePicture = "profile2.jpg",
-                        JobTitle = "Designer",
-                        Gender = "Female",
-                        Country = "UK",
-                        CreatedAt = DateTime.UtcNow.AddDays(-20)
-                    },
-                    CreatedDate = DateTime.UtcNow.AddMinutes(-15),
-                    PostTags = new List<PostTags>(),
-                    Reacts = new List<Reacts>(),
-                    Comments = new List<Comment>()
-                }
-            };
-
-            // add to the in memory database
-            _context.Posts.AddRange(_samplePosts);
-            _context.SaveChanges();
+            // create sample data and add to in memory DB
+            CreateSampleData();
 
             _postService = new PostService(
                 _mockUnitOfWork.Object,
@@ -199,9 +150,182 @@ namespace Optern.Test.BlogTest
                 Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status500InternalServerError));
                 Assert.That(result.Data, Is.Not.Null);
             });
-        } 
+        }
 
         #endregion
+
+        [Test, Category("GetPostById")]
+        [TestCase(1)]
+        public async Task GetPostById_WithPostId_ReturnsPost(int postId)
+        {
+            // Act
+            var result = await _postService.GetPostByIdAsync(postId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Message, Is.EqualTo("Post retrieved successfully."));
+                Assert.That(result.Data.Content, Is.EqualTo($"Content {postId}"));
+            });
+        }
+
+        [Test, Category("GetPostById")]
+        [TestCase(1,"user1")]
+        [TestCase(1,"user2")]
+        public async Task GetPostById_WithUserId_ReturnsIsFavPost(int postId,string userId)
+        {
+            // Act
+            var result = await _postService.GetPostByIdAsync(postId,userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Message, Is.EqualTo("Post retrieved successfully."));
+                Assert.That(result.Data.Content, Is.EqualTo($"Content {postId}"));
+                Assert.That(result.Data.IsFav, Is.True);
+            });
+        }
+
+        [Test, Category("GetPostById")]
+        [TestCase(2, "user2")]
+        public async Task GetPostById_WithUserId_ReturnsIsNotFavAndReactType(int postId, string userId)
+        {
+            // Act
+            var result = await _postService.GetPostByIdAsync(postId, userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.IsFav, Is.False);
+                Assert.That(result.Data.UserReact, Is.EqualTo(ReactType.VOTEUP));
+            });
+        }
+
+        [Test, Category("GetPostById")]
+        [TestCase(3)]
+        [TestCase(null)]
+        public async Task GetPostById_WithNonExistentPost_ReturnsNotFound(int postId)
+        {
+            // Act
+            var result = await _postService.GetPostByIdAsync(postId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Data, Is.Not.Null);
+            });
+        }
+
+        #region Helpers
+        private void CreateSampleData()
+        {
+            _samplePosts = new List<Post>
+            {
+                new Post
+                {
+                    Id = 1,
+                    Title = "Post 1",
+                    Content = "Content 1",
+                    Creator = new ApplicationUser
+                    {
+                        Id = "user1",
+                        UserName = "john.doe",
+                        FirstName = "John",
+                        LastName = "Doe",
+                        Email = "john.doe@example.com",
+                        ProfilePicture = "profile1.jpg",
+                        JobTitle = "Developer",
+                        Gender = "Male",
+                        Country = "USA",
+                        CreatedAt = DateTime.UtcNow.AddDays(-30)
+                    },
+                    CreatedDate = DateTime.UtcNow.AddMinutes(-10),
+                    PostTags = new List<PostTags>(),
+                    Reacts = new List<Reacts>(),
+                    Comments = new List<Comment>()
+                },
+                new Post
+                {
+                    Id = 2,
+                    Title = "Post 2",
+                    Content = "Content 2",
+                    Creator = new ApplicationUser
+                    {
+                        Id = "user2",
+                        UserName = "alice.smith",
+                        FirstName = "Alice",
+                        LastName = "Smith",
+                        Email = "alice.smith@example.com",
+                        ProfilePicture = "profile2.jpg",
+                        JobTitle = "Designer",
+                        Gender = "Female",
+                        Country = "UK",
+                        CreatedAt = DateTime.UtcNow.AddDays(-20)
+                    },
+                    CreatedDate = DateTime.UtcNow.AddMinutes(-15),
+                    PostTags = new List<PostTags>(),
+                    Reacts = new List<Reacts>(),
+                    Comments = new List<Comment>()
+                }
+            };
+
+            _sampleFavoritePosts = new List<FavoritePosts>
+            {
+                new FavoritePosts
+                {
+                    Id=100,
+                    SavedAt= DateTime.UtcNow,
+                    UserId="user1",
+                    PostId=2
+                },
+                new FavoritePosts
+                {
+                    Id=101,
+                    SavedAt= DateTime.UtcNow,
+                    UserId="user1",
+                    PostId=1
+                },
+                new FavoritePosts
+                {
+                    Id=102,
+                    SavedAt= DateTime.UtcNow,
+                    UserId="user2",
+                    PostId=1
+                },
+            };
+
+            _sampleReacts = new List<Reacts>
+            {
+                new Reacts
+                {
+                    Id=10,
+                    ReactDate= DateTime.UtcNow,
+                    ReactType=ReactType.VOTEUP,
+                    PostId=2,
+                    UserId="user2"
+                }
+            };
+
+
+            // add to the in memory database
+            _context.Posts.AddRange(_samplePosts);
+            _context.FavoritePosts.AddRange(_sampleFavoritePosts);
+            _context.Reacts.AddRange(_sampleReacts);
+            _context.SaveChanges();
+        }
+        #endregion
+
 
     }
 }
