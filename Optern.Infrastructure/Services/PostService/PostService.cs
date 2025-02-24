@@ -163,34 +163,35 @@
 		public async Task<Response<IEnumerable<PostDTO>>> GetRecommendedPostsAsync(int topN)
 		{
 			
-			var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("RecomendedPosts");
+			// var cachedPosts = _cacheService.GetData<IEnumerable<PostDTO>>("RecomendedPosts");
 
-			if (cachedPosts is not null)
-			{
+			// if (cachedPosts is not null)
+			// {
 
-				return Response<IEnumerable<PostDTO>>.Success(
-					cachedPosts,
-					"Posts retrieved successfully.",
-					200
-				);
-			}
+				// return Response<IEnumerable<PostDTO>>.Success(
+					// cachedPosts,
+					// "Posts retrieved successfully.",
+					// 200
+				// );
+			// }
 			try
 			{
 				var recommendedPosts = await _context.Posts
 					.Include(p => p.Creator)
+					.Include(p=>p.PostTags).ThenInclude(pt=>pt.Tag)
 					.OrderByDescending(p => p.Reacts.Count)
 					.Take(topN)
 					.ToListAsync();
 
 
-				_cacheService.SetData("RecomendedPosts", recommendedPosts, TimeSpan.FromMinutes(50));
+				// _cacheService.SetData("RecomendedPosts", recommendedPosts, TimeSpan.FromMinutes(50));
 
 				if (recommendedPosts.Any())
 				{
 					var postDtos = _mapper.Map<IEnumerable<PostDTO>>(recommendedPosts);
 					return Response<IEnumerable<PostDTO>>.Success(postDtos, "Posts fetched successfully.");
 				}
-				return Response<IEnumerable<PostDTO>>.Failure(new List<PostDTO>(), "No posts found.", 404);
+				return Response<IEnumerable<PostDTO>>.Success(new List<PostDTO>(), "No posts found.", 204);
 			}
 			catch (Exception ex)
 			{

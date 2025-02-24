@@ -10,7 +10,7 @@ namespace Optern.Application.Interfaces.ITaskService
         public Task<Response<TaskStatusGroupedDTO>> GetTasksWithFiltersAsync(GetTasksWithFiltersDTO request);
         public Task<Response<TaskDTO>> GetTaskDetailsAsync(int taskId, string? userId = null);
 
-        public Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId,string roomId,bool? isAdmin= false);
+        public Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId,string roomId);
         public Task<Response<TasksSummaryDTO>> GetTasksSummaryAsync(string filterBy, string? roomId = null, int? sprintId = null);
     }
 }

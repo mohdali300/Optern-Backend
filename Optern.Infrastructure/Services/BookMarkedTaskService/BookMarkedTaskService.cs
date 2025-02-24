@@ -42,14 +42,15 @@ namespace Optern.Infrastructure.Services.BookMarkedTaskService
         #endregion
 
         #region Delete
-        public async Task<Response<string>> Delete(int bookMarkId)
+        public async Task<Response<string>> Delete(string userId, int taskId)
         {
             try
             {
-                var bookmark = await _unitOfWork.BookMarkedTask.GetByIdAsync(bookMarkId);
+                var bookmark = await _context.BookMarkedTasks.FirstOrDefaultAsync(bm => bm.UserId == userId && bm.TaskId == taskId);
                 if (bookmark != null)
                 {
                     await _unitOfWork.BookMarkedTask.DeleteAsync(bookmark);
+                    await _unitOfWork.SaveAsync();
                     return Response<string>.Success("Task Removed from BookMarks.");
                 }
                 return Response<string>.Failure(string.Empty, "This Task already is not in your BookMarks.", 400);
@@ -75,8 +76,7 @@ namespace Optern.Infrastructure.Services.BookMarkedTaskService
                 {
                     var dto = bookMarks.Select(b => new BookMarkedTaskDTO
                     {
-                        Id = b.Id,
-                        TaskId = b.TaskId,
+                        Id = b.TaskId,
                         Title = b.Task.Title,
                         Status = b.Task.Status,
                         DueDate = b.Task.DueDate,

@@ -48,7 +48,6 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<OTP>();
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
-            services.AddScoped<IAutoCompleteService, AutoCompleteService>();
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
 

@@ -133,9 +133,6 @@ namespace Optern.Infrastructure.Services.TaskService
 
 				var isAdmin = await _unitOfWork.UserRoom.AnyAsync(ur => ur.UserId == userId && ur.RoomId == editTaskDto.RoomId && ur.IsAdmin);
 
-				if (!isAdmin)
-					return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "You are not authorized to edit this task.", 403);
-
 				if (editTaskDto.WorkspaceId.HasValue)
 				{
 					var workspace = await _unitOfWork.WorkSpace.GetByIdAsync((int)editTaskDto.WorkspaceId);
@@ -313,7 +310,7 @@ namespace Optern.Infrastructure.Services.TaskService
 		}
 		#endregion
 
-            
+			
 		#region Submit Task (upload Attachment and change status)
 		public async Task<Response<string>> SubmitTaskAsync(int taskId, string userId, IFile? file, TaskState? newStatus)
 		{
@@ -486,9 +483,14 @@ namespace Optern.Infrastructure.Services.TaskService
 						.ThenInclude(ut => ut.User)
 					.Include(t => t.Activities)
 						.ThenInclude(a => a.Creator)
+					.Include(t=>t.Sprint)
+						.ThenInclude(s=>s.WorkSpace)
 					.FirstOrDefaultAsync(t => t.Id == taskId);
 
 				var taskDto = _mapper.Map<TaskDTO>(task);
+
+				taskDto.SprintName = task.Sprint.Title;
+				taskDto.WorkSpaceName = task.Sprint.WorkSpace.Title;
 
 				taskDto.Activities = taskDto.Activities.OrderBy(a => a.CreatedAt).ToList();
 
@@ -521,8 +523,9 @@ namespace Optern.Infrastructure.Services.TaskService
 		#endregion
 
 		#region Recent Tasks
-		public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId, bool? isAdmin = false)
+		public async Task<Response<IEnumerable<RecentTaskDTO>>> GetRecentTasksAsync(string userId, string roomId)
 		{
+			bool isAdmin = _context.Rooms.Any(r => r.Id == roomId && r.CreatorId == userId);
 			try
 			{
 				var tasks = await GetRecentTasksForUserAsync(userId, roomId, isAdmin);
@@ -535,7 +538,7 @@ namespace Optern.Infrastructure.Services.TaskService
 						Title = t.Title,
 						Status = t.Status,
 						DueDate = t.DueDate,
-					});
+					}).Take(5);
 					return Response<IEnumerable<RecentTaskDTO>>.Success(dto);
 				}
 

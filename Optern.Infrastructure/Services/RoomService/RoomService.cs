@@ -128,7 +128,7 @@ namespace Optern.Infrastructure.Services.RoomService
 						Name = r.Name,
 						Description = r.Description,
 						CoverPicture = r.CoverPicture,
-						Members = r.UserRooms.Count(),
+						Members = r.UserRooms.Count(r=>r.IsAccepted),
 						CreatedAt = r.CreatedAt,
 						RoomType = r.RoomType,
 						Tracks = r.RoomTracks.Select(rt => new TrackDTO
@@ -169,7 +169,7 @@ namespace Optern.Infrastructure.Services.RoomService
 						 Name = r.Name,
 						 Description = r.Description,
 						 CoverPicture = r.CoverPicture,
-						 Members = r.UserRooms.Count(),
+						 Members = r.UserRooms.Count(r=>r.IsAccepted),
 						 CreatedAt = r.CreatedAt,
 						 RoomType = r.RoomType,
 						Tracks = r.RoomTracks.Select(rt => new TrackDTO
