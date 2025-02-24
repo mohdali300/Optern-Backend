@@ -178,6 +178,7 @@
 			{
 				var recommendedPosts = await _context.Posts
 					.Include(p => p.Creator)
+					.Include(p=>p.PostTags).ThenInclude(pt=>pt.Tag)
 					.OrderByDescending(p => p.Reacts.Count)
 					.Take(topN)
 					.ToListAsync();
@@ -190,7 +191,7 @@
 					var postDtos = _mapper.Map<IEnumerable<PostDTO>>(recommendedPosts);
 					return Response<IEnumerable<PostDTO>>.Success(postDtos, "Posts fetched successfully.");
 				}
-				return Response<IEnumerable<PostDTO>>.Failure(new List<PostDTO>(), "No posts found.", 404);
+				return Response<IEnumerable<PostDTO>>.Success(new List<PostDTO>(), "No posts found.", 204);
 			}
 			catch (Exception ex)
 			{
