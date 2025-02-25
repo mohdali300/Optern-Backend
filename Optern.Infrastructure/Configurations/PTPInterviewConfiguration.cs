@@ -1,4 +1,6 @@
-﻿namespace Optern.Infrastructure.Persistence.Configurations
+﻿using static Dapper.SqlMapper;
+
+namespace Optern.Infrastructure.Persistence.Configurations
 {
     public class PTPInterviewConfiguration : IEntityTypeConfiguration<PTPInterview>
     {
@@ -24,8 +26,12 @@
                    .HasConversion<string>()
                    .HasMaxLength(50);
 
+            builder.Property(i => i.ScheduledDate)
+                .IsRequired();
+          
             builder.Property(i => i.ScheduledTime)
-                   .IsRequired();
+             .HasColumnType("time")
+             .IsRequired();
 
             builder.Property(i => i.Status)
                    .IsRequired()
