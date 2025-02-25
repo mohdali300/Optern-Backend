@@ -1,4 +1,6 @@
-﻿namespace Optern.Infrastructure.Configurations
+﻿using static Dapper.SqlMapper;
+
+namespace Optern.Infrastructure.Configurations
 {
     public class PTPFeedBackConfiguration : IEntityTypeConfiguration<PTPFeedBack>
     {
@@ -18,11 +20,7 @@
                    .ValueGeneratedOnAdd();
 
              // Properties
-            builder.Property(fb => fb.InterviewerPerformance)
-                   .IsRequired();
-
-            builder.Property(fb => fb.IntervieweePerformance)
-                   .IsRequired();
+        
 
               builder.Property(fb => fb.PTPInterviewId)
                    .IsRequired();
@@ -32,6 +30,9 @@
             builder.HasIndex(fb => fb.PTPInterviewId)
               .HasDatabaseName("IX_PTPFeedBack_PTPInterviewId");
 
+            builder.HasIndex(f => new { f.GivenByUserId, f.ReceivedByUserId, f.PTPInterviewId })
+                  .IsUnique();
+
             #endregion
 
             #region Relations
@@ -39,6 +40,19 @@
                    .WithMany(ptp => ptp.PTPFeedBacks)
                    .HasForeignKey(fb => fb.PTPInterviewId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(f => f.GivenByUser)
+             .WithMany()
+             .HasForeignKey(f => f.GivenByUserId)
+             .OnDelete(DeleteBehavior.Cascade); 
+
+            builder.HasOne(f => f.ReceivedByUser)
+                  .WithMany()
+                  .HasForeignKey(f => f.ReceivedByUserId)
+                  .OnDelete(DeleteBehavior.Cascade); 
+
+
+
             #endregion
 
 

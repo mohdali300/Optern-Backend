@@ -4,12 +4,12 @@
 	{
         public PTPFeedBackValidator()
         {
-            RuleFor(f => f.InterviewerPerformance)
-                .NotEmpty().WithMessage("Interviewer Performance feedback Cannot be empty!");
+          
 
-			RuleFor(f => f.IntervieweePerformance)
-				.NotEmpty().WithMessage("Interviewee Performance feedback Cannot be empty!");
+            RuleFor(f => f.Performance)
+                .NotNull().WithMessage("Interviewer Performance feedback cannot be empty!")
+                .InclusiveBetween(1, 5).WithMessage("Interviewer Performance score must be between 1 and 5.");
 
-		}
+        }
     }
 }

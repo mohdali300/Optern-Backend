@@ -8,7 +8,7 @@
                 .NotEmpty().WithMessage("Category Cannot be empty!")
                 .IsInEnum().WithMessage("Category must be valid interview category");
 
-            RuleFor(i => i.ScheduledTime)
+            RuleFor(i => i.ScheduledDate)
                 .NotEmpty().WithMessage("Scheduled interview Time Cannot be empty!")
                 .GreaterThanOrEqualTo(DateTime.Now);
 

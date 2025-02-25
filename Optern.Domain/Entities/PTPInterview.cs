@@ -11,10 +11,11 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
 		public InterviewCategory Category { get; set; }
-		public DateTime ScheduledTime { get; set; }
-        public InterviewStatus Status { get; set; }
-        public TimeSpan Duration { get; set; }
+        public DateTime ScheduledDate { get; set; } 
+        public TimeSpan ScheduledTime { get; set; } 
+        public TimeSlotState SlotState { get; set; }
 
+        public InterviewStatus Status { get; set; }
         // Navigation Properties
         public virtual ICollection<PTPUsers> PeerToPeerInterviewUsers { get; set; }
         public ICollection<PTPQuestionInterview> PTPQuestionInterviews { get; set; }

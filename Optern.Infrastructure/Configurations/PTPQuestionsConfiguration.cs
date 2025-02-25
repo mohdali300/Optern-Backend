@@ -1,4 +1,9 @@
-﻿namespace Optern.Infrastructure.Persistence.Configurations
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore;
+using static Dapper.SqlMapper;
+
+namespace Optern.Infrastructure.Persistence.Configurations
 {
     public class PTPQuestionsConfiguration : IEntityTypeConfiguration<PTPQuestions>
     {
@@ -23,9 +28,12 @@
 
             builder.Property(q => q.Answer)
                    .IsRequired();
+
+
             #endregion
 
             #region Relations
+
             builder.HasMany(q => q.PTPQuestionInterviews)
                 .WithOne(qi => qi.PTPQuestion)
                 .HasForeignKey(qi => qi.PTPQuestionId)

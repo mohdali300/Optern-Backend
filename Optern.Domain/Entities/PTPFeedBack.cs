@@ -9,14 +9,22 @@ namespace Optern.Domain.Entities
     public class PTPFeedBack
     {
         public int Id { get; set; }
+        // in scale from 1 to 5
+        public int? ProblemSolving { get; set; }
+        public int? Coding { get; set; }
+        public int? Communication { get; set; }
+        public int Performance { get; set; }
 
-        public string InterviewerPerformance { get; set; }
-        public string IntervieweePerformance { get; set; }
+        public string InterviewerPerformance {  get; set; }
+        public string Improvement {  get; set; }
 
-        // Foreign Keys
+        public int GivenByUserId { get; set; }
+        public  int ReceivedByUserId { get; set; }
         public int PTPInterviewId { get; set; }
         // Navigation Properties
         public virtual PTPInterview PTPInterview { get; set; }
+        public virtual PTPUsers ReceivedByUser { get; set; }
+        public virtual PTPUsers GivenByUser { get; set; }
 
     }
 }
