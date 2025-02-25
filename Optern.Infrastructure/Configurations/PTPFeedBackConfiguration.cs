@@ -1,4 +1,7 @@
-﻿using static Dapper.SqlMapper;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore;
+using static Dapper.SqlMapper;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Optern.Infrastructure.Configurations
 {
@@ -24,6 +27,19 @@ namespace Optern.Infrastructure.Configurations
 
               builder.Property(fb => fb.PTPInterviewId)
                    .IsRequired();
+            var dictionaryComparer = new ValueComparer<Dictionary<int, string>>(
+                        (d1, d2) => d1 != null && d2 != null && d1.SequenceEqual(d2),
+                        d => d.Aggregate(0, (a, v) => HashCode.Combine(a, v.Key.GetHashCode(), v.Value.GetHashCode())),
+                        d => d.ToDictionary(entry => entry.Key, entry => entry.Value) 
+                    );
+
+            builder.Property(f => f.Ratings)
+               .HasColumnType("jsonb") 
+               .HasConversion(
+                        v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                        v => JsonSerializer.Deserialize<Dictionary<int, string>>(v, new JsonSerializerOptions()) ?? new Dictionary<int, string>()
+                             )
+                  .Metadata.SetValueComparer(dictionaryComparer);
 
             // Indexes
 
