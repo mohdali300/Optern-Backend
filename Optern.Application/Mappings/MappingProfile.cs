@@ -1,6 +1,7 @@
 ﻿
 
 using Optern.Application.DTOs.Message;
+using Optern.Application.DTOs.PTPFeedback;
 
 namespace Optern.Application.Mappings
 {
@@ -151,7 +152,15 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.CreatedTime, opt => opt.MapFrom(src => src.Notifications.CreatedTime));
             #endregion
 
+            #region Interview
 
+            CreateMap<AddPTPFeedbackDTO, PTPFeedBack>()
+                .ForMember(dest => dest.Ratings, opt => opt.MapFrom(src => src.Ratings ?? new List<KeyValuePair<int, string>>()));
+
+            CreateMap<PTPFeedBack, PTPFeedbackDTO>();
+               
+
+            #endregion
 
         }
     }

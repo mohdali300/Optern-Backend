@@ -1,19 +1,4 @@
 // Initialize builder
-
-
-using Optern.Presentation.GraphQlApi.Notification.Mutation;
-using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Optern.Presentation.GraphQlApi.Message.Mutation;
-using Optern.Presentation.GraphQlApi.Message.Query;
-using Optern.Presentation.GraphQlApi.ExternalAuth.GoogleAuth.Mutation;
-using Optern.Presentation.GraphQlApi.ExternalAuth.GoogleAuth.Query;
-using System.Text;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Identity;
-using Optern.Infrastructure.MiddleWares;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -56,6 +41,7 @@ builder.Services
 .AddType<UserNotificationQuery>()
 .AddType<MessageQuery>()
 .AddType<GoogleAuthQuery>()
+.AddType<PTPFeedbackQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -76,6 +62,7 @@ builder.Services
 .AddType<UserNotificationMutation>()
 .AddType<MessageMutation>()
 .AddType<GoogleAuthMutation>()
+.AddType<PTPFeedbackMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 

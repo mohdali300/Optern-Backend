@@ -27,19 +27,20 @@ namespace Optern.Infrastructure.Configurations
 
               builder.Property(fb => fb.PTPInterviewId)
                    .IsRequired();
-            var dictionaryComparer = new ValueComparer<Dictionary<int, string>>(
-                        (d1, d2) => d1 != null && d2 != null && d1.SequenceEqual(d2),
-                        d => d.Aggregate(0, (a, v) => HashCode.Combine(a, v.Key.GetHashCode(), v.Value.GetHashCode())),
-                        d => d.ToDictionary(entry => entry.Key, entry => entry.Value) 
-                    );
+
+            var listComparer = new ValueComparer<List<KeyValuePair<int, string>>>(
+             (l1, l2) => (l1 == null && l2 == null) || (l1 != null && l2 != null && l1.SequenceEqual(l2)),
+             l => l == null ? 0 : l.Aggregate(0, (a, v) => HashCode.Combine(a, v.Key.GetHashCode(), v.Value.GetHashCode())),
+             l => l == null ? new List<KeyValuePair<int, string>>() : new List<KeyValuePair<int, string>>(l)
+              );
 
             builder.Property(f => f.Ratings)
-               .HasColumnType("jsonb") 
-               .HasConversion(
-                        v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
-                        v => JsonSerializer.Deserialize<Dictionary<int, string>>(v, new JsonSerializerOptions()) ?? new Dictionary<int, string>()
-                             )
-                  .Metadata.SetValueComparer(dictionaryComparer);
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v ?? new List<KeyValuePair<int, string>>(), new JsonSerializerOptions()),
+                    v => JsonSerializer.Deserialize<List<KeyValuePair<int, string>>>(v, new JsonSerializerOptions()) ?? new List<KeyValuePair<int, string>>()
+                )
+                .Metadata.SetValueComparer(listComparer);
 
             // Indexes
 
