@@ -25,13 +25,14 @@ namespace Optern.Application.Mappings
 		  .ForMember(dest => dest.ReactCount, opt => opt.MapFrom(src => src.Reacts.Count))
 		  .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count));
 
-			//post
-			CreateMap<Post, PostDTO>()
-			.ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.Creator.ProfilePicture))
-			.ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
-			.ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
+            //post
+            CreateMap<Post, PostDTO>()
+            .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.Creator.ProfilePicture))
+            .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
 
-			CreateMap<Post, PostWithDetailsDTO>()
+
+            CreateMap<Post, PostWithDetailsDTO>()
 			.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName));
 
 			//comment

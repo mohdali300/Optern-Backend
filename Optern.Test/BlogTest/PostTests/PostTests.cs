@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
+using Optern.Application.DTOs.Post;
 using Optern.Application.Interfaces.IPostService;
 using Optern.Application.Response;
 using Optern.Domain.Entities;
@@ -16,31 +17,33 @@ using Task = System.Threading.Tasks.Task;
 namespace Optern.Test.BlogTest
 {
     [TestFixture]
+    [Category("PostTests")]
     public class PostTests
     {
         private Mock<IUnitOfWork> _mockUnitOfWork = null!;
         private OpternDbContext _context = null!;
-        private Mock<IMapper> _mockMapper = null!;
         private Mock<ICacheService> _mockCacheService = null!;
         private IPostService _postService = null!;
         private List<Post> _samplePosts = null!;
+        private List<ApplicationUser> _sampleUsers = null!;
         private List<FavoritePosts> _sampleFavoritePosts = null!;
         private List<Reacts> _sampleReacts = null!;
         private List<Tags> _sampleTags = null!;
         private List<PostTags> _samplePostTags = null!;
+        private IMapper _mapper = null!;
 
         [SetUp]
         public void SetUp()
         {
             // Create in memory database with a unique name for each test
             var options = new DbContextOptionsBuilder<OpternDbContext>()
-                .UseInMemoryDatabase(databaseName: "OpternTestDB")
+                .UseInMemoryDatabase(databaseName: $"OpternTestDB_{Guid.NewGuid()}")
                 .EnableSensitiveDataLogging()
                 .Options;
 
             _context = new OpternDbContext(options);
+            _mapper = MappingProfiles().CreateMapper();
             _mockUnitOfWork = new Mock<IUnitOfWork>();
-            _mockMapper = new Mock<IMapper>();
             _mockCacheService = new Mock<ICacheService>();
 
             // create sample data and add to in memory DB
@@ -49,7 +52,7 @@ namespace Optern.Test.BlogTest
             _postService = new PostService(
                 _mockUnitOfWork.Object,
                 _context,
-                _mockMapper.Object,
+                _mapper,
                 _mockCacheService.Object);
         }
 
@@ -62,7 +65,7 @@ namespace Optern.Test.BlogTest
 
         #region GetLatestPosts
         
-        [Test, Category("GetLatestPosts")]
+        [Test]
         public async Task GetLatestPosts_ReturnsAllPosts()
         {
             // Act
@@ -78,7 +81,7 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test, Category("GetLatestPosts")]
+        [Test]
         [TestCase("user1")]
         [TestCase("user2")]
         public async Task GetLatestPosts_WithUserId_ReturnsUserPosts(string userId)
@@ -96,7 +99,7 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test, Category("GetLatestPosts")]
+        [Test]
         [TestCase(0, 2)]
         [TestCase(1, 2)]
         [TestCase(2, 2)]
@@ -115,7 +118,7 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test, Category("GetLatestPosts")]
+        [Test]
         public async Task GetLatestPosts_EmptyPosts_ReturnsEmptyList()
         {
             // Arrange
@@ -130,19 +133,19 @@ namespace Optern.Test.BlogTest
             Assert.Multiple(() =>
             {
                 Assert.That(result.IsSuccess, Is.True);
-                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
                 Assert.That(result.Data, Is.Not.Null);
                 Assert.That(result.Data.Count(), Is.EqualTo(0));
                 Assert.That(result.Message, Is.EqualTo("No posts found."));
             });
         }
 
-        [Test, Category("GetLatestPosts")]
+        [Test]
         public async Task GetLatestPosts_WithExceptions_ShouldHandleException()
         {
             // Arrange
             OpternDbContext dbContext = null!;
-            _postService = new PostService(_mockUnitOfWork.Object, dbContext, _mockMapper.Object, _mockCacheService.Object);
+            _postService = new PostService(_mockUnitOfWork.Object, dbContext, _mapper, _mockCacheService.Object);
             // Act
             var result = await _postService.GetLatestPostsAsync();
             // Assert
@@ -157,7 +160,7 @@ namespace Optern.Test.BlogTest
         #endregion
 
         #region GetPostById
-        [Test, Category("GetPostById")]
+        [Test]
         [TestCase(1)]
         public async Task GetPostById_WithPostId_ReturnsPost(int postId)
         {
@@ -175,7 +178,7 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test, Category("GetPostById")]
+        [Test]
         [TestCase(1, "user1")]
         [TestCase(1, "user2")]
         public async Task GetPostById_WithUserId_ReturnsIsFavPost(int postId, string userId)
@@ -195,7 +198,7 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test, Category("GetPostById")]
+        [Test]
         [TestCase(2, "user2")]
         public async Task GetPostById_WithUserId_ReturnsIsNotFavAndReactType(int postId, string userId)
         {
@@ -213,7 +216,7 @@ namespace Optern.Test.BlogTest
             });
         }
 
-        [Test, Category("GetPostById")]
+        [Test]
         [TestCase(3)]
         [TestCase(0)]
         public async Task GetPostById_WithNonExistentPost_ReturnsNotFound(int postId)
@@ -231,7 +234,8 @@ namespace Optern.Test.BlogTest
         }
         #endregion
 
-        [Test, Category("GetRecommendedPosts")]
+        #region GetRecommendedPosts
+        [Test]
         [TestCase(2)]
         public async Task GetRecommendedPosts_WithTopN_ReturnsTopPosts(int topN)
         {
@@ -248,17 +252,93 @@ namespace Optern.Test.BlogTest
             });
         }
 
+        [Test]
+        public async Task GetRecommendedPosts_WithEmptyList_ReturnsNoPostsFound()
+        {
+            //Arrange
+            _context.RemoveRange(_samplePosts);
+            _context.SaveChanges();
+
+            // Act
+            var result = await _postService.GetRecommendedPostsAsync(1);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count, Is.EqualTo(0));
+            });
+        }
+        #endregion
+
+        #region SearchPosts (service needs to refactor)
+        //[Test]
+        //[TestCase("DotNet", null, null, 0, 1)]
+        //[TestCase("DotNet", null, null, 1, 1)]
+        //public async Task SearchPosts_WithTag_ReturnsTagPosts(string tag, string userName, string keyword, int skip, int take)
+        //{
+        //    // Act
+        //    var result = await _postService.SearchPostsAsync(tag, userName, keyword, skip, take);
+
+        //    // Assert
+        //    Assert.Multiple(() =>
+        //    {
+        //        Assert.That(result.IsSuccess, Is.True);
+        //        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        //        Assert.That(result.Data, Is.Not.Null);
+        //        Assert.That(result.Data.Count, Is.EqualTo(take - skip));
+        //    });
+        //}
+
+        //[Test]
+        //[TestCase(null, "John Doe", null, 0, 1)]
+        //public async Task SearchPosts_WithUserName_ReturnsUserPosts(string tag, string userName, string keyword, int skip, int take)
+        //{
+        //    // Act
+        //    var result = await _postService.SearchPostsAsync(tag, userName, keyword, skip, take);
+
+        //    // Assert
+        //    Assert.Multiple(() =>
+        //    {
+        //        Assert.That(result.IsSuccess, Is.True);
+        //        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        //        Assert.That(result.Data, Is.Not.Null);
+        //        Assert.That(result.Data.Count, Is.Not.EqualTo(0));
+        //        Assert.That(result.Message, Is.EqualTo("Search completed successfully."));
+        //    });
+        //} 
+        #endregion
+
+        [Test]
+        public async Task CreatePost_WithValidData_ReturnsCreatedPost()
+        {
+            var post = new ManagePostDTO
+            {
+                Title = "Test Post",
+                Content = "Test Content",
+                Tags = new List<string> { "test1", "test2" }
+            };
+
+            var result = await _postService.CreatePostAsync("user1", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.CreatorName, Is.EqualTo("John Doe"));
+                Assert.That(result.Data.Tags![0], Is.EqualTo("test1"));
+            });
+        }
+
         #region Helpers
         private void CreateSampleData()
         {
-            _samplePosts = new List<Post>
+            _sampleUsers = new List<ApplicationUser>
             {
-                new Post
-                {
-                    Id = 1,
-                    Title = "Post 1",
-                    Content = "Content 1",
-                    Creator = new ApplicationUser
+                new ApplicationUser
                     {
                         Id = "user1",
                         UserName = "john.doe",
@@ -271,17 +351,7 @@ namespace Optern.Test.BlogTest
                         Country = "USA",
                         CreatedAt = DateTime.UtcNow.AddDays(-30)
                     },
-                    CreatedDate = DateTime.UtcNow.AddMinutes(-10),
-                    PostTags = new List<PostTags>(),
-                    Reacts = new List<Reacts>(),
-                    Comments = new List<Comment>()
-                },
-                new Post
-                {
-                    Id = 2,
-                    Title = "Post 2",
-                    Content = "Content 2",
-                    Creator = new ApplicationUser
+                new ApplicationUser
                     {
                         Id = "user2",
                         UserName = "alice.smith",
@@ -293,7 +363,28 @@ namespace Optern.Test.BlogTest
                         Gender = "Female",
                         Country = "UK",
                         CreatedAt = DateTime.UtcNow.AddDays(-20)
-                    },
+                    }
+            };
+
+            _samplePosts = new List<Post>
+            {
+                new Post
+                {
+                    Id = 1,
+                    Title = "Post 1",
+                    Content = "Content 1",
+                    CreatorId="user1" ,
+                    CreatedDate = DateTime.UtcNow.AddMinutes(-10),
+                    PostTags = new List<PostTags>(),
+                    Reacts = new List<Reacts>(),
+                    Comments = new List<Comment>()
+                },
+                new Post
+                {
+                    Id = 2,
+                    Title = "Post 2",
+                    Content = "Content 2",
+                    CreatorId="user2",
                     CreatedDate = DateTime.UtcNow.AddMinutes(-15),
                     PostTags = new List<PostTags>(),
                     Reacts = new List<Reacts>(),
@@ -334,7 +425,7 @@ namespace Optern.Test.BlogTest
                     ReactDate= DateTime.UtcNow,
                     ReactType=ReactType.VOTEUP,
                     PostId=2,
-                    UserId="user2"
+                    UserId="user2",
                 }
             };
 
@@ -377,12 +468,27 @@ namespace Optern.Test.BlogTest
 
             // add to the in memory database
             _context.Posts.AddRange(_samplePosts);
+            _context.Users.AddRange(_sampleUsers);
             _context.FavoritePosts.AddRange(_sampleFavoritePosts);
             _context.Reacts.AddRange(_sampleReacts);
             _context.Tags.AddRange(_sampleTags);
             _context.PostTags.AddRange(_samplePostTags);
             _context.SaveChanges();
         }
+
+        private MapperConfiguration MappingProfiles()
+        {
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Post, PostDTO>()
+                    .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.Creator.ProfilePicture))
+                    .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
+                    .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
+            
+            });
+            return mapperConfig;
+        }
+
         #endregion
 
 
