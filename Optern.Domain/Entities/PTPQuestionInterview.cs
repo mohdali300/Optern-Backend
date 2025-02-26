@@ -19,6 +19,5 @@ namespace Optern.Domain.Entities
         public virtual PTPQuestions PTPQuestion { get; set; }
         public virtual PTPInterview PTPInterview { get; set; }
 
-
     }
 }

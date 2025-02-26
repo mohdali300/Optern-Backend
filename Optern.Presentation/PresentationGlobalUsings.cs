@@ -113,6 +113,13 @@ global using Optern.Application.DTOs.PTPFeedback;
 global using Optern.Application.Interfaces.IPTPFeedbackService;
 global using Optern.Presentation.GraphQlApi.PTPFeedback.Query;
 
+// PTPInterview
+global using Optern.Presentation.GraphQlApi.PTPInterview.Query;
+global using Optern.Application.DTOs.PTPInterview;
+global using Optern.Application.Interfaces.IPTPInterviewService;
+
+
+
 
 
 
