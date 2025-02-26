@@ -33,4 +33,6 @@ global using Optern.Application.DTOs.LoginForJWT;
 global using Optern.Application.DTOs.Notification;
 global using Optern.Application.DTOs.UserNotification;
 global using Optern.Application.DTOs.PTPFeedback;
+global using Optern.Application.DTOs.PTPInterview;
+
 

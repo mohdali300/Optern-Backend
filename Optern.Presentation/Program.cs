@@ -1,4 +1,5 @@
 // Initialize builder
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -42,6 +43,7 @@ builder.Services
 .AddType<MessageQuery>()
 .AddType<GoogleAuthQuery>()
 .AddType<PTPFeedbackQuery>()
+.AddType<PTPInterviewQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
