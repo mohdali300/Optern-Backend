@@ -40,6 +40,11 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<ChatParticipants> ChatParticipants { get; }
         IGenericRepository<Message> Messages { get; }
 
+        IGenericRepository<PTPUsers> PTPUsers { get; }
+
+        IGenericRepository<PTPFeedBack> PTPFeedBack { get; }
+
+        IGenericRepository<PTPInterview> PTPInterviews { get; }  
 
         Task<int> SaveAsync();
     }

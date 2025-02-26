@@ -10,7 +10,8 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
         // in scale from 1 to 5
-        public Dictionary<int, string> Ratings { get; set; } = new Dictionary<int, string>();
+        public List<KeyValuePair<int, string>> Ratings { get; set; } = new();
+
         public string InterviewerPerformance {  get; set; }
         public string Improvement {  get; set; }
 

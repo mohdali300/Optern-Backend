@@ -1,4 +1,5 @@
-﻿using Task = Optern.Domain.Entities.Task;
+﻿using Optern.Domain.Entities;
+using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.UnitOfWork
 {
@@ -43,6 +44,12 @@ namespace Optern.Infrastructure.UnitOfWork
 
         public IGenericRepository<Message> Messages { get; private set; }
 
+        public IGenericRepository<PTPUsers> PTPUsers { get; private set; }
+
+        public IGenericRepository<PTPFeedBack> PTPFeedBack { get; private set; }
+
+        public IGenericRepository<PTPInterview> PTPInterviews { get; private set; }
+
         public UnitOfWork(OpternDbContext context) 
         {
             _context = context;
@@ -75,6 +82,9 @@ namespace Optern.Infrastructure.UnitOfWork
             UserNotification= new GenericRepository<UserNotification>(context);
             Notifications= new GenericRepository<Notifications>(context);
             Messages= new GenericRepository<Message>(context);
+            PTPUsers= new GenericRepository<PTPUsers>(context);
+            PTPFeedBack =new GenericRepository<PTPFeedBack>(context);
+            PTPInterviews=new GenericRepository<PTPInterview>(context);
         }
 
         public async Task<int> SaveAsync()
