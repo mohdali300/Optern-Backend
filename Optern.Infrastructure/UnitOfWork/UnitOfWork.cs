@@ -52,6 +52,8 @@ namespace Optern.Infrastructure.UnitOfWork
 
         public IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; private set; }
 
+        public IGenericRepository<PTPQuestions> PTPQuestions { get; private set; }
+
         public UnitOfWork(OpternDbContext context) 
         {
             _context = context;
@@ -88,6 +90,7 @@ namespace Optern.Infrastructure.UnitOfWork
             PTPFeedBack =new GenericRepository<PTPFeedBack>(context);
             PTPInterviews=new GenericRepository<PTPInterview>(context);
             PTPQuestionInterviews= new GenericRepository<PTPQuestionInterview>(context);
+            PTPQuestions= new GenericRepository<PTPQuestions>(context);
         }
 
         public async Task<int> SaveAsync()

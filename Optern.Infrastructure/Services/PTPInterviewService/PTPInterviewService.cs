@@ -40,19 +40,7 @@
                     TimeSpan timeRemaining = interviewDateTime - currentTime;
 
                     interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
-
-                    //var questions = await _unitOfWork.PTPQuestionInterviews
-                    //    .GetAllByExpressionAsync(qi => qi.PTPInterviewId == interviewEntity.Id);
-
-                    //var questionDTOs = questions
-                    //    .Select(qi => new PTPQuestionDTO
-                    //    {
-                    //        Id = qi.PTPQuestionId,
-                    //        Content = qi.PTPQuestion?.Content, 
-                    //    })
-                    //    .ToList();
-
-                    //interviewDTO.Questions = questionDTOs;
+                    interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
 
                 }
 
@@ -88,6 +76,32 @@
 
             return string.Join(", ", parts);
         }
+
+        private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForInterview(int interviewId, string userId)
+        {
+            var userEntity = await _unitOfWork.PTPUsers
+                .GetByExpressionAsync(u => u.PTPIId == interviewId && u.UserID == userId);
+
+            if (userEntity == null)
+            {
+                return new List<PTPUpcomingQuestionDTO>(); 
+            }
+
+            var userQuestions = await _unitOfWork.PTPQuestionInterviews
+                .GetAllByExpressionAsync(qi => qi.PTPInterviewId == interviewId && qi.PTPUserId == userEntity.Id);
+
+            foreach (var qi in userQuestions)
+            {
+                qi.PTPQuestion = await _unitOfWork.PTPQuestions.GetByIdAsync(qi.PTPQuestionId);
+            }
+
+            return userQuestions.Select(qi => new PTPUpcomingQuestionDTO
+            {
+                Id = qi.PTPQuestionId,
+                Title= qi.PTPQuestion?.Title ?? string.Empty
+            }).ToList();
+        }
+
         #endregion
 
 
