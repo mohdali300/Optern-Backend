@@ -48,6 +48,8 @@ namespace Optern.Infrastructure.UnitOfWork
 
         IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; } 
 
+        IGenericRepository<PTPQuestions> PTPQuestions { get; }
+
         Task<int> SaveAsync();
     }
 }

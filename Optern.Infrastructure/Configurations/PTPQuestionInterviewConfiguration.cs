@@ -1,4 +1,6 @@
-﻿namespace Optern.Infrastructure.Persistence.Configurations
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Optern.Infrastructure.Persistence.Configurations
 {
     public class PTPQuestionInterviewConfiguration : IEntityTypeConfiguration<PTPQuestionInterview>
     {
@@ -38,7 +40,12 @@
             builder.HasOne(q => q.PTPInterview)
                 .WithMany(i => i.PTPQuestionInterviews)
                 .HasForeignKey(q => q.PTPInterviewId)
-                .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(q => q.PTPUser)
+        .WithMany(u => u.PTPQuestionInterviews)
+        .HasForeignKey(q => q.PTPUserId)
+        .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
     }
