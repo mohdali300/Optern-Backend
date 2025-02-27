@@ -1,4 +1,6 @@
 ﻿
+using Optern.Application.DTOs.Question;
+
 namespace Optern.Presentation.GraphQlApi.PTPInterview.Query
 {
     [ExtendObjectType("Query")]
@@ -8,7 +10,6 @@ namespace Optern.Presentation.GraphQlApi.PTPInterview.Query
 
         public async Task<Response<IEnumerable<UpcomingPTPInterviewDTO>>> GetAllUpcomingPTPInterviews([Service] IPTPInterviewService PTPInterviewService
             , string userId) => await PTPInterviewService.GetAllUpcomingPTPInterviews(userId);
-            
 
 
     }
