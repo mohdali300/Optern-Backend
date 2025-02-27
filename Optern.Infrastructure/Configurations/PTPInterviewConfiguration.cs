@@ -1,4 +1,5 @@
-﻿using static Dapper.SqlMapper;
+﻿using Microsoft.EntityFrameworkCore;
+using static Dapper.SqlMapper;
 
 namespace Optern.Infrastructure.Persistence.Configurations
 {
@@ -27,11 +28,10 @@ namespace Optern.Infrastructure.Persistence.Configurations
                    .HasMaxLength(50);
 
             builder.Property(i => i.ScheduledDate)
-                .IsRequired();
-          
+            .IsRequired();
+
             builder.Property(i => i.ScheduledTime)
-             .HasColumnType("time")
-             .IsRequired();
+                .HasConversion<int>();
 
             builder.Property(i => i.Status)
                    .IsRequired()
