@@ -1,5 +1,7 @@
 // Initialize builder
 
+using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -65,6 +67,7 @@ builder.Services
 .AddType<MessageMutation>()
 .AddType<GoogleAuthMutation>()
 .AddType<PTPFeedbackMutation>()
+.AddType<PTPInterviewMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 

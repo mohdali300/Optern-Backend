@@ -3,6 +3,7 @@
 using Optern.Application.DTOs.Message;
 using Optern.Application.DTOs.PTPFeedback;
 using Optern.Application.DTOs.PTPInterview;
+using Optern.Application.DTOs.Question;
 
 namespace Optern.Application.Mappings
 {
@@ -163,7 +164,11 @@ namespace Optern.Application.Mappings
             CreateMap<PTPInterview, UpcomingPTPInterviewDTO>()
            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
            .ForMember(dest => dest.Questions, opt => opt.Ignore())
-           .ForMember(dest => dest.TimeRemaining, opt => opt.Ignore()); 
+           .ForMember(dest => dest.TimeRemaining, opt => opt.Ignore());
+
+            CreateMap<PTPQuestions, PTPQuestionDTO>();
+            CreateMap<PTPInterview, PTPInterviewDTO>();
+
 
 
             #endregion

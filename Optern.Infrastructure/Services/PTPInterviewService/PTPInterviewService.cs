@@ -1,4 +1,9 @@
-﻿namespace Optern.Infrastructure.Services.PTPInterviewService
+﻿using Optern.Application.DTOs.Question;
+using Optern.Domain.Extensions;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System.Reflection.Emit;
+
+namespace Optern.Infrastructure.Services.PTPInterviewService
 {
     public class PTPInterviewService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IPTPInterviewService
     {
@@ -19,7 +24,7 @@
                 var currentTime = DateTime.UtcNow;
                 var upcomingInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
-                                                  i.ScheduledDate >= currentTime.Date &&
+                                                 // i.ScheduledDate >= currentTime.Date &&
                                                   i.Status == InterviewStatus.Scheduled);
 
                 if (upcomingInterviews == null || !upcomingInterviews.Any())
@@ -31,15 +36,15 @@
 
                 foreach (var interviewDTO in upcomingInterviewsDTO)
                 {
-                    var interviewEntity = upcomingInterviews.First(i => i.ScheduledDate == interviewDTO.ScheduledDate);
+                    var interviewEntity = upcomingInterviews.First(/*i => i.ScheduledDate == interviewDTO.ScheduledDate*/);
                                                                         
 
-                    TimeSpan interviewTime = interviewEntity.ScheduledTime;
-                    interviewDTO.ScheduledTime = $"{interviewTime.Hours:D2}:{interviewTime.Minutes:D2}:{interviewTime.Seconds:D2}";
-                    DateTime interviewDateTime = interviewEntity.ScheduledDate.Add(interviewEntity.ScheduledTime);
-                    TimeSpan timeRemaining = interviewDateTime - currentTime;
+                    //TimeSpan interviewTime = interviewEntity.ScheduledTime;
+                    //interviewDTO.ScheduledTime = $"{interviewTime.Hours:D2}:{interviewTime.Minutes:D2}:{interviewTime.Seconds:D2}";
+                    //DateTime interviewDateTime = interviewEntity.ScheduledDate.Add(interviewEntity.ScheduledTime);
+                    //TimeSpan timeRemaining = interviewDateTime - currentTime;
 
-                    interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+                    //interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
 
                 }
@@ -51,6 +56,114 @@
                 return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Failure(new List<UpcomingPTPInterviewDTO>(), ex.Message, 500);
             }
         }
+        #endregion
+
+        #region Create PTP Interview
+        public async Task<Response<PTPInterviewDTO>> CreatePTPInterviewAsync(CreatePTPInterviewDTO dto, int questionCount, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (!Enum.IsDefined(typeof(InterviewCategory), dto.Category) ||
+                    !Enum.IsDefined(typeof(InterviewQuestionType), dto.QuestionType) ||
+                    !Enum.IsDefined(typeof(InterviewTimeSlot), dto.ScheduledTime))
+                {
+                    return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), "Invalid category or question type or time slot", 400);
+                }
+
+                var existingInterview = await _context.PTPInterviews
+                    .Include(i => i.PeerToPeerInterviewUsers)
+                    .Where(i => i.ScheduledDate == dto.ScheduledDate &&
+                                i.ScheduledTime == dto.ScheduledTime &&
+                                i.Category == dto.Category &&
+                                i.QusestionType == dto.QuestionType)
+                    .FirstOrDefaultAsync();
+
+                if (existingInterview != null &&existingInterview.PeerToPeerInterviewUsers.Any(u => u.UserID == userId))
+                {
+                    return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), "User has already created an interview in this time slot.", 400);
+                }
+
+                PTPInterview interview;
+                if (existingInterview != null)
+                {
+                     if (existingInterview.SlotState == TimeSlotState.TakenByTwo)
+                    {
+                        return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), "Time slot is fully booked", 400);
+                    }
+                    else if (existingInterview.SlotState == TimeSlotState.TakenByOne)
+                    {
+                        existingInterview.SlotState = TimeSlotState.TakenByTwo;
+                        _context.PTPInterviews.Update(existingInterview);
+                         await _context.SaveChangesAsync();
+                    }
+                    interview = existingInterview;
+                }
+                else
+                {
+                    interview = new PTPInterview
+                    {
+                        ScheduledDate = dto.ScheduledDate,
+                        ScheduledTime = dto.ScheduledTime,
+                        SlotState = TimeSlotState.TakenByOne,
+                        Status = InterviewStatus.Scheduled,
+                        Category=dto.Category,
+                        QusestionType=dto.QuestionType,
+                        PTPQuestionInterviews = new List<PTPQuestionInterview>(),
+                        PeerToPeerInterviewUsers = new List<PTPUsers>()
+                    };
+
+                    _context.PTPInterviews.Add(interview);
+                    await _context.SaveChangesAsync();
+                }
+
+                var ptpUser = new PTPUsers
+                {
+                    UserID = userId,
+                    PTPIId = interview.Id,
+                    PeerToPeerInterview = interview
+                };
+                _context.PTPUsers.Add(ptpUser);
+                await _context.SaveChangesAsync();
+
+                var questionResult = await GetRandomQuestionsAsync(dto.QuestionType, dto.Category, questionCount);
+                if (!questionResult.IsSuccess)
+                {
+                    await transaction.RollbackAsync();
+                    return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), questionResult.Message, questionResult.StatusCode);
+                }
+                var randomQuestions = questionResult.Data;
+
+                var questionInterviews = new List<PTPQuestionInterview>();
+                foreach (var qDto in randomQuestions)
+                {
+                    var qi = new PTPQuestionInterview
+                    {
+                        PTPInterviewId = interview.Id,
+                        PTPQuestionId = qDto.Id,
+                        PTPUserId = ptpUser.Id,
+
+                    };
+                    questionInterviews.Add(qi);
+                }
+                _context.PTPQuestionInterviews.AddRange(questionInterviews);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                var interviewDto = _mapper.Map<PTPInterviewDTO>(interview);
+                interviewDto.Questions = _mapper.Map<List<PTPQuestionDTO>>(randomQuestions);
+                interviewDto.ScheduledTimeDisplay = interview.ScheduledTime.GetDisplayName();
+
+                return Response<PTPInterviewDTO>.Success(interviewDto, $"Interview created with {questionCount} random question(s).", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), $"Failed to create interview: {ex.Message}", 500);
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -101,6 +214,52 @@
                 Title= qi.PTPQuestion?.Title ?? string.Empty
             }).ToList();
         }
+        private async Task<Response<List<PTPQuestionDTO>>> GetRandomQuestionsAsync(InterviewQuestionType questionType, InterviewCategory category, int questionCount)
+        {
+            try
+            {
+                if (!Enum.IsDefined(typeof(InterviewCategory), category) ||
+                !Enum.IsDefined(typeof(InterviewQuestionType), questionType))
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(),"Invalid category or question type",400);
+                }
+
+                if (questionCount <= 0)
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(),"Question count must be a positive integer.",400);
+                }
+
+                var query = _context.PTPQuestions
+                   .Where(q => q.QusestionType == questionType && q.Category == category);
+
+                var questionIds = await query.Select(q => q.Id).ToListAsync();
+
+                if (questionIds.Count < questionCount)
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(),$"Not enough questions. Requested: {questionCount}, Available: {questionIds.Count}",404);
+                }
+                var rng = new Random();
+                var selectedIds = questionIds.OrderBy(id => rng.Next()).Take(questionCount).ToList();
+
+                var questions = await _context.PTPQuestions
+                    .Where(q => selectedIds.Contains(q.Id))
+                    .ToListAsync();
+
+                if (questions == null)
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), "Error retrieving questions", 500);
+                }
+
+                var questionDtos = _mapper.Map<List<PTPQuestionDTO>>(questions);
+                return Response<List<PTPQuestionDTO>>.Success(questionDtos, "Random question retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), $"An error occurred while retrieving the question: {ex.Message}", 500);
+            }
+        }
+
+
 
         #endregion
 
