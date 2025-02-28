@@ -8,7 +8,8 @@ namespace Optern.Application.DTOs.PTPInterview
 {
     public class UpcomingPTPInterviewDTO
     {
-        public DateTime? ScheduledDate { get; set; } 
+        public int Id { get; set; }
+        public string? ScheduledDate { get; set; } 
         public string? ScheduledTime { get; set; }
         public string? Category { get; set; }
         public List<PTPUpcomingQuestionDTO>? Questions { get; set; }

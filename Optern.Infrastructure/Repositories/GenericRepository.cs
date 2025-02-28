@@ -1,4 +1,5 @@
-﻿using Task = System.Threading.Tasks.Task;
+﻿using Microsoft.EntityFrameworkCore;
+using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Repositories
 {
@@ -83,6 +84,21 @@ namespace Optern.Infrastructure.Repositories
                 return results ?? Enumerable.Empty<T>();
            
         }
+
+        public async Task<IEnumerable<T>> GetAllByExpressionAsync(
+    Expression<Func<T, bool>> predicate,
+    Func<IQueryable<T>, IQueryable<T>> include = null)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            return await query.ToListAsync();
+        }
+
 
 
         public async Task SaveChangesAsync()
