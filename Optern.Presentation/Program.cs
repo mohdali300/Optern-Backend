@@ -1,6 +1,4 @@
 // Initialize builder
-
-
 using Optern.Presentation.GraphQlApi.Notification.Mutation;
 using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
 using Microsoft.Extensions.Logging;

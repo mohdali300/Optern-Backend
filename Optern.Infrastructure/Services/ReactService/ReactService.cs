@@ -68,7 +68,7 @@ namespace Optern.Infrastructure.Services.ReactService
 				await transaction.CommitAsync();
 
 				var newReactDTO = _mapper.Map<ReactDTO>(newReact);
-				return Response<ReactDTO>.Success(newReactDTO, "React added successfully.");
+				return Response<ReactDTO>.Success(newReactDTO, "React added successfully.",200);
 			}
 			catch (Exception ex)
 			{
