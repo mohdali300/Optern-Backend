@@ -9,7 +9,9 @@ namespace Optern.Domain.Entities
     public class PTPQuestions
     {
         public int Id {  get; set; }
-        public  InterviewQuestionType QusestionType { get; set; } 
+        public  InterviewQuestionType QusestionType { get; set; }
+        public InterviewCategory Category { get; set; }
+        public string Title { get; set; }
 
         public string Content {  get; set; }
 

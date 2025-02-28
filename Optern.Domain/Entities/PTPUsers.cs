@@ -16,6 +16,8 @@ namespace Optern.Domain.Entities
 
         public virtual ApplicationUser User { get; set; }
         public virtual PTPInterview PeerToPeerInterview { get; set; }
+        public virtual ICollection<PTPQuestionInterview> PTPQuestionInterviews { get; set; } = new List<PTPQuestionInterview>();
+
 
     }
 }

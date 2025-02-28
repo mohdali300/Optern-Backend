@@ -14,6 +14,10 @@ namespace Optern.Infrastructure.Repositories
            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
         Task<IEnumerable<T>> GetAllByExpressionAsync(Expression<Func<T, bool>> predicate);
 
+        public Task<IEnumerable<T>> GetAllByExpressionAsync(
+   Expression<Func<T, bool>> predicate,
+   Func<IQueryable<T>, IQueryable<T>> include = null);
+
         Task<IEnumerable<T>> GetAllAsync();
         Task SaveChangesAsync();
         Task<T> AddAsync(T entity);

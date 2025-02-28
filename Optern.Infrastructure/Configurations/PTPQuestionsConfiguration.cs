@@ -23,8 +23,11 @@ namespace Optern.Infrastructure.Persistence.Configurations
 
 
             builder.Property(q => q.Content)
-                   .IsRequired()
-                   .HasMaxLength(500);
+                   .IsRequired();
+                   
+
+            builder.Property(q => q.Title)
+                .IsRequired();
 
             builder.Property(q => q.Answer)
                    .IsRequired();

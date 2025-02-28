@@ -13,9 +13,10 @@ namespace Optern.Infrastructure.Data
         {
 
             builder.ApplyConfigurationsFromAssembly(typeof(OpternDbContext).Assembly);
+
             base.OnModelCreating(builder);
         }
-
+       
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<Chat> Chats { get; set; }
 

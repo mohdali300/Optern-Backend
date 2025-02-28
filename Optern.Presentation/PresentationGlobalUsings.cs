@@ -80,7 +80,6 @@ global using Optern.Application.Interfaces.IRepositoryFileService;
 global using Optern.Application.Interfaces.ISkillService;
 
 global using Optern.Presentation.GraphQlApi.Chat.Query;
-global using Optern.Application.DTOs.Chat;
 global using Optern.Application.Interfaces.IChatService;
 
 global using Optern.Application.Response;
@@ -92,6 +91,9 @@ global using Optern.Infrastructure.ExternalDTOs.Refresh_Token;
 global using Optern.Infrastructure.ExternalInterfaces.IJWTService;
 global using Optern.Infrastructure.Helpers;
 global using Optern.Domain.Entities;
+global using Optern.Presentation.GraphQlApi.ExternalAuth.GoogleAuth.Mutation;
+global using Optern.Presentation.GraphQlApi.ExternalAuth.GoogleAuth.Query;
+global using Optern.Infrastructure.MiddleWares;
 
 
 global using Serilog;
@@ -103,6 +105,23 @@ global using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
 global using Optern.Presentation.GraphQlApi.UserNotification.Query;
 global using Optern.Application.DTOs.UserNotification;
 global using Optern.Application.Interfaces.IUserNotificationService;
+global using Optern.Presentation.GraphQlApi.Message.Query;
+
+// PTPFeedback
+global using Optern.Presentation.GraphQlApi.PTPFeedback.Mutation;
+global using Optern.Application.DTOs.PTPFeedback;
+global using Optern.Application.Interfaces.IPTPFeedbackService;
+global using Optern.Presentation.GraphQlApi.PTPFeedback.Query;
+
+// PTPInterview
+global using Optern.Presentation.GraphQlApi.PTPInterview.Query;
+global using Optern.Application.DTOs.PTPInterview;
+global using Optern.Application.Interfaces.IPTPInterviewService;
+
+
+
+
+
 
 
 

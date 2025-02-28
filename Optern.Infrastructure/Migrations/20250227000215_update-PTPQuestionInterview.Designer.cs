@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Optern.Infrastructure.Data;
 namespace Optern.Infrastructure.Migrations
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250227000215_update-PTPQuestionInterview")]
+    partial class updatePTPQuestionInterview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -713,15 +716,11 @@ namespace Optern.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("QusestionType")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ScheduledDate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ScheduledTime")
-                        .HasColumnType("integer");
+                    b.Property<TimeSpan>("ScheduledTime")
+                        .HasColumnType("time");
 
                     b.Property<int>("SlotState")
                         .HasColumnType("integer");
@@ -777,22 +776,16 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Hints")
                         .HasColumnType("text");
 
                     b.Property<int>("QusestionType")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

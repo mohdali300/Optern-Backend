@@ -11,8 +11,9 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
 		public InterviewCategory Category { get; set; }
-        public DateTime ScheduledDate { get; set; } 
-        public TimeSpan ScheduledTime { get; set; } 
+        public InterviewQuestionType QusestionType { get; set; }
+        public string? ScheduledDate { get; set; }
+        public InterviewTimeSlot ScheduledTime { get; set; }
         public TimeSlotState SlotState { get; set; }
 
         public InterviewStatus Status { get; set; }
