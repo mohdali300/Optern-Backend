@@ -8,8 +8,13 @@ namespace Optern.Presentation.GraphQlApi.PTPInterview.Query
     {
         [GraphQLDescription("Get Upcoming PTP Interview")]
 
-        public async Task<Response<IEnumerable<UpcomingPTPInterviewDTO>>> GetAllUpcomingPTPInterviews([Service] IPTPInterviewService PTPInterviewService
-            , string userId) => await PTPInterviewService.GetAllUpcomingPTPInterviews(userId);
+        public async Task<Response<IEnumerable<UpcomingPTPInterviewDTO>>> GetAllUpcomingPTPInterviews([Service] IPTPInterviewService PTPInterviewService, string userId) 
+            => await PTPInterviewService.GetAllUpcomingPTPInterviews(userId);
+
+        [GraphQLDescription("Get PTP Interview TimeSlots")]
+        public async Task<Response<List<PTPInterviewTimeSlotDTO>>> GetPTPInterviewTimeSlotsAsync([Service] IPTPInterviewService PTPInterviewService,InterviewCategory category, InterviewQuestionType questionType, string scheduledDate)
+            => await PTPInterviewService.GetPTPInterviewTimeSlotsAsync(category,questionType,scheduledDate);
+
 
 
     }
