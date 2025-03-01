@@ -43,9 +43,10 @@ namespace Optern.Application.Mappings
 			.ForMember(dest => dest.Reacts, opt => opt.MapFrom(src => src.CommentReacts));
 
 
-			//react
-			CreateMap<Reacts, ReactDTO>()
-			.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName));
+            CreateMap<Reacts, ReactDTO>()
+                .ForMember(dest => dest.ReactType, opt => opt.MapFrom(src => src.ReactType))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName));
+
 
             #endregion
 
