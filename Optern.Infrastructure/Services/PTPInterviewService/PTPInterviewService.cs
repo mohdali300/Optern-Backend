@@ -5,11 +5,12 @@ using System.Reflection.Emit;
 
 namespace Optern.Infrastructure.Services.PTPInterviewService
 {
-    public class PTPInterviewService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IPTPInterviewService
+    public class PTPInterviewService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,ICacheService cacheService) : IPTPInterviewService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
+        private readonly ICacheService _cacheService = cacheService;
 
         #region Get Upcoming PTP Interviews 
         public async Task<Response<IEnumerable<UpcomingPTPInterviewDTO>>> GetAllUpcomingPTPInterviews(string userId)
@@ -178,6 +179,123 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         }
 
         #endregion
+
+        #region Get PTP Interview TimeSlots
+        public async Task<Response<List<PTPInterviewTimeSlotDTO>>> GetPTPInterviewTimeSlotsAsync(InterviewCategory category, InterviewQuestionType questionType, string scheduledDate)
+        {
+            try
+            {
+                //string cacheKey = $"InterviewTimeSlots_{category}_{questionType}_{scheduledDate}";
+
+                //var cachedData = _cacheService.GetData<List<PTPInterviewTimeSlotDTO>>(cacheKey);
+                //if (cachedData != null)
+                //{
+                //    return Response<List<PTPInterviewTimeSlotDTO>>.Success(cachedData, "Time slots retrieved from cache.", 200);
+                //}
+
+                var timeSlotList = new List<PTPInterviewTimeSlotDTO>();
+
+
+                foreach (InterviewTimeSlot slot in Enum.GetValues(typeof(InterviewTimeSlot)))
+                {
+                    var interview = await _context.PTPInterviews
+                        .Where(i => i.ScheduledDate == scheduledDate &&
+                                    i.ScheduledTime == slot &&
+                                    i.Category == category &&
+                                    i.QusestionType == questionType)
+                        .FirstOrDefaultAsync();
+
+
+                    var dto = new PTPInterviewTimeSlotDTO
+                    {
+                        TimeSlot = slot,
+                        SlotState = interview != null ? interview.SlotState : TimeSlotState.Empty,
+                        TimeSlotName = slot.GetDisplayName(),
+                    };
+
+                    timeSlotList.Add(dto);
+                }
+
+
+                //_cacheService.SetData(cacheKey, timeSlotList, TimeSpan.FromMinutes(5));
+
+                return Response<List<PTPInterviewTimeSlotDTO>>.Success(timeSlotList, "Time slots retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<PTPInterviewTimeSlotDTO>>.Failure(new List<PTPInterviewTimeSlotDTO>(), $"An error occurred: {ex.Message}", 500);
+            }
+        }
+
+        #endregion
+
+        public async Task<Response<bool>> CancelPTPInterviewAsync(int interviewId, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var interview = await _context.PTPInterviews
+                    .Include(i => i.PeerToPeerInterviewUsers)
+                    .Include(i => i.PTPQuestionInterviews)
+                    .FirstOrDefaultAsync(i => i.Id == interviewId);
+
+                if (interview == null)
+                {
+                    return Response<bool>.Failure(false, "Interview not found.", 404);
+                }
+
+                var userAssociation = interview.PeerToPeerInterviewUsers.FirstOrDefault(u => u.UserID == userId);
+
+                if (userAssociation == null)
+                {
+                    return Response<bool>.Failure(false, "Unauthorized: User is not associated with this interview.", 403);
+                }
+
+                //if (interview.Status != InterviewStatus.Scheduled)
+                //{
+                //    return Response<bool>.Failure(false, "Interview cannot be cancelled at this stage.", 400);
+                //}
+
+                var isRemainingUser = interview.PeerToPeerInterviewUsers.Any(u => u.UserID != userId); 
+                                    
+                if (!isRemainingUser)
+                {
+                    _context.PTPInterviews.Remove(interview);                    
+                }
+                else
+                {
+                    interview.PeerToPeerInterviewUsers.Remove(userAssociation);
+                    var userQuestionInterviews = interview.PTPQuestionInterviews
+                        .Where(q => q.PTPUserId == userAssociation.Id)
+                        .ToList();
+
+                    if (userQuestionInterviews.Any())
+                    {
+                        _context.PTPQuestionInterviews.RemoveRange(userQuestionInterviews);
+                    }
+
+                    interview.SlotState = TimeSlotState.TakenByOne;
+                    _context.PTPInterviews.Update(interview);
+
+                }
+                
+                await _context.SaveChangesAsync();
+
+                //string cacheKey = $"InterviewTimeSlots_{interview.Category}_{interview.QusestionType}_{interview.ScheduledDate}";
+                //await _cacheService.RemoveDataAsync(cacheKey);
+
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "Interview cancelled successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Failed to cancel interview: {ex.Message}", 500);
+            }
+        }
+
+
 
         #region Helpers
 
