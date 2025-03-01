@@ -35,7 +35,7 @@ namespace Optern.Infrastructure.Services.ReactService
 
 						var removedReactDTO = _mapper.Map<ReactDTO>(existingReact);
 						removedReactDTO.ReactType = ReactType.NOTVOTEYET;
-						return Response<ReactDTO>.Success(removedReactDTO, "React removed successfully.");
+						return Response<ReactDTO>.Success(removedReactDTO, "React removed successfully.",200);
 					}
 					else
 					{
@@ -48,7 +48,7 @@ namespace Optern.Infrastructure.Services.ReactService
 
 						
 						var updatedReactDTO = _mapper.Map<ReactDTO>(existingReact);
-						return Response<ReactDTO>.Success(updatedReactDTO, "React updated successfully.");
+						return Response<ReactDTO>.Success(updatedReactDTO, "React updated successfully.",200);
 					}
 				}
 
@@ -109,7 +109,7 @@ namespace Optern.Infrastructure.Services.ReactService
 							UserId = existingReact.UserId,
 							UserName = existingReact.User?.UserName,
 						};
-						return Response<CommentReactDTO>.Success(dto, "React removed successfully.");
+						return Response<CommentReactDTO>.Success(dto, "React removed successfully.",200);
 					}
 					else
 					{
@@ -125,7 +125,7 @@ namespace Optern.Infrastructure.Services.ReactService
 							UserId = existingReact.UserId,
 							UserName = existingReact.User?.UserName,
 						};
-						return Response<CommentReactDTO>.Success(dto, "React updated successfully.");
+						return Response<CommentReactDTO>.Success(dto, "React updated successfully.",200);
 					}
 				}
 
@@ -151,7 +151,7 @@ namespace Optern.Infrastructure.Services.ReactService
 					UserName = user?.UserName
 				};
 
-				return Response<CommentReactDTO>.Success(newDto, "React added successfully.");
+				return Response<CommentReactDTO>.Success(newDto, "React added successfully.",201);
 			}
 			catch (Exception ex)
 			{
@@ -169,7 +169,7 @@ namespace Optern.Infrastructure.Services.ReactService
 				var postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
 				if (!postExists)
 				{
-					return Response<List<ReactDTO>>.Failure(new List<ReactDTO>(), "Post not found.");
+					return Response<List<ReactDTO>>.Failure(new List<ReactDTO>(), "Post not found.",404);
 				}
 
 				var query = _context.Reacts
@@ -188,13 +188,12 @@ namespace Optern.Infrastructure.Services.ReactService
 
 				if (!reacts.Any())
 				{
-					return Response<List<ReactDTO>>.Success(new List<ReactDTO>(), "No reacts found for the specified criteria.");
+					return Response<List<ReactDTO>>.Success(new List<ReactDTO>(), "No reacts found for the specified criteria.",204);
 				}
 
-				// Map entities to DTOs using AutoMapper
 				var reactDTOs = _mapper.Map<List<ReactDTO>>(reacts);
 
-				return Response<List<ReactDTO>>.Success(reactDTOs, "Reacts retrieved successfully.");
+				return Response<List<ReactDTO>>.Success(reactDTOs, "Reacts retrieved successfully.",200);
 			}
 			catch (Exception ex)
 			{
@@ -212,7 +211,7 @@ namespace Optern.Infrastructure.Services.ReactService
 				var commentExists = await _context.Comments.AnyAsync(c => c.Id == commentId);
 				if (!commentExists)
 				{
-					return Response<List<CommentReactDTO>>.Failure(new List<CommentReactDTO>(), "Comment not found.");
+					return Response<List<CommentReactDTO>>.Failure(new List<CommentReactDTO>(), "Comment not found.",404);
 				}
 
 				var query = _context.CommentReacts
@@ -230,17 +229,16 @@ namespace Optern.Infrastructure.Services.ReactService
 
 				if (!commentReacts.Any())
 				{
-					return Response<List<CommentReactDTO>>.Success(new List<CommentReactDTO>(), "No reacts found for the specified criteria.");
+					return Response<List<CommentReactDTO>>.Success(new List<CommentReactDTO>(), "No reacts found for the specified criteria.",204);
 				}
 
 				var commentReactDTOs = _mapper.Map<List<CommentReactDTO>>(commentReacts);
 
-				return Response<List<CommentReactDTO>>.Success(commentReactDTOs, "Comment reacts retrieved successfully.");
+				return Response<List<CommentReactDTO>>.Success(commentReactDTOs, "Comment reacts retrieved successfully.",200);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Error in GetCommentReactsAsync: {ex.Message}");
-				return Response<List<CommentReactDTO>>.Failure(new List<CommentReactDTO>(), "An error occurred while retrieving comment reacts.");
+				return Response<List<CommentReactDTO>>.Failure(new List<CommentReactDTO>(), "An error occurred while retrieving comment reacts.",500);
 			}
 		}
         #endregion

@@ -10,10 +10,7 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
         // in scale from 1 to 5
-        public int? ProblemSolving { get; set; }
-        public int? Coding { get; set; }
-        public int? Communication { get; set; }
-        public int Performance { get; set; }
+        public List<KeyValuePair<int, string>> Ratings { get; set; } = new();
 
         public string InterviewerPerformance {  get; set; }
         public string Improvement {  get; set; }
