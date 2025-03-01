@@ -87,6 +87,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 var existingInterview = await _context.PTPInterviews
                     .Include(i => i.PeerToPeerInterviewUsers)
+                    .Include(i => i.PTPQuestionInterviews)
                     .Where(i => i.ScheduledDate == dto.ScheduledDate &&
                                 i.ScheduledTime == dto.ScheduledTime &&
                                 i.Category == dto.Category &&
@@ -140,7 +141,13 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 _context.PTPUsers.Add(ptpUser);
                 await _context.SaveChangesAsync();
 
-                var questionResult = await GetRandomQuestionsAsync(dto.QuestionType, dto.Category, questionCount);
+
+                IEnumerable<int>? excludeQuestionIds = null;
+                if (existingInterview != null && existingInterview.PTPQuestionInterviews.Any())
+                {
+                    excludeQuestionIds = existingInterview.PTPQuestionInterviews.Select(qi => qi.PTPQuestionId);
+                }
+                var questionResult = await GetRandomQuestionsAsync(dto.QuestionType, dto.Category, questionCount, excludeQuestionIds);
                 if (!questionResult.IsSuccess)
                 {
                     await transaction.RollbackAsync();
@@ -346,7 +353,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         }
 
 
-        private async Task<Response<List<PTPQuestionDTO>>> GetRandomQuestionsAsync(InterviewQuestionType questionType, InterviewCategory category, int questionCount)
+        private async Task<Response<List<PTPQuestionDTO>>> GetRandomQuestionsAsync(InterviewQuestionType questionType, InterviewCategory category, int questionCount,IEnumerable<int>? excludeQuestionIds = null)
         {
             try
             {
@@ -363,6 +370,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 var query = _context.PTPQuestions
                    .Where(q => q.QusestionType == questionType && q.Category == category);
+                if (excludeQuestionIds != null && excludeQuestionIds.Any())
+                {
+                    query = query.Where(q => !excludeQuestionIds.Contains(q.Id));
+                }
 
                 var questionIds = await query.Select(q => q.Id).ToListAsync();
 
