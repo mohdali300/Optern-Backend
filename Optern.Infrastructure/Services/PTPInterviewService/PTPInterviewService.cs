@@ -5,11 +5,12 @@ using System.Reflection.Emit;
 
 namespace Optern.Infrastructure.Services.PTPInterviewService
 {
-    public class PTPInterviewService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IPTPInterviewService
+    public class PTPInterviewService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper,ICacheService cacheService) : IPTPInterviewService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
+        private readonly ICacheService _cacheService = cacheService;
 
         #region Get Upcoming PTP Interviews 
         public async Task<Response<IEnumerable<UpcomingPTPInterviewDTO>>> GetAllUpcomingPTPInterviews(string userId)
@@ -22,31 +23,42 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 }
 
                 var currentTime = DateTime.UtcNow;
+
                 var upcomingInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
-                                                 // i.ScheduledDate >= currentTime.Date &&
                                                   i.Status == InterviewStatus.Scheduled);
+                    
+                var filteredInterviews = upcomingInterviews
+                    .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
+                                scheduledDate >= currentTime).OrderBy(i=>i.ScheduledTime)
+                    .ToList();
 
-                if (upcomingInterviews == null || !upcomingInterviews.Any())
+                if (!filteredInterviews.Any())
                 {
                     return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Failure(new List<UpcomingPTPInterviewDTO>(), "No Upcoming Interviews found", 404);
                 }
 
-                var upcomingInterviewsDTO = _mapper.Map<List<UpcomingPTPInterviewDTO>>(upcomingInterviews);
+                var upcomingInterviewsDTO = _mapper.Map<List<UpcomingPTPInterviewDTO>>(filteredInterviews);
 
                 foreach (var interviewDTO in upcomingInterviewsDTO)
                 {
-                    var interviewEntity = upcomingInterviews.First(/*i => i.ScheduledDate == interviewDTO.ScheduledDate*/);
-                                                                        
+                    var interviewEntity = filteredInterviews.FirstOrDefault(i => i.Id == interviewDTO.Id);
 
-                    //TimeSpan interviewTime = interviewEntity.ScheduledTime;
-                    //interviewDTO.ScheduledTime = $"{interviewTime.Hours:D2}:{interviewTime.Minutes:D2}:{interviewTime.Seconds:D2}";
-                    //DateTime interviewDateTime = interviewEntity.ScheduledDate.Add(interviewEntity.ScheduledTime);
-                    //TimeSpan timeRemaining = interviewDateTime - currentTime;
+                    interviewDTO.ScheduledTime = interviewEntity.ScheduledTime.GetDisplayName();
 
-                    //interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+                    if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
+                    {
+                        interviewDTO.TimeRemaining = "Invalid date format";
+                        continue;
+                    }
+
+                    DateTime scheduledDateTime = scheduledDate.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
+
+                    TimeSpan timeRemaining = scheduledDateTime - DateTime.UtcNow;
+
+                    interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
-
                 }
 
                 return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Success(upcomingInterviewsDTO, "Upcoming interviews retrieved successfully", 200);
@@ -56,6 +68,8 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Failure(new List<UpcomingPTPInterviewDTO>(), ex.Message, 500);
             }
         }
+
+
         #endregion
 
         #region Create PTP Interview
@@ -166,54 +180,172 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         #endregion
 
-        #region Helpers
-
-        private string FormatTimeRemaining(TimeSpan timeSpan)
+        #region Get PTP Interview TimeSlots
+        public async Task<Response<List<PTPInterviewTimeSlotDTO>>> GetPTPInterviewTimeSlotsAsync(InterviewCategory category, InterviewQuestionType questionType, string scheduledDate)
         {
-            if (timeSpan.TotalSeconds <= 0)
-                return "Interview has already started";
+            try
+            {
+                //string cacheKey = $"InterviewTimeSlots_{category}_{questionType}_{scheduledDate}";
 
-            List<string> parts = new List<string>();
+                //var cachedData = _cacheService.GetData<List<PTPInterviewTimeSlotDTO>>(cacheKey);
+                //if (cachedData != null)
+                //{
+                //    return Response<List<PTPInterviewTimeSlotDTO>>.Success(cachedData, "Time slots retrieved from cache.", 200);
+                //}
 
-            if (timeSpan.Days > 0)
-                parts.Add($"{timeSpan.Days} d");
+                var timeSlotList = new List<PTPInterviewTimeSlotDTO>();
 
-            if (timeSpan.Hours > 0)
-                parts.Add($"{timeSpan.Hours} h");
 
-            if (timeSpan.Minutes > 0)
-                parts.Add($"{timeSpan.Minutes} m");
+                foreach (InterviewTimeSlot slot in Enum.GetValues(typeof(InterviewTimeSlot)))
+                {
+                    var interview = await _context.PTPInterviews
+                        .Where(i => i.ScheduledDate == scheduledDate &&
+                                    i.ScheduledTime == slot &&
+                                    i.Category == category &&
+                                    i.QusestionType == questionType)
+                        .FirstOrDefaultAsync();
 
-            if (timeSpan.Seconds > 0)
-                parts.Add($"{timeSpan.Seconds} sec");
 
-            return string.Join(", ", parts);
+                    var dto = new PTPInterviewTimeSlotDTO
+                    {
+                        TimeSlot = slot,
+                        SlotState = interview != null ? interview.SlotState : TimeSlotState.Empty,
+                        TimeSlotName = slot.GetDisplayName(),
+                    };
+
+                    timeSlotList.Add(dto);
+                }
+
+
+                //_cacheService.SetData(cacheKey, timeSlotList, TimeSpan.FromMinutes(5));
+
+                return Response<List<PTPInterviewTimeSlotDTO>>.Success(timeSlotList, "Time slots retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<PTPInterviewTimeSlotDTO>>.Failure(new List<PTPInterviewTimeSlotDTO>(), $"An error occurred: {ex.Message}", 500);
+            }
         }
 
+        #endregion
+
+        public async Task<Response<bool>> CancelPTPInterviewAsync(int interviewId, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var interview = await _context.PTPInterviews
+                    .Include(i => i.PeerToPeerInterviewUsers)
+                    .Include(i => i.PTPQuestionInterviews)
+                    .FirstOrDefaultAsync(i => i.Id == interviewId);
+
+                if (interview == null)
+                {
+                    return Response<bool>.Failure(false, "Interview not found.", 404);
+                }
+
+                var userAssociation = interview.PeerToPeerInterviewUsers.FirstOrDefault(u => u.UserID == userId);
+
+                if (userAssociation == null)
+                {
+                    return Response<bool>.Failure(false, "Unauthorized: User is not associated with this interview.", 403);
+                }
+
+                //if (interview.Status != InterviewStatus.Scheduled)
+                //{
+                //    return Response<bool>.Failure(false, "Interview cannot be cancelled at this stage.", 400);
+                //}
+
+                var isRemainingUser = interview.PeerToPeerInterviewUsers.Any(u => u.UserID != userId); 
+                                    
+                if (!isRemainingUser)
+                {
+                    _context.PTPInterviews.Remove(interview);                    
+                }
+                else
+                {
+                    interview.PeerToPeerInterviewUsers.Remove(userAssociation);
+                    var userQuestionInterviews = interview.PTPQuestionInterviews
+                        .Where(q => q.PTPUserId == userAssociation.Id)
+                        .ToList();
+
+                    if (userQuestionInterviews.Any())
+                    {
+                        _context.PTPQuestionInterviews.RemoveRange(userQuestionInterviews);
+                    }
+
+                    interview.SlotState = TimeSlotState.TakenByOne;
+                    _context.PTPInterviews.Update(interview);
+
+                }
+                
+                await _context.SaveChangesAsync();
+
+                //string cacheKey = $"InterviewTimeSlots_{interview.Category}_{interview.QusestionType}_{interview.ScheduledDate}";
+                //await _cacheService.RemoveDataAsync(cacheKey);
+
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "Interview cancelled successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Failed to cancel interview: {ex.Message}", 500);
+            }
+        }
+
+
+
+        #region Helpers
+
+        private string FormatTimeRemaining(TimeSpan timeRemaining)
+        {
+            if (timeRemaining.TotalSeconds <= 0)
+                return "Interview has started or passed";
+
+            if (timeRemaining.TotalMinutes < 1)
+                return "Starting now!";
+
+            return $"{timeRemaining.Days} d, {timeRemaining.Hours} h, {timeRemaining.Minutes} min";
+        }
+
+
+        private TimeSpan GetTimeSpanFromEnum(InterviewTimeSlot timeSlot)
+        {
+            return timeSlot switch
+            {
+                InterviewTimeSlot.EightAM => new TimeSpan(8, 0, 0),
+                InterviewTimeSlot.TenAM => new TimeSpan(10, 0, 0),
+                InterviewTimeSlot.TwelvePM => new TimeSpan(12, 0, 0),
+                InterviewTimeSlot.TwoPM => new TimeSpan(14, 0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(18, 0, 0),
+                InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
+                _ => TimeSpan.Zero
+            };
+        }
         private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForInterview(int interviewId, string userId)
         {
-            var userEntity = await _unitOfWork.PTPUsers
-                .GetByExpressionAsync(u => u.PTPIId == interviewId && u.UserID == userId);
+            var ptpUser = await _unitOfWork.PTPUsers
+                .GetByExpressionAsync(u => u.UserID == userId && u.PTPIId == interviewId);
 
-            if (userEntity == null)
+            if (ptpUser == null)
             {
                 return new List<PTPUpcomingQuestionDTO>(); 
             }
 
             var userQuestions = await _unitOfWork.PTPQuestionInterviews
-                .GetAllByExpressionAsync(qi => qi.PTPInterviewId == interviewId && qi.PTPUserId == userEntity.Id);
-
-            foreach (var qi in userQuestions)
-            {
-                qi.PTPQuestion = await _unitOfWork.PTPQuestions.GetByIdAsync(qi.PTPQuestionId);
-            }
+                .GetAllByExpressionAsync(qi => qi.PTPUserId == ptpUser.Id && qi.PTPInterviewId == interviewId,
+                                         include: q => q.Include(qi => qi.PTPQuestion));
 
             return userQuestions.Select(qi => new PTPUpcomingQuestionDTO
             {
-                Id = qi.PTPQuestionId,
-                Title= qi.PTPQuestion?.Title ?? string.Empty
+                Id = qi.PTPQuestion.Id,
+                Title = qi.PTPQuestion.Title ?? string.Empty
             }).ToList();
         }
+
+
         private async Task<Response<List<PTPQuestionDTO>>> GetRandomQuestionsAsync(InterviewQuestionType questionType, InterviewCategory category, int questionCount)
         {
             try
