@@ -112,7 +112,7 @@ namespace Optern.Infrastructure.Hubs
 
 
         #region Send Notifications To All Users in System
-        public async Task<Response<bool>> SendNotificationToAll(string? title, string message)
+        public async Task<Response<bool>> SendNotificationToAll(string? title, string message,string Url)
         {
             if (string.IsNullOrEmpty(message))
             {
@@ -125,6 +125,7 @@ namespace Optern.Infrastructure.Hubs
                 {
                     Title = title,
                     Message = message,
+                    Url = Url
                 };
 
                 var notificationResult = await _notificationService.AddNotification(notification);
@@ -156,7 +157,7 @@ namespace Optern.Infrastructure.Hubs
 
 
         #region Send Notification To Specific User in System
-        public async Task<Response<bool>> SendNotificationToUser(string userId, string? title, string message)
+        public async Task<Response<bool>> SendNotificationToUser(string userId, string? title, string message,string Url)
         {
             try
             {
@@ -164,6 +165,7 @@ namespace Optern.Infrastructure.Hubs
                 {
                     Title = title,
                     Message = message,
+                    Url = Url
                 };
 
                 var notificationResult = await _notificationService.AddNotification(notification);
@@ -199,7 +201,7 @@ namespace Optern.Infrastructure.Hubs
 
 
         #region Send Notification To All in Room
-        public async Task<Response<bool>> SendNotificationToAllInRoom(string roomId, string? title, string message)
+        public async Task<Response<bool>> SendNotificationToAllInRoom(string roomId, string? title, string message,string Url)
         {
             if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(roomId))
             {
@@ -212,7 +214,8 @@ namespace Optern.Infrastructure.Hubs
                 {
                     Title = title,
                     Message = message,
-                    RoomId = roomId
+                    RoomId = roomId,
+                    Url = Url
                 };
 
                 var notificationResult = await _notificationService.AddNotification(notification);
