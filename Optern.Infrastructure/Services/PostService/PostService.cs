@@ -270,7 +270,7 @@
 
 					// Then, search for posts by the user
 					var userPostsQuery = _context.Users
-						.Where(u => EF.Functions.ILike((u.FirstName + " " + u.LastName).ToLower(), $"%{username.ToLower()}%"))
+						.Where(u => EF.Functions.Like((u.FirstName + " " + u.LastName).ToLower(), $"%{username.ToLower()}%"))
 						.Include(u => u.CreatedPosts)
 							.ThenInclude(p => p.Creator)
 						.Include(u => u.CreatedPosts)
@@ -318,7 +318,7 @@
 				if (!string.IsNullOrEmpty(keyword))
 				{
 					tasks.Add(_context.Posts
-						.Where(p => EF.Functions.ILike(p.Title, $"%{keyword}%") || EF.Functions.Like(p.Content, $"%{keyword}%"))
+						.Where(p => EF.Functions.Like(p.Title, $"%{keyword}%") || EF.Functions.Like(p.Content, $"%{keyword}%"))
 						.Include(p => p.Creator)
 						.Include(p => p.PostTags)
 							.ThenInclude(pt => pt.Tag)
