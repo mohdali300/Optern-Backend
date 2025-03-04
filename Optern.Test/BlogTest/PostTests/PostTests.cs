@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using NUnit.Framework;
 using Optern.Application.DTOs.Post;
@@ -31,6 +32,10 @@ namespace Optern.Test.BlogTest
         private List<Tags> _sampleTags = null!;
         private List<PostTags> _samplePostTags = null!;
         private IMapper _mapper = null!;
+        private static int _postId = 1;
+        private static int _tagId = 5;
+        private static int _postTagId = 8;
+        private static int _favPostId = 100;
 
         [SetUp]
         public void SetUp()
@@ -38,6 +43,8 @@ namespace Optern.Test.BlogTest
             // Create in memory database with a unique name for each test
             var options = new DbContextOptionsBuilder<OpternDbContext>()
                 .UseInMemoryDatabase(databaseName: $"OpternTestDB_{Guid.NewGuid()}")
+                .ConfigureWarnings(warnings =>
+                    warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .EnableSensitiveDataLogging()
                 .Options;
 
@@ -48,6 +55,8 @@ namespace Optern.Test.BlogTest
 
             // create sample data and add to in memory DB
             CreateSampleData();
+            // UOW mocking setup
+            UOWSetup();
 
             _postService = new PostService(
                 _mockUnitOfWork.Object,
@@ -122,7 +131,6 @@ namespace Optern.Test.BlogTest
         public async Task GetLatestPosts_EmptyPosts_ReturnsEmptyList()
         {
             // Arrange
-            var emptyList = new List<Post>();
             _context.RemoveRange(_samplePosts);
             _context.SaveChanges();
 
@@ -311,8 +319,9 @@ namespace Optern.Test.BlogTest
         //} 
         #endregion
 
+        #region CreatePost
         [Test]
-        public async Task CreatePost_WithValidData_ReturnsCreatedPost()
+        public async Task CreatePost_WithValidData_ReturnsCreatedPost() // will fail
         {
             var post = new ManagePostDTO
             {
@@ -332,6 +341,177 @@ namespace Optern.Test.BlogTest
                 Assert.That(result.Data.Tags![0], Is.EqualTo("test1"));
             });
         }
+
+        [Test]
+        [TestCase("", "content test")]
+        [TestCase("title test", "")]
+        public async Task CreatePost_WithEmptyTitleOrContent_ReturnsBadRequest(string title, string content)
+        {
+            var post = new ManagePostDTO
+            {
+                Title = title,
+                Content = content,
+                Tags = new List<string> { "test1", "test2" }
+            };
+
+            var result = await _postService.CreatePostAsync("user1", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Message, Is.EqualTo("Title and Content cannot be empty."));
+            });
+        }
+
+        [Test]
+        public async Task CreatePost_WithNonExistentUser_ReturnsNotFound()
+        {
+            var post = new ManagePostDTO
+            {
+                Title = "Test Title",
+                Content = "Test Content",
+                Tags = new List<string> { "test1", "test2" }
+            };
+
+            var result = await _postService.CreatePostAsync("user4", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Is.EqualTo("User not found."));
+            });
+        }
+
+        [Test]
+        public async Task CreatePost_WithInValidData_ReturnsInvalidData()
+        {
+            var post = new ManagePostDTO
+            {
+                Title = "this Test Title cannot be more than 150 characters - " +
+                    "this Test Title cannot be more than 150 characters - " +
+                    "this Test Title cannot be more than 150 characters",
+                Content = "Test Content",
+                Tags = new List<string> { "test1", "test2" }
+            };
+
+            var result = await _postService.CreatePostAsync("user1", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+            });
+        }
+        #endregion
+
+        #region DeletePost
+        [Test]
+        public async Task DeletePost_WithValidData_ShouldDeletePost()
+        {
+            var result = await _postService.DeletePostAsync(1, "user1");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Message, Is.EqualTo("Post deleted successfully"));
+                Assert.That(result.Data, Is.Not.Null);
+            });
+        }
+
+        [Test]
+        public async Task DeletePost_WithNonExistentPost_ReturnsNotFound()
+        {
+            var result = await _postService.DeletePostAsync(4, "user1");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Is.EqualTo("Post not found"));
+            });
+        }
+
+        [Test]
+        public async Task DeletePost_WithUnAuthorizedUser_ReturnsNotAuthorized()
+        {
+            var result = await _postService.DeletePostAsync(1, "user2");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden));
+                Assert.That(result.Message, Is.EqualTo("You are not authorized to delete this post"));
+            });
+        }
+        #endregion
+
+        #region EditPost
+        [Test]
+        public async Task EditPost_WithValidData_ReturnsUpdatedPost() // will fail
+        {
+            var post = new ManagePostDTO
+            {
+                Title = "Updated title",
+                Content = "Updated content",
+                Tags = new List<string> { "addedTag1", "addedTag2" }
+            };
+
+            var result = await _postService.EditPostAsync(1, "user1", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Message, Is.EqualTo("Post edited successfully."));
+                Assert.That(result.Data.CreatorName, Is.EqualTo("John Doe"));
+            });
+        }
+
+        [Test]
+        public async Task EditPost_WithNonExistentPost_ReturnsNotFound()
+        {
+            var post = new ManagePostDTO
+            {
+                Title = "Updated title",
+                Content = "Updated content",
+                Tags = new List<string> { "addedTag1", "addedTag2" }
+            };
+
+            var result = await _postService.EditPostAsync(4, "user1", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Is.EqualTo("Post not found"));
+            });
+        }
+
+        [Test]
+        public async Task EditPost_WithUnAuthorizedUser_ReturnsUnAuthorized()
+        {
+            var post = new ManagePostDTO
+            {
+                Title = "Updated title",
+                Content = "Updated content",
+                Tags = new List<string> { "addedTag1", "addedTag2" }
+            };
+
+            var result = await _postService.EditPostAsync(1, "user4", post);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden));
+                Assert.That(result.Message, Is.EqualTo("You are not authorized to edit this post"));
+            });
+        } 
+        #endregion
 
         #region Helpers
         private void CreateSampleData()
@@ -370,7 +550,7 @@ namespace Optern.Test.BlogTest
             {
                 new Post
                 {
-                    Id = 1,
+                    Id = _postId++,
                     Title = "Post 1",
                     Content = "Content 1",
                     CreatorId="user1" ,
@@ -381,7 +561,7 @@ namespace Optern.Test.BlogTest
                 },
                 new Post
                 {
-                    Id = 2,
+                    Id = _postId++,
                     Title = "Post 2",
                     Content = "Content 2",
                     CreatorId="user2",
@@ -396,21 +576,21 @@ namespace Optern.Test.BlogTest
             {
                 new FavoritePosts
                 {
-                    Id=100,
+                    Id=_favPostId++,
                     SavedAt= DateTime.UtcNow,
                     UserId="user1",
                     PostId=2
                 },
                 new FavoritePosts
                 {
-                    Id=101,
+                    Id=_favPostId++,
                     SavedAt= DateTime.UtcNow,
                     UserId="user1",
                     PostId=1
                 },
                 new FavoritePosts
                 {
-                    Id=102,
+                    Id=_favPostId++,
                     SavedAt= DateTime.UtcNow,
                     UserId="user2",
                     PostId=1
@@ -433,19 +613,19 @@ namespace Optern.Test.BlogTest
             {
                 new Tags
                 {
-                    Id=5,
+                    Id=_tagId++,
                     Name="DotNet"
                 },
 
                 new Tags
                 {
-                    Id=6,
+                    Id=_tagId++,
                     Name="GraphQL"
                 },
 
                 new Tags
                 {
-                    Id=7,
+                    Id=_tagId++,
                     Name="PostgreSQL"
                 }
             };
@@ -454,13 +634,13 @@ namespace Optern.Test.BlogTest
             {
                 new PostTags
                 {
-                    Id= 8,
+                    Id= _postTagId++,
                     PostId=1,
                     TagId=5
                 },
                 new PostTags
                 {
-                    Id= 9,
+                    Id= _postTagId++,
                     PostId=2,
                     TagId=6
                 },
@@ -474,6 +654,59 @@ namespace Optern.Test.BlogTest
             _context.Tags.AddRange(_sampleTags);
             _context.PostTags.AddRange(_samplePostTags);
             _context.SaveChanges();
+        }
+
+        private void UOWSetup()
+        {
+            _mockUnitOfWork.Setup(uow => uow.Posts.AddAsync(It.IsAny<Post>()))
+                .ReturnsAsync((Post entity) => 
+                {
+                    entity.Creator= _context.Users.Find(entity.CreatorId)!;
+                    entity.Id = _postId++;
+                    return entity;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.Posts.DeleteAsync(It.IsAny<Post>()))
+                .Returns(Task.CompletedTask);
+
+            _mockUnitOfWork.Setup(uow => uow.PostTags.AddAsync(It.IsAny<PostTags>()))
+                .ReturnsAsync((PostTags entity) =>
+                {
+                    entity.Id = _postTagId++;
+                    return entity;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.PostTags.AddRangeAsync(It.IsAny<List<PostTags>>()))
+                .Returns((List<PostTags> entities) =>
+                {
+                    foreach (var entity in entities)
+                    {
+                        entity.Id = _postTagId++;
+                    }
+                    return Task.CompletedTask;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.Tags.AddAsync(It.IsAny<Tags>()))
+                .ReturnsAsync((Tags entity) => 
+                {
+                    entity.Id = _tagId++;
+                    return entity;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.Users.GetByIdAsync(It.IsAny<string>()))
+                .ReturnsAsync((string id) =>
+                {
+                    var user = _sampleUsers.FirstOrDefault(x => x.Id == id);
+                    return user!;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.Posts.GetByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync((int id) =>
+                {
+                    var post = _samplePosts.FirstOrDefault(x => x.Id == id);
+                    return post!;
+                });
+
         }
 
         private MapperConfiguration MappingProfiles()
