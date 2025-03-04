@@ -34,7 +34,8 @@ namespace Optern.Application.Services.NotificationService
                     Title = model.Title??null,
                     Message = model.Message,
                     CreatedTime = DateTime.UtcNow,
-                    RoomId = model.RoomId??null
+                    RoomId = model.RoomId??null,
+                    Url = model.Url
                 };
 
                 await _unitOfWork.Notifications.AddAsync(notification);

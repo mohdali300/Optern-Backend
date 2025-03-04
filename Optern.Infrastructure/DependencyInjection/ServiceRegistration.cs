@@ -1,9 +1,5 @@
 ﻿
 
-using Microsoft.AspNetCore.Identity;
-using Optern.Infrastructure.ExternalInterfaces.IExternalAuth.IGoogleAuthService;
-using Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService;
-
 namespace Optern.Infrastructure.DependencyInjection
 {
     public static class ServiceRegistration
@@ -81,6 +77,8 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUserNotificationService, UserNotificationService>();
+            services.AddScoped<IPTPFeedbackService,PTPFeedbackService>();  
+            services.AddScoped<IPTPInterviewService, PTPInterviewService>();   
 
 
             return services;

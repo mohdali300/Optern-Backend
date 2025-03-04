@@ -1,6 +1,6 @@
 // Initialize builder
 
-
+using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
 using Optern.Presentation.GraphQlApi.Notification.Mutation;
 using Optern.Presentation.GraphQlApi.UserNotification.Mutation;
 using Microsoft.Extensions.Logging;
@@ -56,6 +56,8 @@ builder.Services
 .AddType<UserNotificationQuery>()
 .AddType<MessageQuery>()
 .AddType<GoogleAuthQuery>()
+.AddType<PTPFeedbackQuery>()
+.AddType<PTPInterviewQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -76,6 +78,8 @@ builder.Services
 .AddType<UserNotificationMutation>()
 .AddType<MessageMutation>()
 .AddType<GoogleAuthMutation>()
+.AddType<PTPFeedbackMutation>()
+.AddType<PTPInterviewMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 

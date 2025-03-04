@@ -128,4 +128,14 @@ global using Optern.Infrastructure.Services.TaskService;
 global using Optern.Infrastructure.Services.TrackService;
 global using Optern.Infrastructure.Services.UserService;
 global using Optern.Infrastructure.Services.WorkSpaceService;
+global using Optern.Application.DTOs.PTPFeedback;
+global using Optern.Application.Interfaces.IPTPFeedbackService;
 
+global using Optern.Infrastructure.ExternalInterfaces.IExternalAuth.IGoogleAuthService;
+global using Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService;
+global using Optern.Infrastructure.Services.PTPFeedbackService;
+
+
+global using Optern.Application.DTOs.PTPInterview;
+global using Optern.Application.Interfaces.IPTPInterviewService;
+global using Optern.Infrastructure.Services.PTPInterviewService;

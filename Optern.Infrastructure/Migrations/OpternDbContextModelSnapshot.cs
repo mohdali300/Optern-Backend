@@ -651,6 +651,10 @@ namespace Optern.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasDefaultValue("");
 
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
@@ -713,11 +717,15 @@ namespace Optern.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("ScheduledDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("QusestionType")
+                        .HasColumnType("integer");
 
-                    b.Property<TimeSpan>("ScheduledTime")
-                        .HasColumnType("time");
+                    b.Property<string>("ScheduledDate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ScheduledTime")
+                        .HasColumnType("integer");
 
                     b.Property<int>("SlotState")
                         .HasColumnType("integer");
@@ -746,12 +754,17 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<int>("PTPQuestionId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("PTPUserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PTPInterviewId");
 
                     b.HasIndex("PTPQuestionId")
                         .HasDatabaseName("IX_PTPQuestionInterview_PTPQuestionId");
+
+                    b.HasIndex("PTPUserId");
 
                     b.ToTable("PTPQuestionInterviews", (string)null);
                 });
@@ -768,16 +781,22 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Hints")
                         .HasColumnType("text");
 
                     b.Property<int>("QusestionType")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1880,9 +1899,17 @@ namespace Optern.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Optern.Domain.Entities.PTPUsers", "PTPUser")
+                        .WithMany("PTPQuestionInterviews")
+                        .HasForeignKey("PTPUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("PTPInterview");
 
                     b.Navigation("PTPQuestion");
+
+                    b.Navigation("PTPUser");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPUsers", b =>
@@ -2300,6 +2327,11 @@ namespace Optern.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPQuestions", b =>
+                {
+                    b.Navigation("PTPQuestionInterviews");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.PTPUsers", b =>
                 {
                     b.Navigation("PTPQuestionInterviews");
                 });

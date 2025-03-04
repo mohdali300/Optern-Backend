@@ -8,7 +8,6 @@ namespace Optern.Application.DTOs.React
             Id = 0;
             ReactDate=DateTime.UtcNow;
             UserId=string.Empty;
-            ReactType= ReactType.VOTEDOWN;
             UserName=string.Empty;
             ProfilePicture=string.Empty;
         }
@@ -27,7 +26,6 @@ namespace Optern.Application.DTOs.React
         {
             Id=0;
             UserId = string.Empty;
-            ReactType = ReactType.NOTVOTEYET;
             UserName = string.Empty;
             ProfilePicture=string.Empty;
         }
