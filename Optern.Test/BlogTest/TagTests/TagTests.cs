@@ -12,6 +12,7 @@ using Optern.Application.DTOs.Tags;
 using Optern.Infrastructure.Data;
 using Optern.Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Http;
+using Optern.Application.Interfaces.ITagService;
 
 namespace Optern.Tests.Services
 {
@@ -21,7 +22,7 @@ namespace Optern.Tests.Services
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private OpternDbContext _context;
         private Mock<IMapper> _mockMapper;
-        private TagsService _tagsService;
+        private ITagsService _tagsService;
         private List<Tags> _tags;
 
         [SetUp]
