@@ -10,6 +10,8 @@ namespace Optern.Application.Interfaces.IPTPInterviewService
         public Task<Response<PTPInterviewDTO>> CreatePTPInterviewAsync(CreatePTPInterviewDTO dto, int questionCount, string userId);
         public Task<Response<List<PTPInterviewTimeSlotDTO>>> GetPTPInterviewTimeSlotsAsync(InterviewCategory category, InterviewQuestionType questionType, string scheduledDate);
         public  Task<Response<bool>> CancelPTPInterviewAsync(int interviewId, string userId);
+        public Task<Response<List<PTPQuestionDTO>>> GetUserPTPInterviewQuestionsAsync(int interviewId, string userId);
+
 
 
 

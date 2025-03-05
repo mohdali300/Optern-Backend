@@ -236,6 +236,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         #endregion
 
+        #region Cancel PTP Interview
         public async Task<Response<bool>> CancelPTPInterviewAsync(int interviewId, string userId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -263,11 +264,11 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 //    return Response<bool>.Failure(false, "Interview cannot be cancelled at this stage.", 400);
                 //}
 
-                var isRemainingUser = interview.PeerToPeerInterviewUsers.Any(u => u.UserID != userId); 
-                                    
+                var isRemainingUser = interview.PeerToPeerInterviewUsers.Any(u => u.UserID != userId);
+
                 if (!isRemainingUser)
                 {
-                    _context.PTPInterviews.Remove(interview);                    
+                    _context.PTPInterviews.Remove(interview);
                 }
                 else
                 {
@@ -285,7 +286,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     _context.PTPInterviews.Update(interview);
 
                 }
-                
+
                 await _context.SaveChangesAsync();
 
                 //string cacheKey = $"InterviewTimeSlots_{interview.Category}_{interview.QusestionType}_{interview.ScheduledDate}";
@@ -302,6 +303,53 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             }
         }
 
+        #endregion
+
+        #region Get User PTPInterview Questions
+        public async Task<Response<List<PTPQuestionDTO>>> GetUserPTPInterviewQuestionsAsync(int interviewId, string userId)
+        {
+            try
+            {
+                var interview = await _context.PTPInterviews
+                    .Include(i => i.PeerToPeerInterviewUsers)
+                    .Include(i => i.PTPQuestionInterviews)
+                        .ThenInclude(qi => qi.PTPQuestion)
+                    .FirstOrDefaultAsync(i => i.Id == interviewId);
+
+                if (interview == null)
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), "Interview not found.", 404);
+                }
+
+                var user = interview.PeerToPeerInterviewUsers
+                    .FirstOrDefault(u => u.UserID == userId);
+
+                if (user == null)
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), "Unauthorized: User is not associated with this interview.", 403);
+                }
+
+                var userQuestions = interview.PTPQuestionInterviews
+                    .Where(qi => qi.PTPUserId == user.Id)
+                    .Select(qi => qi.PTPQuestion)
+                    .ToList();
+
+                if (!userQuestions.Any())
+                {
+                    return Response<List<PTPQuestionDTO>>.Success(new List<PTPQuestionDTO>(), "No questions found for this user in the interview.", 200);
+                }
+
+                var questionDtos = _mapper.Map<List<PTPQuestionDTO>>(userQuestions);
+
+                return Response<List<PTPQuestionDTO>>.Success(questionDtos, "User interview questions retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), $"An error occurred while retrieving user questions: {ex.Message}", 500);
+            }
+        }
+
+        #endregion
 
 
         #region Helpers

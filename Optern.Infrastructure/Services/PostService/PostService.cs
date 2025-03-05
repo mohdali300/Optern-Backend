@@ -48,7 +48,7 @@
 					return Response<IEnumerable<PostDTO>>.Success(
 						new List<PostDTO>(),
 						"No posts found.",
-						200
+						204
 					);
 				}
 
@@ -179,6 +179,7 @@
 				var recommendedPosts = await _context.Posts
 					.Include(p => p.Creator)
 					.Include(p=>p.PostTags).ThenInclude(pt=>pt.Tag)
+					.Include(p=>p.Reacts)
 					.OrderByDescending(p => p.Reacts.Count)
 					.Take(topN)
 					.ToListAsync();
@@ -223,7 +224,7 @@
 				if (!string.IsNullOrEmpty(tagName))
 				{
 					tasks.Add(_context.PostTags
-						.Where(pt => EF.Functions.ILike(pt.Tag.Name, $"%{tagName}%"))
+						.Where(pt => EF.Functions.Like(pt.Tag.Name, $"%{tagName.ToLower()}%"))
 						.Include(pt => pt.Post)
 							.ThenInclude(p => p.Creator)
 						.Include(pt => pt.Post.PostTags)
