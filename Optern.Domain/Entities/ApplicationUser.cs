@@ -16,6 +16,7 @@ namespace Optern.Domain.Entities
 		public string ProfilePicture { get; set; }
         public string Gender { get; set; }
         public string Country { get; set; }
+        public string AboutMe { get; set; }
 		public DateTime CreatedAt { get; set; }
         public DateTime? LastLogIn { get; set; }
 
