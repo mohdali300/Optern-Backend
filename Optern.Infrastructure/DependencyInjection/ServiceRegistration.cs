@@ -1,5 +1,7 @@
 ﻿
 
+using Optern.Infrastructure.Services.EducationService;
+
 namespace Optern.Infrastructure.DependencyInjection
 {
     public static class ServiceRegistration
@@ -79,6 +81,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IUserNotificationService, UserNotificationService>();
             services.AddScoped<IPTPFeedbackService,PTPFeedbackService>();  
             services.AddScoped<IPTPInterviewService, PTPInterviewService>();   
+            services.AddScoped<IEducationService, EducationService>();
 
 
             return services;

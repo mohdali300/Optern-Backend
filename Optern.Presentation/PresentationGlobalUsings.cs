@@ -117,8 +117,11 @@ global using Optern.Presentation.GraphQlApi.PTPFeedback.Query;
 global using Optern.Presentation.GraphQlApi.PTPInterview.Query;
 global using Optern.Application.DTOs.PTPInterview;
 global using Optern.Application.Interfaces.IPTPInterviewService;
+global using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
 
-
+// Profile
+global using Optern.Presentation.GraphQlApi.Education.Mutation;
+global using Optern.Presentation.GraphQlApi.User.Mutation;
 
 
 

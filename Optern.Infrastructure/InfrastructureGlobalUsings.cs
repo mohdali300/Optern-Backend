@@ -139,3 +139,4 @@ global using Optern.Infrastructure.Services.PTPFeedbackService;
 global using Optern.Application.DTOs.PTPInterview;
 global using Optern.Application.Interfaces.IPTPInterviewService;
 global using Optern.Infrastructure.Services.PTPInterviewService;
+global using Optern.Application.Interfaces.IEducationService;
