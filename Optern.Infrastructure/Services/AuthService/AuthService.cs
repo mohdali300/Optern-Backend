@@ -38,18 +38,18 @@ namespace Optern.Infrastructure.Services.AuthService
 
 				if (existingUserByEmail != null)
 				{
-					return Response<string>.Failure("This Email is already used before!", 400);
+					return Response<string>.Failure("This Email is already used before!", "This Email is already used before!", 400);
 				}
 
 				if (existingUserByUserName != null)
 				{
-					return Response<string>.Failure("This UserName is already used before!", 400);
+					return Response<string>.Failure("This UserName is already used before!", "This UserName is already used before!", 400);
 				}
 
 				var user = await CreateUserAsync(model);
 				if (user == null)
 				{
-					return Response<string>.Failure("There was an error creating the user", 400);
+					return Response<string>.Failure("There was an error creating the user", "There was an error creating the user", 400);
 				}
 
 				if (!await _roleManager.RoleExistsAsync("User"))
@@ -64,14 +64,14 @@ namespace Optern.Infrastructure.Services.AuthService
 				var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
 				if (!addToRoleResult.Succeeded)
 				{
-					return Response<string>.Failure("Error occurred while assigning role to the user", 400);
+					return Response<string>.Failure("Error occurred while assigning role to the user", "Error occurred while assigning role to the user", 400);
 				}
 
 				var otpResult = await _OTP.SendRegisterationOTPAsync(model.Email);
 
 				if (!otpResult.IsSuccess)
 				{
-					return Response<string>.Failure("There is an Error Happen While Sending Email", 400);
+					return Response<string>.Failure("There is an Error Happen While Sending Email", "There is an Error Happen While Sending Email", 400);
 				}
 
 				return Response<string>.Success("Account Registered Successfully, Pleas Go To your Email and Confirm Your Account", "Account Registered Successfully, Pleas Go To your Email and Confirm Your Account", 200);

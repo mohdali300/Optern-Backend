@@ -1,6 +1,7 @@
 // Initialize builder
 
 using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
+using Optern.Presentation.GraphQlApi.Skill.Mutation;
 using Optern.Presentation.GraphQlApi.User.Mutation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,6 +71,7 @@ builder.Services
 .AddType<PTPFeedbackMutation>()
 .AddType<PTPInterviewMutation>()
 .AddType<UserMutation>()
+.AddType<SkillMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 
