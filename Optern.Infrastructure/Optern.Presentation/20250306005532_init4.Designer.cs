@@ -9,11 +9,11 @@ using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Optern.Persentaion
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    [Migration("20250212222052_init3")]
-    partial class init3
+    [Migration("20250306005532_init4")]
+    partial class init4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -591,6 +591,9 @@ namespace Optern.Infrastructure.Optern.Persentaion
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("text");
+
                     b.Property<int>("ChatId")
                         .HasColumnType("integer");
 
@@ -598,6 +601,12 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("SenderId")
                         .IsRequired()
@@ -640,9 +649,14 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .HasColumnType("text");
 
                     b.Property<string>("Title")
-                        .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -659,7 +673,10 @@ namespace Optern.Infrastructure.Optern.Persentaion
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("IntervieweePerformance")
+                    b.Property<int>("GivenByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Improvement")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -670,10 +687,22 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.Property<int>("PTPInterviewId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Ratings")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("ReceivedByUserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PTPInterviewId")
                         .HasDatabaseName("IX_PTPFeedBack_PTPInterviewId");
+
+                    b.HasIndex("ReceivedByUserId");
+
+                    b.HasIndex("GivenByUserId", "ReceivedByUserId", "PTPInterviewId")
+                        .IsUnique();
 
                     b.ToTable("PTPFeedBacks", (string)null);
                 });
@@ -691,11 +720,18 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<TimeSpan>("Duration")
-                        .HasColumnType("interval");
+                    b.Property<int>("QusestionType")
+                        .HasColumnType("integer");
 
-                    b.Property<DateTime>("ScheduledTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("ScheduledDate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ScheduledTime")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SlotState")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -721,12 +757,17 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.Property<int>("PTPQuestionId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("PTPUserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PTPInterviewId");
 
                     b.HasIndex("PTPQuestionId")
                         .HasDatabaseName("IX_PTPQuestionInterview_PTPQuestionId");
+
+                    b.HasIndex("PTPUserId");
 
                     b.ToTable("PTPQuestionInterviews", (string)null);
                 });
@@ -743,10 +784,22 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hints")
+                        .HasColumnType("text");
+
+                    b.Property<int>("QusestionType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1535,10 +1588,7 @@ namespace Optern.Infrastructure.Optern.Persentaion
                     b.HasIndex("RoomId")
                         .HasDatabaseName("IX_WorkSpace_RoomId");
 
-                    b.ToTable("WorkSpaces", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_WorkSpaces_CreatedDate_Future", "CreatedDate > NOW()");
-                        });
+                    b.ToTable("WorkSpaces");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1813,13 +1863,29 @@ namespace Optern.Infrastructure.Optern.Persentaion
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPFeedBack", b =>
                 {
+                    b.HasOne("Optern.Domain.Entities.PTPUsers", "GivenByUser")
+                        .WithMany()
+                        .HasForeignKey("GivenByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Optern.Domain.Entities.PTPInterview", "PTPInterview")
                         .WithMany("PTPFeedBacks")
                         .HasForeignKey("PTPInterviewId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Optern.Domain.Entities.PTPUsers", "ReceivedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReceivedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GivenByUser");
+
                     b.Navigation("PTPInterview");
+
+                    b.Navigation("ReceivedByUser");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPQuestionInterview", b =>
@@ -1836,9 +1902,17 @@ namespace Optern.Infrastructure.Optern.Persentaion
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Optern.Domain.Entities.PTPUsers", "PTPUser")
+                        .WithMany("PTPQuestionInterviews")
+                        .HasForeignKey("PTPUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("PTPInterview");
 
                     b.Navigation("PTPQuestion");
+
+                    b.Navigation("PTPUser");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPUsers", b =>
@@ -2256,6 +2330,11 @@ namespace Optern.Infrastructure.Optern.Persentaion
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPQuestions", b =>
+                {
+                    b.Navigation("PTPQuestionInterviews");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.PTPUsers", b =>
                 {
                     b.Navigation("PTPQuestionInterviews");
                 });

@@ -338,6 +338,7 @@ namespace Optern.Infrastructure.Services.RoomService
 						CreatorId = room.CreatorId,
 						CoverPicture = room.CoverPicture,
 						CreatedAt = room.CreatedAt,
+						chatId = room.ChatId,
 						Members = room.UserRooms.Count(r => r.IsAccepted == true),
 						Skills = room.RoomSkills
 						.Select(rs => new SkillDTO

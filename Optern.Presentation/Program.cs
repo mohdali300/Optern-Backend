@@ -126,8 +126,8 @@ using (var scope = app.Services.CreateScope())
 	userCleanUpScheduler.UserCleanUp();
 }
 
-app.MapHub<ChatHub>("/ChatHub");
-app.MapHub<NotificationHub>("/NotificationHub");
+app.MapHub<ChatHub>("/Chat");
+app.MapHub<NotificationHub>("/Notification");
 app.MapControllers();
 app.MapGraphQL("/ui/graphql");
 app.UseGoogleAuthMiddleware();
