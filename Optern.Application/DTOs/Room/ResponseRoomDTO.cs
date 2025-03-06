@@ -10,7 +10,7 @@ namespace Optern.Application.DTOs.Room
 		public List<TrackDTO>? Tracks { get; set; }
 		public List<PositionDTO>? Position { get; set; }
 		public UserRoomStatus UserStatus { get; set; }
-		
+		public int chatId {get;set;}
 		public ResponseRoomDTO()
 		{
 			Id = string.Empty;
@@ -19,6 +19,7 @@ namespace Optern.Application.DTOs.Room
 			Skills = new List<SkillDTO>();
 			Tracks= new List<TrackDTO>();
 			Position= new List<PositionDTO>();
+			chatId = 0;
 		}
 	}
 }
