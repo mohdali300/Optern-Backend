@@ -1,6 +1,8 @@
 // Initialize builder
 
 using Optern.Presentation.GraphQlApi.Education.Query;
+using Optern.Presentation.GraphQlApi.UserSkills.Mutation;
+using Optern.Presentation.GraphQlApi.UserSkills.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +49,7 @@ builder.Services
 .AddType<PTPFeedbackQuery>()
 .AddType<PTPInterviewQuery>()
 .AddType<EducationQuery>()
+.AddType<UserSkillsQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -70,6 +73,7 @@ builder.Services
 .AddType<PTPFeedbackMutation>()
 .AddType<PTPInterviewMutation>()
 .AddType<UserMutation>()
+.AddType<UserSkillsMutation>()
 .AddType<EducationMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 

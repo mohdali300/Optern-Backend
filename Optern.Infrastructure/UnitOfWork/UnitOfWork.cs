@@ -45,15 +45,13 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Message> Messages { get; private set; }
 
         public IGenericRepository<PTPUsers> PTPUsers { get; private set; }
-
         public IGenericRepository<PTPFeedBack> PTPFeedBack { get; private set; }
-
         public IGenericRepository<PTPInterview> PTPInterviews { get; private set; }
-
         public IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; private set; }
-
         public IGenericRepository<PTPQuestions> PTPQuestions { get; private set; }
+
         public IGenericRepository<Education> Education { get; private set; }
+        public IGenericRepository<UserSkills> UserSkills { get; private set; }
 
 
         public UnitOfWork(OpternDbContext context) 
@@ -94,6 +92,7 @@ namespace Optern.Infrastructure.UnitOfWork
             PTPQuestionInterviews= new GenericRepository<PTPQuestionInterview>(context);
             PTPQuestions= new GenericRepository<PTPQuestions>(context);
             Education= new GenericRepository<Education>(context);
+            UserSkills= new GenericRepository<UserSkills>(context);
         }
 
         public async Task<int> SaveAsync()

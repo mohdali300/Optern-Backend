@@ -1,6 +1,7 @@
 ﻿
 
 using Optern.Infrastructure.Services.EducationService;
+using Optern.Infrastructure.Services.UserSkillsService;
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -82,6 +83,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IPTPFeedbackService,PTPFeedbackService>();  
             services.AddScoped<IPTPInterviewService, PTPInterviewService>();   
             services.AddScoped<IEducationService, EducationService>();
+            services.AddScoped<IUserSkillsService, UserSkillsService>();
 
 
             return services;

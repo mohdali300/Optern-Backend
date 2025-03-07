@@ -41,15 +41,13 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Message> Messages { get; }
 
         IGenericRepository<PTPUsers> PTPUsers { get; }
-
         IGenericRepository<PTPFeedBack> PTPFeedBack { get; }
-
         IGenericRepository<PTPInterview> PTPInterviews { get; }  
-
         IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; } 
-
         IGenericRepository<PTPQuestions> PTPQuestions { get; }
+
         IGenericRepository<Education> Education { get; }
+        IGenericRepository<UserSkills> UserSkills { get; }
 
         Task<int> SaveAsync();
     }

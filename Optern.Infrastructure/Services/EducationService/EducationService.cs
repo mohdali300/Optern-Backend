@@ -36,6 +36,15 @@ namespace Optern.Infrastructure.Services.EducationService
                     EndYear = model.EndYear,
                 };
 
+                var validate = new EducationValidator().Validate(education);
+                if (!validate.IsValid)
+                {
+                    var validationErrors=new List<string>();
+                    validationErrors.AddRange(validate.Errors.Select(e=>e.ErrorMessage));
+                    return Response<EducationDTO>.Failure(new EducationDTO(),
+                        $"Inavlid data model: {validationErrors}", 400);
+                }
+
                 await _unitOfWork.Education.AddAsync(education);
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -81,6 +90,15 @@ namespace Optern.Infrastructure.Services.EducationService
                 education.Degree = model.Degree;
                 education.StartYear = !string.IsNullOrEmpty(model.StartYear) ? model.StartYear : education.StartYear;
                 education.EndYear = !string.IsNullOrEmpty(model.EndYear) ? model.EndYear : education.EndYear;
+
+                var validate = new EducationValidator().Validate(education);
+                if (!validate.IsValid)
+                {
+                    var validationErrors = new List<string>();
+                    validationErrors.AddRange(validate.Errors.Select(e => e.ErrorMessage));
+                    return Response<EducationDTO>.Failure(new EducationDTO(),
+                        $"Inavlid data model: {validationErrors}", 400);
+                }
 
                 await _unitOfWork.Education.UpdateAsync(education);
                 await _unitOfWork.SaveAsync();
