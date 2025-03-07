@@ -49,6 +49,8 @@ builder.Services
 .AddType<GoogleAuthQuery>()
 .AddType<PTPFeedbackQuery>()
 .AddType<PTPInterviewQuery>()
+.AddType<EducationQuery>()
+.AddType<UserSkillsQuery>()
 .AddType<UserQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
@@ -73,6 +75,8 @@ builder.Services
 .AddType<PTPFeedbackMutation>()
 .AddType<PTPInterviewMutation>()
 .AddType<UserMutation>()
+.AddType<UserSkillsMutation>()
+.AddType<EducationMutation>()
 .AddType<SkillMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
