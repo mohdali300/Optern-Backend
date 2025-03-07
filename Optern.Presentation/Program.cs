@@ -1,6 +1,11 @@
 // Initialize builder
 
+
 using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
+using Optern.Presentation.GraphQlApi.Skill.Mutation;
+using Optern.Presentation.GraphQlApi.User.Mutation;
+using Optern.Presentation.GraphQlApi.User.Query;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +51,9 @@ builder.Services
 .AddType<GoogleAuthQuery>()
 .AddType<PTPFeedbackQuery>()
 .AddType<PTPInterviewQuery>()
+.AddType<UserQuery>()
+.AddType<EducationQuery>()
+.AddType<UserSkillsQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -68,6 +76,10 @@ builder.Services
 .AddType<GoogleAuthMutation>()
 .AddType<PTPFeedbackMutation>()
 .AddType<PTPInterviewMutation>()
+.AddType<UserMutation>()
+.AddType<UserSkillsMutation>()
+.AddType<EducationMutation>()
+.AddType<SkillMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 
@@ -126,8 +138,8 @@ using (var scope = app.Services.CreateScope())
 	userCleanUpScheduler.UserCleanUp();
 }
 
-app.MapHub<ChatHub>("/ChatHub");
-app.MapHub<NotificationHub>("/NotificationHub");
+app.MapHub<ChatHub>("/Chat");
+app.MapHub<NotificationHub>("/Notification");
 app.MapControllers();
 app.MapGraphQL("/ui/graphql");
 app.UseGoogleAuthMiddleware();

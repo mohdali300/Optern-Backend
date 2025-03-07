@@ -338,6 +338,7 @@ namespace Optern.Infrastructure.Services.RoomService
 						CreatorId = room.CreatorId,
 						CoverPicture = room.CoverPicture,
 						CreatedAt = room.CreatedAt,
+						chatId = room.ChatId,
 						Members = room.UserRooms.Count(r => r.IsAccepted == true),
 						Skills = room.RoomSkills
 						.Select(rs => new SkillDTO
@@ -421,25 +422,9 @@ namespace Optern.Infrastructure.Services.RoomService
 		#region Helper Function For Manage Skills in Room
 		private async Task<bool> ManageSkillOperationistRoomCreation(Room room, IEnumerable<SkillDTO> data)
 		{
-			var existingSkills = await _context.Skills
-						.Select(s => new SkillDTO
-						{
-							Id = s.Id,
-							Name = s.Name,
-						})
-						.ToListAsync();
-
-			var newSkills = data
-				  .Where(skill => !existingSkills.Any(es => es.Name.ToLower() == skill.Name.ToLower()))
-				  .Select(skill => new SkillDTO
-				  {
-					  Name = skill.Name,
-				  })
-				  .ToList();
-
-			if (newSkills.Any())
+			if (data.Any())
 			{
-				var skill = await _skillService.AddSkills(newSkills);
+				var skill = await _skillService.AddSkills(data);
 			}
 			var allSkills = await _context.Skills
 					.Where(s => data.Select(ms => ms.Name).Contains(s.Name))

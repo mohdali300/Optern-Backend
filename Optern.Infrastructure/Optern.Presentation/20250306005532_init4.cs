@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace Optern.Infrastructure.Optern.Persentaion
+namespace Optern.Infrastructure.Optern.Presentation
 {
     /// <inheritdoc />
-    public partial class init3 : Migration
+    public partial class init4 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
