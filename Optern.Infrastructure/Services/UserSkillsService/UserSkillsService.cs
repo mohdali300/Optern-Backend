@@ -1,6 +1,4 @@
-﻿
-
-namespace Optern.Infrastructure.Services.UserSkillsService
+﻿namespace Optern.Infrastructure.Services.UserSkillsService
 {
     public class UserSkillsService(IUnitOfWork unitOfWork,OpternDbContext context,ISkillService skillService):IUserSkillsService
     {
@@ -8,12 +6,13 @@ namespace Optern.Infrastructure.Services.UserSkillsService
         private readonly OpternDbContext _context = context;
         private readonly ISkillService _skillService = skillService;
 
-        public async Task<Response<bool>> AddUserSkillsAsync(string userId,List<int> skills)
+        #region AddUserSkills
+        public async Task<Response<bool>> AddUserSkillsAsync(string userId, List<int> skills)
         {
             try
             {
-                var UserSkills = await _context.UserSkills.Where(us=>us.UserId==userId)
-                    .Select(us=>us.SkillId).ToListAsync();
+                var UserSkills = await _context.UserSkills.Where(us => us.UserId == userId)
+                    .Select(us => us.SkillId).ToListAsync();
                 var newUserSkills = skills.Where(skillId => !UserSkills.Contains(skillId))
                     .Select(skillId => new UserSkills
                     {
@@ -35,7 +34,9 @@ namespace Optern.Infrastructure.Services.UserSkillsService
                 return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
         }
+        #endregion
 
+        #region ManageUserSkills
         public async Task<Response<bool>> ManageUserSkillsAsync(string userId, List<SkillInputDTO> skills)
         {
             if (string.IsNullOrEmpty(userId) || !skills.Any())
@@ -54,9 +55,9 @@ namespace Optern.Infrastructure.Services.UserSkillsService
 
                 var existingSkills = await _unitOfWork.Skills.GetAllAsync();
                 var newSkills = skills.Where(s => !existingSkills.Any(ex => ex.Name.ToLower() == s.Name.ToLower()))
-                    .Select(s=>new SkillDTO
+                    .Select(s => new SkillDTO
                     {
-                        Name=s.Name
+                        Name = s.Name
                     }).ToList();
 
                 if (newSkills.Any())
@@ -78,7 +79,9 @@ namespace Optern.Infrastructure.Services.UserSkillsService
                 return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
         }
+        #endregion
 
+        #region GetUserSkills
         public async Task<Response<IEnumerable<SkillDTO>>> GetUserSkillsAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -112,10 +115,45 @@ namespace Optern.Infrastructure.Services.UserSkillsService
                 return Response<IEnumerable<SkillDTO>>.Failure(new List<SkillDTO>(), $"Server error: {ex.Message}", 500);
             }
         }
+        #endregion
 
-        public Task<Response<bool>> DeleteUserSkillsAsync(string userId, List<int> userSkillsId)
+        #region DeleteUserSkills
+        public async Task<Response<bool>> DeleteUserSkillsAsync(string userId, List<int> skillsIds)
         {
-            throw new NotImplementedException();
-        }
+            if (string.IsNullOrEmpty(userId) || !skillsIds.Any())
+            {
+                return Response<bool>.Failure(false, "Invalid user id or skills IDs", 400);
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var skills = await _context.Skills.Where(s => skillsIds.Contains(s.Id))
+                    .Select(s => s.Id).ToListAsync();
+                if (!skills.Any())
+                {
+                    return Response<bool>.Failure(false, "Skills not found.", 404);
+                }
+
+                var userskills = await _context.UserSkills.Include(us => us.Skill)
+                    .Where(us => us.UserId == userId && skills.Contains(us.Skill.Id)).ToListAsync();
+                if (!userskills.Any())
+                {
+                    return Response<bool>.Success(true, "User already doesn’t have those skills.", 204);
+                }
+
+                await _unitOfWork.UserSkills.DeleteRangeAsync(userskills);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "User Skills deleted successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        } 
+        #endregion
     }
 }

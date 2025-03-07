@@ -9,5 +9,9 @@
         [GraphQLDescription("All Pending Requests")]
         public async Task<Response<List<RoomUserDTO>>> GetPendingRequestsAsync([Service] IRoomUserService _roomUserService, string roomId, string leaderId)
            => await _roomUserService.GetPendingRequestsAsync(roomId, leaderId);
+
+        [GraphQLDescription("Latest rooms for user profile")]
+        public async Task<Response<IEnumerable<ProfileUserRoomDTO>>> getLatestUserRoomsAsync([Service] IRoomUserService _roomUserService, string userId, bool? isPublic = null)
+            => await _roomUserService.getLatestUserRoomsAsync(userId, isPublic);
     }
 
