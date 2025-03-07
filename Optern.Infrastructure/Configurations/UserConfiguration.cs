@@ -1,4 +1,6 @@
-﻿namespace Optern.Infrastructure.Configurations
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+namespace Optern.Infrastructure.Configurations
 {
     public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     {
@@ -49,6 +51,20 @@
 
             builder.Property(u => u.LastLogIn)
                 .IsRequired(false);
+
+            builder.Property(u => u.Links)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                    v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, new JsonSerializerOptions()) ?? new Dictionary<string, string>()
+                )
+                .Metadata.SetValueComparer(new ValueComparer<Dictionary<string, string>>(
+                    (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.Key.GetHashCode(), v.Value.GetHashCode())), 
+                    c => new Dictionary<string, string>(c) 
+                ));
+
+
 
             // Indexes
 
