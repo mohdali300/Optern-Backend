@@ -1,5 +1,6 @@
 // Initialize builder
 
+
 using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
 using Optern.Presentation.GraphQlApi.Skill.Mutation;
 using Optern.Presentation.GraphQlApi.User.Mutation;
@@ -49,6 +50,7 @@ builder.Services
 .AddType<GoogleAuthQuery>()
 .AddType<PTPFeedbackQuery>()
 .AddType<PTPInterviewQuery>()
+.AddType<UserQuery>()
 .AddType<EducationQuery>()
 .AddType<UserSkillsQuery>()
 .AddType<UserQuery>()
