@@ -27,11 +27,14 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 var upcomingInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
                                                   i.Status == InterviewStatus.Scheduled);
-                    
+
                 var filteredInterviews = upcomingInterviews
-                    .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
-                                scheduledDate >= currentTime).OrderBy(i=>i.ScheduledTime)
-                    .ToList();
+                       .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
+                (scheduledDate.Date > currentTime.Date ||
+                 (scheduledDate.Date == currentTime.Date && GetTimeSpanFromEnum(i.ScheduledTime) >= currentTime.TimeOfDay))) 
+                .OrderBy(i => i.ScheduledTime)
+                   .ToList();
+              
 
                 if (!filteredInterviews.Any())
                 {
@@ -52,11 +55,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         continue;
                     }
 
-                    DateTime scheduledDateTime = scheduledDate.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
-
-                    TimeSpan timeRemaining = scheduledDateTime - DateTime.UtcNow;
-
+                    DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
+                    DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
+                    scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
+                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
                     interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+
 
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
                 }
