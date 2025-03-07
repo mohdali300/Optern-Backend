@@ -12,5 +12,13 @@ namespace Optern.Presentation.GraphQlApi.User.Mutation
         public async Task<Response<bool>> EditProfilePicture([Service] IUserService _userService, [ID] string userId,
             IFile picture) =>
             await _userService.EditProfilePicture(userId, picture);
+
+        public async Task<Response<bool>> AddSocialLinks([Service] IUserService _userService, string userId,
+            Dictionary<string, string> links) =>
+            await _userService.AddSocialLinks(userId, links);
+
+        public async Task<Response<bool>> DeleteSocialLink([Service] IUserService _userService, string userId,
+            List<string> linksKeys) =>
+            await _userService.DeleteSocialLink(userId, linksKeys);
     }
 }

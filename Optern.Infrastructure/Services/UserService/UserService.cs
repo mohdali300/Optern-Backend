@@ -100,6 +100,91 @@ namespace Optern.Infrastructure.Services.UserService
             }
         }
 
+        public async Task<Response<bool>> AddSocialLinks(string userId,Dictionary<string, string> links)
+        {
+            if ( links.Count == 0)
+            {
+                return Response<bool>.Failure(false,"Cannot Add Empty link",400);
+            }
+
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return Response<bool>.Failure(false, "User Not Found", 404);
+                }
+                user.Links= links;
+                await _unitOfWork.Users.UpdateAsync(user);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                return Response<bool>.Success(true,"Links Added Successfully",201);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"An error occurred: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<bool>> DeleteSocialLink(string userId, List<string> linksKeys)
+        {
+            if (linksKeys.Count == 0)
+            {
+                return Response<bool>.Failure(false, "Please Choice Link To delete", 400);
+            }
+
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return Response<bool>.Failure(false, "User Not Found", 404);
+                }
+
+                foreach (var link in linksKeys)
+                {
+                    user.Links.Remove(link);
+                }
+
+                await _unitOfWork.Users.UpdateAsync(user);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                return Response<bool>.Success(true, "Links Deleted Successfully", 200);
+
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"An error occurred: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<Dictionary<string, string>>> GetSocialLinks(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Response<Dictionary<string, string>>.Failure(new Dictionary<string, string>(),"Invalid UserId",400);
+            }
+            try
+            {
+                var userLinks = await _context.Users
+                    .Where(u => u.Id == userId)
+                    .Select(l => l.Links)
+                    .FirstOrDefaultAsync();
+              
+                    return !userLinks.Any()? 
+                        Response<Dictionary<string, string>>.Success(new Dictionary<string, string>(), "There are no Social Links Until Now", 200): 
+                        Response<Dictionary<string, string>>.Success(userLinks, "Links Retrieved Successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<Dictionary<string, string>>.Failure(new Dictionary<string, string>(), $"An error occurred: {ex.Message}", 500);
+
+            }
+        }
         public async Task<Response<IEnumerable<UserDTO>>> GetAll()
         {
             try

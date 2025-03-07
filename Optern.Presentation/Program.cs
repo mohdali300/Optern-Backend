@@ -3,6 +3,7 @@
 using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
 using Optern.Presentation.GraphQlApi.Skill.Mutation;
 using Optern.Presentation.GraphQlApi.User.Mutation;
+using Optern.Presentation.GraphQlApi.User.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,7 @@ builder.Services
 .AddType<GoogleAuthQuery>()
 .AddType<PTPFeedbackQuery>()
 .AddType<PTPInterviewQuery>()
+.AddType<UserQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()

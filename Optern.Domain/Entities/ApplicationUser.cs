@@ -21,6 +21,8 @@ namespace Optern.Domain.Entities
         public DateTime? LastLogIn { get; set; }
 
 		public UserRole Role { get; set; }
+        public Dictionary<string, string> Links { get; set; } = new();
+
         public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
 
 
