@@ -1,9 +1,5 @@
 // Initialize builder
 
-using Optern.Presentation.GraphQlApi.Education.Query;
-using Optern.Presentation.GraphQlApi.UserSkills.Mutation;
-using Optern.Presentation.GraphQlApi.UserSkills.Query;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -75,6 +71,7 @@ builder.Services
 .AddType<UserMutation>()
 .AddType<UserSkillsMutation>()
 .AddType<EducationMutation>()
+.AddType<SkillMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 

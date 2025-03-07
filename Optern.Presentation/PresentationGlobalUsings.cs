@@ -122,7 +122,10 @@ global using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
 // Profile
 global using Optern.Presentation.GraphQlApi.Education.Mutation;
 global using Optern.Presentation.GraphQlApi.User.Mutation;
-
+global using Optern.Presentation.GraphQlApi.Education.Query;
+global using Optern.Presentation.GraphQlApi.UserSkills.Mutation;
+global using Optern.Presentation.GraphQlApi.UserSkills.Query;
+global using Optern.Presentation.GraphQlApi.Skill.Mutation;
 
 
 
