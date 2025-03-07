@@ -12,13 +12,13 @@ namespace Optern.Domain.Entities
         public int Id { get; set; }
         public string School { get; set; }
         public string University { get; set; }
-		public EducationDegree Degree { get; set; }
+		public EducationDegree Degree { get; set; } = EducationDegree.Bachelor;
 		public string Major { get; set; }
-		public string StartYear { get; set; }
-		public string EndYear { get; set; }
+		public string StartYear { get; set; } = DateTime.UtcNow.Year.ToString();
+		public string EndYear { get; set; } = DateTime.UtcNow.Year.ToString();
 
-		// Foreign Key
-		public string UserId { get; set; }
+        // Foreign Key
+        public string UserId { get; set; }
 
 		// Navigation Properties
 		public virtual ApplicationUser User { get; set; }

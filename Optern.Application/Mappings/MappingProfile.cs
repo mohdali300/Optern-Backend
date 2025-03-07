@@ -1,5 +1,6 @@
 ﻿
 
+using Optern.Application.DTOs.Education;
 using Optern.Application.DTOs.Message;
 using Optern.Application.DTOs.PTPFeedback;
 using Optern.Application.DTOs.PTPInterview;
@@ -174,6 +175,10 @@ namespace Optern.Application.Mappings
 
 
             #endregion
+
+            CreateMap<Education, EducationDTO>()
+                .ForMember(dest => dest.MajorDegree, opt => opt.MapFrom(src => $"{src.Major} {src.Degree}"))
+                .ReverseMap();
 
         }
     }

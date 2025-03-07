@@ -1,9 +1,5 @@
 // Initialize builder
 
-using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
-using Optern.Presentation.GraphQlApi.Skill.Mutation;
-using Optern.Presentation.GraphQlApi.User.Mutation;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -48,6 +44,8 @@ builder.Services
 .AddType<GoogleAuthQuery>()
 .AddType<PTPFeedbackQuery>()
 .AddType<PTPInterviewQuery>()
+.AddType<EducationQuery>()
+.AddType<UserSkillsQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -71,6 +69,8 @@ builder.Services
 .AddType<PTPFeedbackMutation>()
 .AddType<PTPInterviewMutation>()
 .AddType<UserMutation>()
+.AddType<UserSkillsMutation>()
+.AddType<EducationMutation>()
 .AddType<SkillMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
