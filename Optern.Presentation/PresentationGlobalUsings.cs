@@ -126,6 +126,8 @@ global using Optern.Presentation.GraphQlApi.Education.Query;
 global using Optern.Presentation.GraphQlApi.UserSkills.Mutation;
 global using Optern.Presentation.GraphQlApi.UserSkills.Query;
 global using Optern.Presentation.GraphQlApi.Skill.Mutation;
+global using Optern.Application.DTOs.Skills;
+global using Optern.Application.Interfaces.IUserSkillsService;
 
 
 

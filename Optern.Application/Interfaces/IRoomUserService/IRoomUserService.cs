@@ -12,5 +12,6 @@ namespace Optern.Application.Interfaces.IRoomUserService
         public Task<Response<RoomUserDTO>> ToggleLeadershipAsync(string roomId, string targetUserId, string leaderId);
         public Task<Response<List<RoomUserDTO>>> AcceptRequestsAsync(string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null);
         public Task<Response<string>> RejectRequestsAsync(string roomId, string leaderId, int? userRoomId = null, bool? rejectAll = null);
+        public Task<Response<IEnumerable<ProfileUserRoomDTO>>> getLatestUserRoomsAsync(string userId, bool? isPublic = null);
     }
 }
