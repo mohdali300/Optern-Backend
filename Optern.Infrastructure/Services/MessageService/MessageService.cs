@@ -15,8 +15,8 @@ namespace Optern.Infrastructure.Services.MessageService
         private readonly ICacheService _cacheService = cacheService;
 
 
-        #region Send Message To Room
-        public async Task<Response<MessageDTO>> SendMessageToRoomAsync(int chatId, string senderId, string? content = null, IFile? file = null)
+        #region Send Message
+        public async Task<Response<MessageDTO>> SendMessageAsync(int chatId, string senderId, string? content = null, IFile? file = null)
         {
             try
             {
@@ -33,12 +33,12 @@ namespace Optern.Infrastructure.Services.MessageService
 
                 if (chat == null)
                 {
-                    return Response<MessageDTO>.Failure(new MessageDTO(), "Chat room not found.", 404);
+                    return Response<MessageDTO>.Failure(new MessageDTO(), "Chat not found.", 404);
                 }
 
                 if (!chat.ChatParticipants.Any(p => p.UserId == senderId))
                 {
-                    return Response<MessageDTO>.Failure(new MessageDTO(), "You are not a member of this chat room.", 403);
+                    return Response<MessageDTO>.Failure(new MessageDTO(), "You are not a member of this chat.", 403);
                 }
 
                 string? fileUrl = null;

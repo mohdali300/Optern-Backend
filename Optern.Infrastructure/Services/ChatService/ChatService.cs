@@ -16,6 +16,52 @@ namespace Optern.Infrastructure.Services.ChatService
             _context = context;
         }
 
+        #region CreatePrivateChat
+        public async Task<Response<ChatDTO>> CreatePrivateChatAsync(string creatorId, string receiverId)
+        {
+            if (string.IsNullOrEmpty(creatorId) || string.IsNullOrEmpty(receiverId))
+                return Response<ChatDTO>.Failure(new ChatDTO(), "Invalid Creator or Receiver Id.", 400);
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var creator = await _unitOfWork.Users.GetByIdAsync(creatorId);
+                var receiver = await _unitOfWork.Users.GetByIdAsync(receiverId);
+                if (creator is null || receiver is null)
+                {
+                    return Response<ChatDTO>.Failure(new ChatDTO(), "Creator or Receiver not found.", 404);
+                }
+
+                var existingChat = await IsChatExisted(creatorId, receiverId);
+                if (existingChat)
+                {
+                    return Response<ChatDTO>.Failure(new ChatDTO(), "Already there is a chat between the two users.", 400);
+                }
+
+                var chat = new Chat
+                {
+                    Type = ChatType.Private,
+                    CreatedDate = DateTime.UtcNow,
+                    CreatorId = creatorId,
+                };
+                await _unitOfWork.Chats.AddAsync(chat);
+                await _unitOfWork.SaveAsync();
+
+                if (await AddChatParticipants(chat.Id, [creatorId, receiverId]))
+                {
+                    await transaction.CommitAsync();
+                    return Response<ChatDTO>.Success(new ChatDTO { Id = chat.Id, Type = chat.Type }, "Chat created successfully.", 200);
+                }
+                return Response<ChatDTO>.Failure(new ChatDTO(), "Failed to create chat.", 400);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<ChatDTO>.Failure(new ChatDTO(), $"Server error: {ex.Message}", 500);
+            }
+        } 
+        #endregion
+
         #region Create room chat
         public async Task<Response<ChatDTO>> CreateRoomChatAsync(string creatorId, ChatType type)
         {
@@ -181,7 +227,45 @@ namespace Optern.Infrastructure.Services.ChatService
                 return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), $"Server error: {ex.Message}", 500);
             }
 
+        }
+        #endregion
+
+        #region Helper
+        private async Task<bool> AddChatParticipants(int chatId, List<string> participantsId)
+        {
+            try
+            {
+                var participants = new List<ChatParticipants>();
+                foreach (var id in participantsId)
+                {
+                    var participant = new ChatParticipants
+                    {
+                        ChatId = chatId,
+                        UserId = id
+                    };
+                    participants.Add(participant);
+                }
+
+                await _unitOfWork.ChatParticipants.AddRangeAsync(participants);
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         } 
+
+        private async Task<bool> IsChatExisted(string creatorId,string receiverId)
+        {
+            var existingChat = await _context.Chats.Include(c => c.ChatParticipants)
+                    .Where(c => c.Type == ChatType.Private && c.ChatParticipants.Count == 2
+                    && c.ChatParticipants.Any(cp => cp.UserId == creatorId)
+                    && c.ChatParticipants.Any(cp => cp.UserId == receiverId)).FirstOrDefaultAsync();
+            if (existingChat != null)
+                return true;
+            return false;
+        }
         #endregion
     }
 }
