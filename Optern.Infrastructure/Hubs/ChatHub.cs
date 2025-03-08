@@ -83,7 +83,7 @@ namespace Optern.Infrastructure.Hubs
                 //    throw new HubException("Unauthorized: User not found.");
                 //}
 
-                var messageResult = await _messageService.SendMessageToRoomAsync(chatId, userId, content, file);
+                var messageResult = await _messageService.SendMessageAsync(chatId, userId, content, file);
 
                 if (messageResult.IsSuccess)
                 {

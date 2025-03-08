@@ -1,7 +1,4 @@
-﻿using Optern.Application.DTOs.Skills;
-using Optern.Application.Interfaces.IUserSkillsService;
-
-namespace Optern.Presentation.GraphQlApi.UserSkills.Query
+﻿namespace Optern.Presentation.GraphQlApi.UserSkills.Query
 {
     [ExtendObjectType("Query")]
     public class UserSkillsQuery
