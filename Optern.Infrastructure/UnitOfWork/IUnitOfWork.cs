@@ -47,7 +47,8 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<PTPQuestions> PTPQuestions { get; }
 
         IGenericRepository<Education> Education { get; }
-        IGenericRepository<UserSkills> UserSkills { get; }
+        IGenericRepository<UserSkills> UserSkills { get; } 
+        IGenericRepository<Experience> Experience { get; }
 
         Task<int> SaveAsync();
     }

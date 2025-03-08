@@ -4,23 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Optern.Domain.Entities
+namespace Optern.Application.DTOs.ExperienceDTO
 {
-	public class Experience
-	{
-        public int Id { get; set; }
+    public class ExperienceDTO
+    {
+        public int? Id { get; set; }
         public string JobTitle { get; set; }
         public string Company { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public bool IsCurrentlyWork { get; set; }
+        public bool? IsCurrentlyWork { get; set; }
         public string? JobDescription { get; set; }
-        public string? Location { get; set; }
-
-        // Foreign Key
-        public string UserId { get; set; }
-
-		// Navigation Properties
-		public virtual ApplicationUser User { get; set; }
+        public string Location { get; set; }
     }
 }
