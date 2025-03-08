@@ -144,6 +144,7 @@ using (var scope = app.Services.CreateScope())
 
 app.MapHub<ChatHub>("/Chat");
 app.MapHub<NotificationHub>("/Notification");
+app.MapHub<PTPInterviewHub>("/PTPInterview");
 app.MapControllers();
 app.MapGraphQL("/ui/graphql");
 app.UseGoogleAuthMiddleware();
