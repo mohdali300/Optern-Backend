@@ -52,6 +52,7 @@ namespace Optern.Infrastructure.UnitOfWork
 
         public IGenericRepository<Education> Education { get; private set; }
         public IGenericRepository<UserSkills> UserSkills { get; private set; }
+        public IGenericRepository<Experience> Experience { get; private set; }
 
 
         public UnitOfWork(OpternDbContext context) 
@@ -93,6 +94,7 @@ namespace Optern.Infrastructure.UnitOfWork
             PTPQuestions= new GenericRepository<PTPQuestions>(context);
             Education= new GenericRepository<Education>(context);
             UserSkills= new GenericRepository<UserSkills>(context);
+            Experience = new GenericRepository<Experience>(context);
         }
 
         public async Task<int> SaveAsync()

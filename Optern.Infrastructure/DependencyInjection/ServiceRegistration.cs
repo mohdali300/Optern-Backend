@@ -1,6 +1,8 @@
 ﻿
 
+using Optern.Application.Interfaces.IExperienceService;
 using Optern.Infrastructure.Services.EducationService;
+using Optern.Infrastructure.Services.Experience;
 using Optern.Infrastructure.Services.UserSkillsService;
 
 namespace Optern.Infrastructure.DependencyInjection
@@ -84,6 +86,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IPTPInterviewService, PTPInterviewService>();   
             services.AddScoped<IEducationService, EducationService>();
             services.AddScoped<IUserSkillsService, UserSkillsService>();
+            services.AddScoped<IExperienceService, ExperienceService>();
 
 
             return services;
