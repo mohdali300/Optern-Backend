@@ -1,12 +1,12 @@
-﻿
-namespace Optern.Infrastructure.Services.RoomUserService
+﻿namespace Optern.Infrastructure.Services.RoomUserService
 {
-    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService) : IRoomUserService
+    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService, ICacheService cacheService) : IRoomUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly IChatService _chatService = chatService;
+        private readonly ICacheService _cacheService = cacheService;
 
 
         public async Task<Response<List<RoomUserDTO>>> GetAllCollaboratorsAsync(string roomId, bool? isAdmin = null)
@@ -389,19 +389,53 @@ namespace Optern.Infrastructure.Services.RoomUserService
             }
         }
 
+        public async Task<Response<IEnumerable<ProfileUserRoomDTO>>> getLatestUserRoomsAsync(string userId, bool? isPublic = null)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return Response<IEnumerable<ProfileUserRoomDTO>>.Failure(new List<ProfileUserRoomDTO>(), "Invalid user id.", 400);
 
+            try
+            {
+                var userCachedRooms = _cacheService.GetData<IEnumerable<ProfileUserRoomDTO>>($"{userId}LatestRooms");
+                if(userCachedRooms != null && userCachedRooms.Any())
+                {
+                    return Response<IEnumerable<ProfileUserRoomDTO>>.Success(userCachedRooms, "Latest user rooms fetched sccessfully.", 200);
+                }
 
+                if (!await _unitOfWork.Users.AnyAsync(u=>u.Id == userId))
+                {
+                    return Response<IEnumerable<ProfileUserRoomDTO>>.Failure(new List<ProfileUserRoomDTO>(), "User not found.", 404);
+                }
 
+                var userRooms = await _context.UserRooms.Include(ur => ur.Room)
+                    .Where(ur => ur.UserId == userId).OrderByDescending(ur => ur.JoinedAt)
+                    .ToListAsync();
+                if (isPublic.HasValue && isPublic is true)
+                {
+                    userRooms = userRooms.Where(ur => ur.Room.RoomType == RoomType.Public).ToList();
+                }
 
+                if (!userRooms.Any())
+                {
+                    return Response<IEnumerable<ProfileUserRoomDTO>>.Success(new List<ProfileUserRoomDTO>(), "User didn’t join to any room.", 204);
+                }
 
+                var roomDto = userRooms.Take(3).Select(ur => new ProfileUserRoomDTO
+                {
+                    RoomId = ur.RoomId,
+                    Name = ur.Room.Name,
+                    Description = ur.Room.Description,
+                    Type = ur.Room.RoomType,
+                });
 
-
-
-
-
-
-
-
+                _cacheService.SetData($"{userId}LatestRooms", roomDto, TimeSpan.FromMinutes(15));
+                return Response<IEnumerable<ProfileUserRoomDTO>>.Success(roomDto, "Latest user rooms fetched sccessfully.", 200);
+            }
+            catch(Exception ex)
+            {
+                return Response<IEnumerable<ProfileUserRoomDTO>>.Success(new List<ProfileUserRoomDTO>(), $"Server error: {ex.Message}", 500);
+            }
+        }
 
     }
 }
