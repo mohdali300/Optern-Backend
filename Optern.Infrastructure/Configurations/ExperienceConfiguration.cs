@@ -38,7 +38,7 @@
 
             builder.HasIndex(e =>e.UserId)
                 .HasDatabaseName("IX_Experience_UserId")
-                .IsUnique();
+                .IsUnique(false);
 
             #endregion
 
