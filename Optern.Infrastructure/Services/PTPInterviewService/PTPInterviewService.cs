@@ -26,40 +26,46 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 var upcomingInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
-                                                  i.Status == InterviewStatus.Scheduled);
+                                                  i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress);
 
-                var filteredInterviews = upcomingInterviews
-                       .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
-                (scheduledDate.Date > currentTime.Date ||
-                 (scheduledDate.Date == currentTime.Date && GetTimeSpanFromEnum(i.ScheduledTime) >= currentTime.TimeOfDay))) 
-                .OrderBy(i => i.ScheduledTime)
-                   .ToList();
+
+                //var filteredInterviews = upcomingInterviews
+                //       .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
+                //(scheduledDate.Date > currentTime.Date ||
+                // (scheduledDate.Date == currentTime.Date && GetTimeSpanFromEnum(i.ScheduledTime) >= currentTime.TimeOfDay))) 
+                //.OrderBy(i => i.ScheduledTime)
+                //   .ToList();
               
 
-                if (!filteredInterviews.Any())
+                if (!upcomingInterviews.Any())
                 {
                     return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Failure(new List<UpcomingPTPInterviewDTO>(), "No Upcoming Interviews found", 404);
                 }
 
-                var upcomingInterviewsDTO = _mapper.Map<List<UpcomingPTPInterviewDTO>>(filteredInterviews);
+                var orderedInterviews = upcomingInterviews
+                   .OrderBy(i => DateTime.Parse(i.ScheduledDate!))
+                   .ThenBy(i => GetTimeSpanFromEnum(i.ScheduledTime))
+                    .ToList();
+
+                var upcomingInterviewsDTO = _mapper.Map<List<UpcomingPTPInterviewDTO>>(orderedInterviews);
 
                 foreach (var interviewDTO in upcomingInterviewsDTO)
                 {
-                    var interviewEntity = filteredInterviews.FirstOrDefault(i => i.Id == interviewDTO.Id);
+                    var interviewEntity = upcomingInterviews.FirstOrDefault(i => i.Id == interviewDTO.Id);
 
-                    interviewDTO.ScheduledTime = interviewEntity.ScheduledTime.GetDisplayName();
+                    interviewDTO.ScheduledTime = interviewEntity!.ScheduledTime.GetDisplayName();
 
-                    if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
-                    {
-                        interviewDTO.TimeRemaining = "Invalid date format";
-                        continue;
-                    }
+                    //if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
+                    //{
+                    //    interviewDTO.TimeRemaining = "Invalid date format";
+                    //    continue;
+                    //}
 
-                    DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
-                    DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
-                    scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
-                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
-                    interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+                    //DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
+                    //DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
+                    //scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
+                    //TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                    //interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
 
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
