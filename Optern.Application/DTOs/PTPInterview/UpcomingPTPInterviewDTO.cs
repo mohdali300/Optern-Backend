@@ -13,7 +13,7 @@ namespace Optern.Application.DTOs.PTPInterview
         public string? ScheduledTime { get; set; }
         public string? Category { get; set; }
         public List<PTPUpcomingQuestionDTO>? Questions { get; set; }
-        public string? TimeRemaining { get; set; }
+      //  public string? TimeRemaining { get; set; }
 
         public UpcomingPTPInterviewDTO()
         {
