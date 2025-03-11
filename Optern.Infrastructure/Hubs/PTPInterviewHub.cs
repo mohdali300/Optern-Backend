@@ -61,7 +61,7 @@
 
             public async Task SwapRole(int sessionId, string userId)
             {
-                await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("ReceiveOutput", userId);
+                await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("SwapRole", userId);
             }
             public override async Task OnDisconnectedAsync(Exception? exception)
             {
