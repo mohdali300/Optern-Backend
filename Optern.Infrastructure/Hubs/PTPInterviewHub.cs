@@ -26,30 +26,74 @@
                                 return connections;
                             }
                         }
+
                    );
                 }
                 await base.OnConnectedAsync();
+
+                    }
+               );
+                // add user to running interview if he reconnect or connected from another device
+                var currentInterviewResponse = await _pTPInterviewService.GetUserCurrentPTPInterviewSessionAsync(userId);
+                if(currentInterviewResponse.IsSuccess && currentInterviewResponse.StatusCode == 200)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"ptpInterview{currentInterviewResponse.Data.Id}");
+                    await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully.");
+                }
+
             }
 
-            [HubMethodName("JoinInterviewSession")]
-            public async Task JoinInterviewSession(int sessionId)
-            {
-                await Groups.AddToGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                await Clients.Caller.SendAsync("JoinToSession","Joined to interview session successfully.");
-            }
-
-            [HubMethodName("EndInterviewSession")]
-            public async Task EndInterviewSession(int sessionId)
-            {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                await Clients.Caller.SendAsync("EndSession","Interview session ended.");
-            }
 
             [HubMethodName("UpdateCode")]
             public async Task UpdateCode(int sessionId, string code)
             {
                 await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("UpdatedCode", code);
             }
+
+
+        [HubMethodName("JoinInterviewSession")]
+        public async Task JoinInterviewSession(int sessionId, string userId)
+        {
+            try
+            {
+                var response = await _pTPInterviewService.StartPTPInterviewSessionAsync(sessionId, userId);
+                if (response.IsSuccess)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
+                    await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully.");
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("FaliedJoinToSession", "Failed to start interview session.");
+                }
+            }
+            catch
+            {
+                await Clients.Caller.SendAsync("JoinSessionError", "Unexpected error occurred while starting the session.");
+            }
+        }
+
+        [HubMethodName("EndInterviewSession")]
+        public async Task EndInterviewSession(int sessionId)
+        {
+            try
+            {
+                var response = await _pTPInterviewService.EndPTPInterviewSessionAsync(sessionId);
+                if (response.IsSuccess)
+                {
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
+                    await Clients.Caller.SendAsync("EndSession", "Interview session ended.");
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("FailedEndSession", "Failed to end Interview session.");
+                }
+            }
+            catch
+            {
+                await Clients.Caller.SendAsync("EndSessionError", "Unexpected error occurred while ending session.");
+            }
+        }
 
 
 
@@ -63,6 +107,7 @@
             {
                 await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("SwapRole", userId);
             }
+      
             public override async Task OnDisconnectedAsync(Exception? exception)
             {
                 var user = await _userService.GetCurrentUserAsync();
