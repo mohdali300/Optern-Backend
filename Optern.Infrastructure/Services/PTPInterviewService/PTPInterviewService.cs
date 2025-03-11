@@ -383,10 +383,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     return Response<bool>.Failure(false, "This user isn’t a participant in this interview.", 403);
                 }
 
-                if (!IsInTime(interview.ScheduledTime, interview.ScheduledDate!))
-                {
-                    return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
-                }
+                // if (!IsInTime(interview.ScheduledTime, interview.ScheduledDate!))
+                // {
+                //     return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
+                // }
                 if (interview.SlotState != TimeSlotState.TakenByTwo)
                 {
                     return Response<bool>.Failure(false, "Interview doesn’t have another peer, try to schedule another one with a partner.", 400);
