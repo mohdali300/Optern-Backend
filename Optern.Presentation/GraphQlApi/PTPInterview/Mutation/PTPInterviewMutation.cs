@@ -14,6 +14,12 @@
         public async Task<Response<bool>> CancelPTPInterviewAsync([Service] IPTPInterviewService _pTPInterviewService, int interviewId, string userId)
             => await _pTPInterviewService.CancelPTPInterviewAsync(interviewId, userId);
 
+        [GraphQLDescription("Start PTP Interview Session")]
+        public async Task<Response<bool>> StartPTPInterviewSessionAsync([Service] IPTPInterviewService _pTPInterviewService, int interviewId, string userId)
+            => await _pTPInterviewService.StartPTPInterviewSessionAsync(interviewId, userId);
 
+        [GraphQLDescription("End PTP Interview Session")]
+        public async Task<Response<bool>> EndPTPInterviewSessionAsync([Service] IPTPInterviewService _pTPInterviewService, int interviewId)
+            => await _pTPInterviewService.EndPTPInterviewSessionAsync(interviewId);
     }
 }
