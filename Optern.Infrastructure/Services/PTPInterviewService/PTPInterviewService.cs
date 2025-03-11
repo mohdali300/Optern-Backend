@@ -300,9 +300,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 await _context.SaveChangesAsync();
 
-                //string cacheKey = $"InterviewTimeSlots_{interview.Category}_{interview.QusestionType}_{interview.ScheduledDate}";
-                //await _cacheService.RemoveDataAsync(cacheKey);
-
                 await transaction.CommitAsync();
 
                 return Response<bool>.Success(true, "Interview cancelled successfully.", 200);
