@@ -34,7 +34,7 @@ namespace Optern.Infrastructure.Services.Experience
                 { 
                     JobTitle = model.JobTitle,
                     Company = model.Company,
-                    StartDate = model.StartDate,
+                    StartDate =(DateTime)model.StartDate,
                     EndDate = model.IsCurrentlyWork == true ? null : model.EndDate,
                     IsCurrentlyWork = model.IsCurrentlyWork??false, 
                     JobDescription = model.JobDescription,
@@ -99,6 +99,72 @@ namespace Optern.Infrastructure.Services.Experience
             catch (Exception ex)
             {
                 return Response<IEnumerable<ExperienceDTO>>.Failure(new List<ExperienceDTO>(), $"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<bool>> EditExperience(int id, ExperienceDTO model)
+        {
+            if (model ==null||id==0)
+            {
+                return Response<bool>.Failure(false, "Invalid Data Model", 400);
+            }
+            var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var userExperience = await _unitOfWork.Experience.GetByIdAsync(id);
+                if (userExperience == null)
+                {
+                    return Response<bool>.Failure(false, "this Experience Not Found ", 404);
+                }
+
+                userExperience.JobTitle = model.JobTitle ?? userExperience.JobTitle;
+                userExperience.Company = model.Company ?? userExperience.Company;
+                userExperience.StartDate = model.StartDate ?? userExperience.StartDate;
+                userExperience.EndDate = model.EndDate ?? userExperience.EndDate;
+                userExperience.IsCurrentlyWork = model.IsCurrentlyWork ?? userExperience.IsCurrentlyWork;
+                userExperience.JobDescription = model.JobDescription ?? userExperience.JobDescription;
+                userExperience.Location = model.Location ?? userExperience.Location;
+
+                await _unitOfWork.Experience.UpdateAsync(userExperience);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                return Response<bool>.Success(true, "Experience Updated Successfully", 200);
+
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"There is a server error. Please try again later.{ex.Message}", 500);
+            }
+        }
+
+        public async Task<Response<bool>> DeleteExperience(int id)
+        {
+            if (id == 0)
+            {
+                return Response<bool>.Failure(false, "Invalid Data!", 400);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var experience = await _unitOfWork.Experience.GetByIdAsync(id);
+
+                if (experience == null)
+                {
+                    return Response<bool>.Failure(false, "This Education not found!", 404);
+                }
+
+                await _unitOfWork.Experience.DeleteAsync(experience);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "Experience deleted successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
         }
 

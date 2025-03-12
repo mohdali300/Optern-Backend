@@ -11,5 +11,7 @@ namespace Optern.Application.Interfaces.IExperienceService
     {
         public Task<Response<bool>> AddExperience(string userId, ExperienceDTO model);
         public Task<Response<IEnumerable<ExperienceDTO>>> GetUserExperiences(string userId);
+        public Task<Response<bool>> EditExperience(int id, ExperienceDTO model);
+        public Task<Response<bool>> DeleteExperience(int id);
     }
 }
