@@ -1,4 +1,5 @@
-﻿using Task = Optern.Domain.Entities.Task;
+﻿using Optern.Infrastructure.Services.VInterviewService;
+using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.UnitOfWork
 {
@@ -49,6 +50,7 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Education> Education { get; }
         IGenericRepository<UserSkills> UserSkills { get; } 
         IGenericRepository<Experience> Experience { get; }
+        IGenericRepository<VInterview> VInterviews { get; }
 
         Task<int> SaveAsync();
     }

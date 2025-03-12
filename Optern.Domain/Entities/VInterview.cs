@@ -11,8 +11,8 @@ namespace Optern.Domain.Entities
     {
         public int Id { get; set; }
 		public InterviewCategory Category { get; set; }
+        public InterviewQuestionType QusestionType { get; set; }
         public string SpeechAnalysisResult { get; set; }
-		public DateTime ScheduledTime { get; set; }
 
 
         //Foreign Keys
@@ -21,7 +21,7 @@ namespace Optern.Domain.Entities
         // Navigation Properties
         public virtual ApplicationUser User { get; set; }
         public virtual VFeedBack VirtualFeedBack { get; set; }
-        public ICollection<VInterviewQuestions> VInterviewQuestions { get; set; }   
-       
+        public ICollection<PTPQuestionInterview> VQuestionInterviews { get; set; }
+
     }
 }
