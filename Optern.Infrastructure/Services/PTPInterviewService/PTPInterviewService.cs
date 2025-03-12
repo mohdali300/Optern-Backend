@@ -1,7 +1,12 @@
-﻿using Optern.Application.DTOs.Question;
+﻿using Hangfire.States;
+using Optern.Application.DTOs.Question;
+using Optern.Application.DTOs.VInterview;
 using Optern.Domain.Entities;
 using Optern.Domain.Extensions;
 using Org.BouncyCastle.Asn1.Ocsp;
+using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Optern.Infrastructure.Services.PTPInterviewService
@@ -469,8 +474,104 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             {
                 return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), $"Server error: {ex.Message}.", 500);
             }
-        } 
+        }
         #endregion
+
+
+        #region Past Interviews 
+
+        public async Task<Response<IEnumerable<PastInterviews>>> PastInterviews(string userId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "Invalid parameter: userId is required.", 400);
+                }
+
+                var currentTime = DateTime.UtcNow;
+
+                var virtualInterviews = await _unitOfWork.VInterviews
+                    .GetAllByExpressionAsync(i => i.UserId == userId && i.InterviewDate < currentTime) ?? new List<VInterview>();
+
+                var ptpInterviews = await _unitOfWork.PTPInterviews
+                    .GetAllByExpressionAsync(
+                        i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) && i.Status == InterviewStatus.Completed,
+                        query => query.Include(i => i.PeerToPeerInterviewUsers)
+                                      .ThenInclude(u => u.User) 
+                    );
+
+
+                if (!virtualInterviews.Any() && !ptpInterviews.Any())
+                {
+                    return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "No Past Interviews found.", 404);
+                }
+
+                var interviews = new List<PastInterviews>();
+
+                // Virtual Interviews
+                foreach (var interview in virtualInterviews)
+                {
+
+                    interviews.Add(new PastInterviews
+                    {
+                        Id = interview.Id,
+                        InterviewDate = interview.InterviewDate,
+                        InterviewType = "Virtual",
+                        Category = interview.Category.ToString(),
+                        Partner = new PartnerDTO(),
+                        Questions = await GetUserQuestionsForInterview(interview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
+                    }); ;
+                }
+
+                // Peer-to-Peer Interviews
+                foreach (var interview in ptpInterviews)
+                {
+                    
+                        var partner = interview.PeerToPeerInterviewUsers?.FirstOrDefault(u => u.UserID != userId);
+                                               DateTime? interviewDateTime = null;
+                        if (!string.IsNullOrEmpty(interview.ScheduledDate))
+                        {
+                            interviewDateTime = GetScheduledDateTime(interview.ScheduledDate, interview.ScheduledTime);
+                        }
+
+                        interviews.Add(new PastInterviews
+                        {
+                            Id = interview.Id,
+                            InterviewDate = interviewDateTime ?? DateTime.MinValue,
+                            InterviewType = "Peer-to-Peer",
+                            Category = interview.Category.ToString(),
+                            Partner = new PartnerDTO
+                            {
+                                Id = partner?.UserID ?? string.Empty,
+                                Name = partner?.User.FirstName ?? string.Empty,
+                                ProfilePicture = partner?.User.ProfilePicture ?? string.Empty
+                            },
+                            Questions = await GetUserQuestionsForInterview(interview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
+                        });
+                    }
+                   
+                
+
+
+                return Response<IEnumerable<PastInterviews>>.Success(
+                    interviews.OrderByDescending(i => i.InterviewDate),
+                    "Interviews retrieved successfully.",
+                    200
+                );
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<PastInterviews>>.Failure(
+                    new List<PastInterviews>(),
+                    $"An error occurred: {ex.Message}",
+                    500
+                );
+            }
+        }
+
+        #endregion
+
 
 
         #region Helpers
@@ -579,6 +680,35 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             {
                 return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), $"An error occurred while retrieving the question: {ex.Message}", 500);
             }
+        }
+
+        private DateTime? GetScheduledDateTime(string? scheduledDate, InterviewTimeSlot scheduledTime)
+        {
+            if (string.IsNullOrWhiteSpace(scheduledDate)) return null;
+
+            if (!DateTime.TryParseExact(scheduledDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+            {
+                return null;
+            }
+            string? timeString = GetEnumDescription(scheduledTime);
+            if (string.IsNullOrWhiteSpace(timeString))
+            {
+                return date; 
+            }
+            if (DateTime.TryParseExact(timeString, "hh:mm tt", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime time))
+            {
+                return date.Add(time.TimeOfDay);
+            }
+            return date; 
+        }
+
+
+        private string? GetEnumDescription(Enum value)
+        {
+            return value.GetType()
+                        .GetField(value.ToString())?
+                        .GetCustomAttribute<DescriptionAttribute>()?
+                        .Description;
         }
 
 
