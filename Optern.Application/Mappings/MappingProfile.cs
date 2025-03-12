@@ -5,6 +5,7 @@ using Optern.Application.DTOs.Message;
 using Optern.Application.DTOs.PTPFeedback;
 using Optern.Application.DTOs.PTPInterview;
 using Optern.Application.DTOs.Question;
+using Optern.Application.DTOs.VInterview;
 
 namespace Optern.Application.Mappings
 {
@@ -171,6 +172,7 @@ namespace Optern.Application.Mappings
 
             CreateMap<PTPQuestions, PTPQuestionDTO>();
             CreateMap<PTPInterview, PTPInterviewDTO>();
+            CreateMap<VInterview, VInterviewDTO>();
 
 
 
