@@ -24,10 +24,10 @@
             builder.Property(v => v.Category)
                 .IsRequired().HasConversion<string>();
 
-            builder.Property(v => v.ScheduledTime)
-               .IsRequired()                       
-               .HasColumnType("timestamp")         
-               .HasComment("ScheduledTime must be in the future and is required.");
+            builder.Property(v => v.QusestionType)
+                .IsRequired().HasConversion<string>();
+
+            
 
             //Indexes 
             builder.HasIndex(v => v.UserId)
@@ -45,10 +45,7 @@
                 .HasForeignKey<VInterview>(v => v.Id)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(v => v.VInterviewQuestions)
-                .WithOne(vq => vq.VInterview)
-                .HasForeignKey(vq => vq.VInterviewID)
-                .OnDelete(DeleteBehavior.Cascade);
+           
             #endregion
         }
     }
