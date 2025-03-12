@@ -12,7 +12,9 @@ namespace Optern.Domain.Entities
         public int Id { get; set; }
 		public InterviewCategory Category { get; set; }
         public InterviewQuestionType QusestionType { get; set; }
-        public string SpeechAnalysisResult { get; set; }
+        public string? SpeechAnalysisResult { get; set; }
+
+        public DateTime InterviewDate { get; set; }= DateTime.UtcNow;
 
 
         //Foreign Keys

@@ -16,7 +16,7 @@ namespace Optern.Infrastructure.Services.VInterviewService
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
 
-        #region Create PTP Interview
+        #region Create virtual Interview
         public async Task<Response<VInterviewDTO>> CreateVInterviewAsync(CreateVInterviewDTO dto, int questionCount, string userId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -75,6 +75,8 @@ namespace Optern.Infrastructure.Services.VInterviewService
 
         #endregion
 
+
+        #region Helpers
         private async Task<Response<List<PTPQuestionDTO>>> GetRandomQuestionsAsync(InterviewQuestionType questionType, InterviewCategory category, int questionCount)
         {
             try
@@ -120,7 +122,7 @@ namespace Optern.Infrastructure.Services.VInterviewService
             }
         }
 
-
+        #endregion
 
 
     }
