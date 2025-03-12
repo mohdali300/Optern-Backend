@@ -1,4 +1,5 @@
 ﻿using Optern.Application.DTOs.Question;
+using Optern.Domain.Entities;
 using Optern.Domain.Extensions;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Reflection.Emit;
@@ -299,9 +300,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 await _context.SaveChangesAsync();
 
-                //string cacheKey = $"InterviewTimeSlots_{interview.Category}_{interview.QusestionType}_{interview.ScheduledDate}";
-                //await _cacheService.RemoveDataAsync(cacheKey);
-
                 await transaction.CommitAsync();
 
                 return Response<bool>.Success(true, "Interview cancelled successfully.", 200);
@@ -361,6 +359,119 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         #endregion
 
+        #region Start PTP Interview Session
+        public async Task<Response<bool>> StartPTPInterviewSessionAsync(int interviewId, string userId)
+        {
+            if (string.IsNullOrEmpty(userId) || interviewId == 0)
+            {
+                return Response<bool>.Failure(false, "Invalid user or interview id.", 400);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var interview = await _context.PTPInterviews.Include(ptp => ptp.PeerToPeerInterviewUsers)
+                    .Where(ptp => ptp.Id == interviewId).FirstOrDefaultAsync();
+                if (interview == null)
+                {
+                    return Response<bool>.Failure(false, "Interview not found.", 404);
+                }
+
+                var isParticipant = interview.PeerToPeerInterviewUsers.Any(ptp => ptp.UserID == userId);
+                if (!isParticipant)
+                {
+                    return Response<bool>.Failure(false, "This user isn’t a participant in this interview.", 403);
+                }
+
+                // if (!IsInTime(interview.ScheduledTime, interview.ScheduledDate!))
+                // {
+                //     return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
+                // }
+                if (interview.SlotState != TimeSlotState.TakenByTwo)
+                {
+                    return Response<bool>.Failure(false, "Interview doesn’t have another peer, try to schedule another one with a partner.", 400);
+                }
+
+                interview.Status = InterviewStatus.InProgress;
+                await _unitOfWork.PTPInterviews.UpdateAsync(interview);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "Interview session strated.", 200);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Database update error: {ex.Message}", 500);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        } 
+        #endregion
+
+        #region End PTP Interview Session
+        public async Task<Response<bool>> EndPTPInterviewSessionAsync(int interviewId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var interview = await _context.PTPInterviews.Include(ptp => ptp.PeerToPeerInterviewUsers)
+                    .Where(ptp => ptp.Id == interviewId).FirstOrDefaultAsync();
+                if (interview == null)
+                {
+                    return Response<bool>.Failure(false, "Interview not found.", 404);
+                }
+                if(interview.Status!= InterviewStatus.InProgress)
+                {
+                    return Response<bool>.Failure(false, "Interview didn’t begin to be ended.", 400);
+                }
+                interview.Status = InterviewStatus.Completed;
+                await _unitOfWork.PTPInterviews.UpdateAsync(interview);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                return Response<bool>.Success(true, "Interview session ended.", 200);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Database update error: {ex.Message}", 500);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
+            }
+        }
+        #endregion
+
+        #region Get User Current PTP Interview Session
+        public async Task<Response<PTPInterviewDTO>> GetUserCurrentPTPInterviewSessionAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), "Invalid user id.", 400);
+            }
+            try
+            {
+                var interview = await _context.PTPInterviews.Include(i => i.PeerToPeerInterviewUsers)
+                    .FirstOrDefaultAsync(i => i.Status == InterviewStatus.InProgress
+                        && i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId));
+
+                return interview == null
+                    ? Response<PTPInterviewDTO>.Success(new PTPInterviewDTO(), "User has no running interviews.", 204)
+                    : Response<PTPInterviewDTO>.Success(_mapper.Map<PTPInterviewDTO>(interview), "Interview found.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<PTPInterviewDTO>.Failure(new PTPInterviewDTO(), $"Server error: {ex.Message}.", 500);
+            }
+        } 
+        #endregion
+
 
         #region Helpers
 
@@ -389,6 +500,16 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 _ => TimeSpan.Zero
             };
         }
+
+        private bool IsInTime(InterviewTimeSlot timeSlot,string date)
+        {
+            var scheduledTime = GetTimeSpanFromEnum(timeSlot);
+            DateTime scheduledDate = DateTime.Parse(date);
+            var interviewStartTime = scheduledDate.Date + scheduledTime;
+
+            return interviewStartTime >= DateTime.UtcNow && interviewStartTime <= DateTime.UtcNow.AddHours(1);
+        }
+
         private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForInterview(int interviewId, string userId)
         {
             var ptpUser = await _unitOfWork.PTPUsers
