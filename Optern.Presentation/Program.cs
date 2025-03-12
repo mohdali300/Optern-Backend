@@ -7,6 +7,7 @@ using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
 using Optern.Presentation.GraphQlApi.Skill.Mutation;
 using Optern.Presentation.GraphQlApi.User.Mutation;
 using Optern.Presentation.GraphQlApi.User.Query;
+using Optern.Presentation.GraphQlApi.VInterview.Mutation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +85,7 @@ builder.Services
 .AddType<EducationMutation>()
 .AddType<SkillMutation>()
 .AddType<ExperienceMutation>()
+.AddType<VInterviewMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 
@@ -108,7 +110,8 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("http://localhost:3000")//"http://127.0.0.1:5500"
+		policy.WithOrigins("http://127.0.0.1:5500")//"http://127.0.0.1:5500"   "http://localhost:3000" 
+
               .AllowAnyHeader()
 			  .AllowAnyMethod()
 			  .AllowCredentials();
@@ -144,6 +147,7 @@ using (var scope = app.Services.CreateScope())
 
 app.MapHub<ChatHub>("/Chat");
 app.MapHub<NotificationHub>("/Notification");
+app.MapHub<PTPInterviewHub>("/PTPInterview");
 app.MapControllers();
 app.MapGraphQL("/ui/graphql");
 app.UseGoogleAuthMiddleware();

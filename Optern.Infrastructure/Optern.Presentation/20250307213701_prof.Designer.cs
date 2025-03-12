@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250307213701_prof")]
+    partial class prof
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -521,13 +524,14 @@ namespace Optern.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime?>("EndDate")
+                    b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsCurrentlyWork")
                         .HasColumnType("boolean");
 
                     b.Property<string>("JobDescription")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -537,6 +541,7 @@ namespace Optern.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Location")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -550,6 +555,7 @@ namespace Optern.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
+                        .IsUnique()
                         .HasDatabaseName("IX_Experience_UserId");
 
                     b.ToTable("Experiences", (string)null);
@@ -761,9 +767,6 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<int>("PTPUserId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("VInterviewId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PTPInterviewId");
@@ -772,8 +775,6 @@ namespace Optern.Infrastructure.Migrations
                         .HasDatabaseName("IX_PTPQuestionInterview_PTPQuestionId");
 
                     b.HasIndex("PTPUserId");
-
-                    b.HasIndex("VInterviewId");
 
                     b.ToTable("PTPQuestionInterviews", (string)null);
                 });
@@ -1499,9 +1500,9 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("QusestionType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("ScheduledTime")
+                        .HasColumnType("timestamp")
+                        .HasComment("ScheduledTime must be in the future and is required.");
 
                     b.Property<string>("SpeechAnalysisResult")
                         .IsRequired()
@@ -1520,6 +1521,51 @@ namespace Optern.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_VInterviews_ScheduledTime_Future", "\"ScheduledTime\" > NOW()");
                         });
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.VInterviewQuestions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("VInterviewID")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VQuestionID")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VInterviewID");
+
+                    b.HasIndex("VQuestionID");
+
+                    b.ToTable("VInterviewQuestions", (string)null);
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.VQuestions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Answer")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasComment("Content of the question with a maximum of 500 characters.");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VQuestions", (string)null);
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
@@ -1869,10 +1915,6 @@ namespace Optern.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Optern.Domain.Entities.VInterview", null)
-                        .WithMany("VQuestionInterviews")
-                        .HasForeignKey("VInterviewId");
-
                     b.Navigation("PTPInterview");
 
                     b.Navigation("PTPQuestion");
@@ -2192,6 +2234,25 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("VirtualFeedBack");
                 });
 
+            modelBuilder.Entity("Optern.Domain.Entities.VInterviewQuestions", b =>
+                {
+                    b.HasOne("Optern.Domain.Entities.VInterview", "VInterview")
+                        .WithMany("VInterviewQuestions")
+                        .HasForeignKey("VInterviewID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Optern.Domain.Entities.VQuestions", "VQuestions")
+                        .WithMany("VInterviewQuestions")
+                        .HasForeignKey("VQuestionID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("VInterview");
+
+                    b.Navigation("VQuestions");
+                });
+
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
                 {
                     b.HasOne("Optern.Domain.Entities.Room", "Room")
@@ -2359,7 +2420,12 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.VInterview", b =>
                 {
-                    b.Navigation("VQuestionInterviews");
+                    b.Navigation("VInterviewQuestions");
+                });
+
+            modelBuilder.Entity("Optern.Domain.Entities.VQuestions", b =>
+                {
+                    b.Navigation("VInterviewQuestions");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>

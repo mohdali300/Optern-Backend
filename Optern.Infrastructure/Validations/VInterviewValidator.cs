@@ -8,12 +8,12 @@
                 .IsInEnum()
                 .WithMessage("Category must be a valid enum value.");
 
+            RuleFor(x => x.QusestionType)
+                .IsInEnum()
+                .WithMessage("QusestionType must be a valid enum value.");
 
-            RuleFor(x => x.ScheduledTime)
-                .NotEmpty()
-                .WithMessage("ScheduledTime is required.")
-                .GreaterThan(DateTime.Now)
-                .WithMessage("ScheduledTime must be in the future.");
+
+
 
 
         }

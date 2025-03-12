@@ -1,9 +1,11 @@
 ﻿
 
 using Optern.Application.Interfaces.IExperienceService;
+using Optern.Application.Interfaces.IVInterviewService;
 using Optern.Infrastructure.Services.EducationService;
 using Optern.Infrastructure.Services.Experience;
 using Optern.Infrastructure.Services.UserSkillsService;
+using Optern.Infrastructure.Services.VInterviewService;
 
 namespace Optern.Infrastructure.DependencyInjection
 {
@@ -87,6 +89,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IEducationService, EducationService>();
             services.AddScoped<IUserSkillsService, UserSkillsService>();
             services.AddScoped<IExperienceService, ExperienceService>();
+            services.AddScoped<IVInterviewService, VInterviewService>();
 
 
             return services;
