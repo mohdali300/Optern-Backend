@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250312183048_updateVinterview")]
+    partial class updateVinterview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1481,12 +1484,12 @@ namespace Optern.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("VInterviewID")
-                        .IsUnique();
-
                     b.HasIndex("VirtualInterviewId");
 
-                    b.ToTable("VFeedBack", (string)null);
+                    b.ToTable("VFeedBack", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VFeedBack_PerformanceScore", "\"PerformanceScore\" BETWEEN 0 AND 100");
+                        });
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.VInterview", b =>
@@ -1494,8 +1497,6 @@ namespace Optern.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -1509,6 +1510,7 @@ namespace Optern.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("SpeechAnalysisResult")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserId")
@@ -1520,7 +1522,10 @@ namespace Optern.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_VInterview_UserId");
 
-                    b.ToTable("VInterview", (string)null);
+                    b.ToTable("VInterview", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VInterviews_ScheduledTime_Future", "\"ScheduledTime\" > NOW()");
+                        });
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
@@ -2165,12 +2170,6 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.VFeedBack", b =>
                 {
-                    b.HasOne("Optern.Domain.Entities.VInterview", null)
-                        .WithOne("VirtualFeedBack")
-                        .HasForeignKey("Optern.Domain.Entities.VFeedBack", "VInterviewID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Optern.Domain.Entities.VInterview", "VirtualInterview")
                         .WithMany()
                         .HasForeignKey("VirtualInterviewId")
@@ -2182,6 +2181,12 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.VInterview", b =>
                 {
+                    b.HasOne("Optern.Domain.Entities.VFeedBack", "VirtualFeedBack")
+                        .WithOne()
+                        .HasForeignKey("Optern.Domain.Entities.VInterview", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Optern.Domain.Entities.ApplicationUser", "User")
                         .WithMany("JoinedVirtualInterviews")
                         .HasForeignKey("UserId")
@@ -2189,6 +2194,8 @@ namespace Optern.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+
+                    b.Navigation("VirtualFeedBack");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
@@ -2359,9 +2366,6 @@ namespace Optern.Infrastructure.Migrations
             modelBuilder.Entity("Optern.Domain.Entities.VInterview", b =>
                 {
                     b.Navigation("VQuestionInterviews");
-
-                    b.Navigation("VirtualFeedBack")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>

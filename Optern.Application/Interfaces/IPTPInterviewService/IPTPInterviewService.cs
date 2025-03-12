@@ -15,5 +15,8 @@ namespace Optern.Application.Interfaces.IPTPInterviewService
         public Task<Response<bool>> EndPTPInterviewSessionAsync(int interviewId);
         public Task<Response<PTPInterviewDTO>> GetUserCurrentPTPInterviewSessionAsync(string userId);
 
+        public Task<Response<IEnumerable<PastInterviews>>> PastInterviews(string userId);
+
+
     }
 }

@@ -13,12 +13,8 @@ namespace Optern.Infrastructure.Configurations
             #region Attributes
 
             // Table Name
-            builder.ToTable("VFeedBack", t =>
-            {
-                t.HasCheckConstraint(
-                    "CK_VFeedBack_PerformanceScore",
-                    "\"PerformanceScore\" BETWEEN 0 AND 100");
-            });
+            builder.ToTable("VFeedBack");
+           
             // Primary Key
             builder.HasKey(f => f.Id);
             builder.Property(ur => ur.Id)

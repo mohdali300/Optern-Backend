@@ -7,12 +7,7 @@
             #region Attributes
 
             //Table Name
-            builder.ToTable("VInterview", t =>
-            {
-                t.HasCheckConstraint(
-                    "CK_VInterviews_ScheduledTime_Future",
-                    "\"ScheduledTime\" > NOW()");  
-            });
+            builder.ToTable("VInterview");
             // Primary Key
 
             builder.HasKey(v => v.Id);
@@ -41,11 +36,11 @@
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(v => v.VirtualFeedBack)
-                .WithOne()
-                .HasForeignKey<VInterview>(v => v.Id)
-                .OnDelete(DeleteBehavior.Cascade);
+           .WithOne()
+           .HasForeignKey<VFeedBack>(vf => vf.VInterviewID) 
+           .OnDelete(DeleteBehavior.Cascade);
 
-           
+
             #endregion
         }
     }
