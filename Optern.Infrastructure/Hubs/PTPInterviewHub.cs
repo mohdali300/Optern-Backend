@@ -95,7 +95,7 @@ namespace Optern.Infrastructure.Hubs
                 if (response.IsSuccess)
                 {
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                    await Clients.Caller.SendAsync("EndSession", "Interview session ended.");
+                    await Clients.Group($"ptpInterview{sessionId}").SendAsync("EndSession", "Interview session ended.");
                 }
                 else
                 {
@@ -116,7 +116,7 @@ namespace Optern.Infrastructure.Hubs
                 var response = await _pTPInterviewService.CancelPTPInterviewAsync(sessionId, userId);
                 if (response.IsSuccess)
                 {
-                    await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("CanceledSession", "Interview session Canceled.");
+                    await Clients.Caller.SendAsync("CancelledSession", "Interview session Cancelled.");
                 }
                 else
                 {
@@ -171,14 +171,15 @@ namespace Optern.Infrastructure.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        // Helpers
 
-        // Helpers 
         #region BroadcastRemainingTime
+
         private async Task BroadcastRemainingTime(int sessionId)
         {
             if (_sessionEndTimeMap.TryGetValue(sessionId, out var endTime))
             {
-                var remainingTime = endTime - DateTime.UtcNow.AddHours(2).ToUniversalTime(); 
+                var remainingTime = endTime - DateTime.UtcNow.AddHours(2).ToUniversalTime();
 
                 if (remainingTime.TotalSeconds <= 0)
                 {
@@ -188,7 +189,7 @@ namespace Optern.Infrastructure.Hubs
                     }
                     _sessionEndTimeMap.TryRemove(sessionId, out _);
                     await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("TimerEnded", "The interview session time is over.");
-                   await EndInterviewSession(sessionId);
+                    await EndInterviewSession(sessionId);
                 }
                 else
                 {
@@ -196,9 +197,11 @@ namespace Optern.Infrastructure.Hubs
                 }
             }
         }
-        #endregion
+
+        #endregion BroadcastRemainingTime
 
         #region Start Timer
+
         private void StartInterviewTimer(int sessionId, DateTime interviewStartDateTime)
         {
             interviewStartDateTime = DateTime.SpecifyKind(interviewStartDateTime, DateTimeKind.Utc);
@@ -213,9 +216,10 @@ namespace Optern.Infrastructure.Hubs
             _sessionTimers[sessionId] = timer;
         }
 
-        #endregion
+        #endregion Start Timer
 
         #region Validate Join To Interview Process
+
         private async Task<(bool isValid, DateTime interviewStartDateTime)> ValidateInterviewJoinProcess(int sessionId)
         {
             var interview = await _pTPInterviewService.GetInterviewTimeSlot(sessionId);
@@ -251,7 +255,7 @@ namespace Optern.Infrastructure.Hubs
 
             return (true, interviewStartDateTime);
         }
-        #endregion
 
+        #endregion Validate Join To Interview Process
     }
 }

@@ -142,7 +142,9 @@ app.UseHangfireDashboard("/hangfire");
 using (var scope = app.Services.CreateScope())
 {
 	var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpJob>();
+	var interviewStatusScheduler = scope.ServiceProvider.GetRequiredService<PTPInterviewStatusJob>();
 	userCleanUpScheduler.UserCleanUp();
+	interviewStatusScheduler.InterviewStatus();
 }
 
 app.MapHub<ChatHub>("/Chat");
