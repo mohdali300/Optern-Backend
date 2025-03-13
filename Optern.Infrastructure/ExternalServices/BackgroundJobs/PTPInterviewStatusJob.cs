@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Optern.Infrastructure.ExternalServices.BackgroundJobs
 {
     public class PTPInterviewStatusJob
@@ -12,7 +7,7 @@ namespace Optern.Infrastructure.ExternalServices.BackgroundJobs
         {
             RecurringJob.AddOrUpdate<PTPInterviewService>(
                 "ChangeInterviewStatus",
-                service => service.ChangeInterviewStatus(),
+                service => service.HandleInterviewStatus(),
                 Cron.Daily()
                 );
         }

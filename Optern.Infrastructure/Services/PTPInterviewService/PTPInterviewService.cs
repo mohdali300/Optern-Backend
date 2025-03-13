@@ -567,7 +567,8 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         #endregion Past Interviews
 
-        public async Task ChangeInterviewStatus()
+        #region Handle Interview Status
+        public async Task HandleInterviewStatus()
         {
             var interviews = await _context.PTPInterviews
                 .Where(i => i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress)
@@ -590,7 +591,8 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     }
                 }
             }
-        }
+        } 
+        #endregion
 
         public async Task<Response<PTPInterview>> GetInterviewTimeSlot(int interviewId)
         {
