@@ -144,7 +144,7 @@ namespace Optern.Infrastructure.Hubs
                     };
                     await _userNotificationService.SaveNotification(userNotification);
                 }
-                await Clients.All.SendAsync("ReceiveNotificationAll", title, message, DateTime.UtcNow);
+                await Clients.All.SendAsync("ReceiveNotificationAll", title, message, DateTime.UtcNow,Url);
                 return Response<bool>.Success(true, "Notification sent successfully", 200);
             }
             catch (Exception ex)
@@ -185,7 +185,7 @@ namespace Optern.Infrastructure.Hubs
                 {
                     foreach (var connectionId in connections)
                     {
-                        await Clients.Client(connectionId).SendAsync("ReceiveNotificationUser", title, message, DateTime.UtcNow);
+                        await Clients.Client(connectionId).SendAsync("ReceiveNotificationAll", title, message, DateTime.UtcNow,Url);
                     }
                 }
                 return Response<bool>.Success(true, "Notification sent successfully", 200);
@@ -236,7 +236,7 @@ namespace Optern.Infrastructure.Hubs
                     await _userNotificationService.SaveNotification(userNotification);
                 }
 
-                await Clients.Group(roomId).SendAsync("ReceiveNotificationRoom", title, message, DateTime.UtcNow);
+                await Clients.Group(roomId).SendAsync("ReceiveNotificationRoom", title, message, DateTime.UtcNow,Url);
 
                 return Response<bool>.Success(true, "Notification sent successfully", 200);
             }
