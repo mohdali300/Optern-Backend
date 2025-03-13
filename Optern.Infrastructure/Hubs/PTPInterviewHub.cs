@@ -32,7 +32,6 @@ namespace Optern.Infrastructure.Hubs
                             }
                         }
                     );
-
                     var currentInterviewResponse = await _pTPInterviewService.GetUserCurrentPTPInterviewSessionAsync(userId);
                     if (currentInterviewResponse.IsSuccess && currentInterviewResponse.StatusCode == 200)
                     {
@@ -57,58 +56,33 @@ namespace Optern.Infrastructure.Hubs
         {
             try
             {
+                var (isValid, interviewStartDateTime) = await ValidateInterviewJoinProcess(sessionId);
+                if (!isValid)
+                {
+                    return;
+                }
+
                 var response = await _pTPInterviewService.StartPTPInterviewSessionAsync(sessionId, userId);
                 if (response.IsSuccess)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                    await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully.");
+                    await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully");
 
                     if (!_sessionEndTimeMap.ContainsKey(sessionId))
                     {
-                        var endTime = DateTime.UtcNow.AddHours(1);
-                        _sessionEndTimeMap[sessionId] = endTime;
-
-                        var timer = new Timer(async _ =>
-                        {
-                            await BroadcastRemainingTime(sessionId);
-                        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-
-                        _sessionTimers[sessionId] = timer;
+                        StartInterviewTimer(sessionId, interviewStartDateTime);
                     }
 
                     await BroadcastRemainingTime(sessionId);
                 }
                 else
                 {
-                    await Clients.Caller.SendAsync("FaliedJoinToSession", "Failed to start interview session.");
+                    await Clients.Caller.SendAsync("FailedJoinToSession", "Failed to start interview session");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
                 await Clients.Caller.SendAsync("JoinSessionError", "Server error try again");
-            }
-        }
-
-        private async Task BroadcastRemainingTime(int sessionId)
-        {
-            if (_sessionEndTimeMap.TryGetValue(sessionId, out var endTime))
-            {
-                var remainingTime = endTime - DateTime.UtcNow;
-
-                if (remainingTime.TotalSeconds <= 0)
-                {
-                    if (_sessionTimers.TryRemove(sessionId, out var timer))
-                    {
-                        timer.Dispose();
-                    }
-                    _sessionEndTimeMap.TryRemove(sessionId, out _);
-                    await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("TimerEnded", "The interview session time is over.");
-                }
-                else
-                {
-                    await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("UpdateTimer", remainingTime.ToString(@"hh\:mm\:ss"));
-                }
             }
         }
 
@@ -196,5 +170,88 @@ namespace Optern.Infrastructure.Hubs
             }
             await base.OnDisconnectedAsync(exception);
         }
+
+
+        // Helpers 
+        #region BroadcastRemainingTime
+        private async Task BroadcastRemainingTime(int sessionId)
+        {
+            if (_sessionEndTimeMap.TryGetValue(sessionId, out var endTime))
+            {
+                var remainingTime = endTime - DateTime.UtcNow.AddHours(2).ToUniversalTime(); 
+
+                if (remainingTime.TotalSeconds <= 0)
+                {
+                    if (_sessionTimers.TryRemove(sessionId, out var timer))
+                    {
+                        timer.Dispose();
+                    }
+                    _sessionEndTimeMap.TryRemove(sessionId, out _);
+                    await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("TimerEnded", "The interview session time is over.");
+                   await EndInterviewSession(sessionId);
+                }
+                else
+                {
+                    await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("UpdateTimer", remainingTime.ToString(@"hh\:mm\:ss"));
+                }
+            }
+        }
+        #endregion
+
+        #region Start Timer
+        private void StartInterviewTimer(int sessionId, DateTime interviewStartDateTime)
+        {
+            interviewStartDateTime = DateTime.SpecifyKind(interviewStartDateTime, DateTimeKind.Utc);
+            var endTime = interviewStartDateTime.ToUniversalTime().AddHours(1);
+            _sessionEndTimeMap[sessionId] = endTime;
+
+            var timer = new Timer(async _ =>
+            {
+                await BroadcastRemainingTime(sessionId);
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
+            _sessionTimers[sessionId] = timer;
+        }
+
+        #endregion
+
+        #region Validate Join To Interview Process
+        private async Task<(bool isValid, DateTime interviewStartDateTime)> ValidateInterviewJoinProcess(int sessionId)
+        {
+            var interview = await _pTPInterviewService.GetInterviewTimeSlot(sessionId);
+            if (interview == null)
+            {
+                await Clients.Caller.SendAsync("NotFoundInterview", "This Interview Not Found");
+                return (false, DateTime.MinValue);
+            }
+
+            var interviewTime = _pTPInterviewService.GetTimeSpanFromEnum(interview.Data.ScheduledTime);
+            var interviewDate = DateTime.Parse(interview.Data.ScheduledDate).Date;
+            var interviewStartDateTime = interviewDate.Add(interviewTime);
+            var interviewEndTime = interviewStartDateTime.AddHours(1);
+            var currentTime = DateTime.UtcNow.AddHours(2);
+
+            if (currentTime.Date != interviewDate)
+            {
+                await Clients.Caller.SendAsync("WrongInterviewDate", $"You can only join on the scheduled day: {interview.Data.ScheduledDate}");
+                return (false, DateTime.MinValue);
+            }
+
+            if (currentTime < interviewStartDateTime)
+            {
+                await Clients.Caller.SendAsync("InterviewNotStarted", $"This Interview Not Started Yet, will start at: {interviewTime}");
+                return (false, DateTime.MinValue);
+            }
+
+            if (currentTime > interviewEndTime)
+            {
+                await Clients.Caller.SendAsync("InterviewEnded", "This Interview Ended");
+                return (false, DateTime.MinValue);
+            }
+
+            return (true, interviewStartDateTime);
+        }
+        #endregion
+
     }
 }

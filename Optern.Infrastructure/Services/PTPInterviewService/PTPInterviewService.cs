@@ -572,23 +572,29 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         #endregion
 
-
-
-        #region Helpers
-
-        private string FormatTimeRemaining(TimeSpan timeRemaining)
+        public async Task<Response<PTPInterview>> GetInterviewTimeSlot(int interviewId)
         {
-            if (timeRemaining.TotalSeconds <= 0)
-                return "Interview has started or passed";
+            var interview = await _unitOfWork.PTPInterviews.GetByIdAsync(interviewId);
+            if (interview == null)
+            {
+                return Response<PTPInterview>.Failure("Interview Not Found", 404);
+            }
 
-            if (timeRemaining.TotalMinutes < 1)
-                return "Starting now!";
+            //var interviewDto = new PTPInterviewDTO()
+            //{
+            //    Id = interview.Id,
+            //    Category = interview.Category,
+            //    ScheduledDate = interview.ScheduledDate,
+            //    ScheduledTimeDisplay = interview.ScheduledTime.ToString(),
+            //    Status = interview.Status,
+            //    SlotState = interview.SlotState
+            //};
 
-            return $"{timeRemaining.Days} d, {timeRemaining.Hours} h, {timeRemaining.Minutes} min";
+            return Response<PTPInterview>.Success(interview, "Interview Fetched Successfully", 200);
         }
 
-
-        private TimeSpan GetTimeSpanFromEnum(InterviewTimeSlot timeSlot)
+        #region Helpers
+        public TimeSpan GetTimeSpanFromEnum(InterviewTimeSlot timeSlot)
         {
             return timeSlot switch
             {
@@ -600,6 +606,16 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
                 _ => TimeSpan.Zero
             };
+        }
+        private string FormatTimeRemaining(TimeSpan timeRemaining)
+        {
+            if (timeRemaining.TotalSeconds <= 0)
+                return "Interview has started or passed";
+
+            if (timeRemaining.TotalMinutes < 1)
+                return "Starting now!";
+
+            return $"{timeRemaining.Days} d, {timeRemaining.Hours} h, {timeRemaining.Minutes} min";
         }
 
         private bool IsInTime(InterviewTimeSlot timeSlot,string date)
