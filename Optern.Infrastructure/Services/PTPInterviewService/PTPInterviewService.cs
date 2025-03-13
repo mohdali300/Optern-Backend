@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Services.PTPInterviewService
 {
@@ -572,7 +573,30 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         #endregion
 
-
+        public async Task ChangeInterviewStatus()
+        {
+            var interviews = await _context.PTPInterviews
+                .Where(i => i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress)
+                .ToListAsync();
+            if( interviews.Any() )
+            {
+                foreach( var interview in interviews )
+                {
+                    var time = GetTimeSpanFromEnum(interview.ScheduledTime);
+                    if(TimeOnly.FromDateTime(DateTime.UtcNow).ToTimeSpan() >= time)
+                    {
+                        if(interview.Status == InterviewStatus.InProgress)
+                        {
+                            await EndPTPInterviewSessionAsync(interview.Id);
+                        }
+                        if (interview.Status == InterviewStatus.Scheduled)
+                        {
+                            await DeletePTPInterview(interview);
+                        }
+                    }
+                }
+            }
+        }
 
         #region Helpers
 
@@ -609,6 +633,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             var interviewStartTime = scheduledDate.Date + scheduledTime;
 
             return interviewStartTime >= DateTime.UtcNow && interviewStartTime <= DateTime.UtcNow.AddHours(1);
+        }
+
+        private async Task DeletePTPInterview(PTPInterview interview)
+        {
+            await _unitOfWork.PTPInterviews.DeleteAsync(interview);
+            await _unitOfWork.SaveAsync();
         }
 
         private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForInterview(int interviewId, string userId)

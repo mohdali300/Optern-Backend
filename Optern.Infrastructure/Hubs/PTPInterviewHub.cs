@@ -121,7 +121,7 @@ namespace Optern.Infrastructure.Hubs
                 if (response.IsSuccess)
                 {
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                    await Clients.Caller.SendAsync("EndSession", "Interview session ended.");
+                    await Clients.Group($"ptpInterview{sessionId}").SendAsync("EndSession", "Interview session ended.");
                 }
                 else
                 {
@@ -142,7 +142,7 @@ namespace Optern.Infrastructure.Hubs
                 var response = await _pTPInterviewService.CancelPTPInterviewAsync(sessionId, userId);
                 if (response.IsSuccess)
                 {
-                    await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("CanceledSession", "Interview session Canceled.");
+                    await Clients.Caller.SendAsync("CancelledSession", "Interview session Cancelled.");
                 }
                 else
                 {
