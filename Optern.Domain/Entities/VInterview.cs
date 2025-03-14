@@ -23,7 +23,7 @@ namespace Optern.Domain.Entities
         // Navigation Properties
         public virtual ApplicationUser User { get; set; }
         public virtual VFeedBack VirtualFeedBack { get; set; }
-        public ICollection<PTPQuestionInterview> VQuestionInterviews { get; set; }
+        public ICollection<VQuestionInterview> VQuestionInterviews { get; set; }
 
     }
 }

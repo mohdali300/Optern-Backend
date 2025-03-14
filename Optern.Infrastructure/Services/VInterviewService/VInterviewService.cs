@@ -33,7 +33,8 @@ namespace Optern.Infrastructure.Services.VInterviewService
                     Category = dto.Category,
                     QusestionType = dto.QuestionType,
                     UserId = userId, 
-                    VQuestionInterviews = new List<PTPQuestionInterview>(),
+                    VQuestionInterviews = new List<VQuestionInterview>(),
+                    InterviewDate= DateTime.UtcNow,
                     SpeechAnalysisResult = "" 
                 };
 
@@ -48,13 +49,14 @@ namespace Optern.Infrastructure.Services.VInterviewService
                 }
 
                 var randomQuestions = questionResult.Data;
-                var questionInterviews = randomQuestions.Select(qDto => new PTPQuestionInterview
+                var questionInterviews = randomQuestions.Select(qDto => new VQuestionInterview
                 {
-                    PTPInterviewId = interview.Id,
+                    VInterviewId = interview.Id,
                     PTPQuestionId = qDto.Id,
+                    UserId= userId,
                 }).ToList();
 
-                _context.PTPQuestionInterviews.AddRange(questionInterviews);
+                _context.VQuestionInterviews.AddRange(questionInterviews);
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();

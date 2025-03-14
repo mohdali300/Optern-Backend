@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250313204252_addVinterviewidinquestionconfig")]
+    partial class addVinterviewidinquestionconfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -752,13 +755,16 @@ namespace Optern.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("PTPInterviewId")
+                    b.Property<int?>("PTPInterviewId")
                         .HasColumnType("integer");
 
                     b.Property<int>("PTPQuestionId")
                         .HasColumnType("integer");
 
                     b.Property<int>("PTPUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("VInterviewId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -769,6 +775,8 @@ namespace Optern.Infrastructure.Migrations
                         .HasDatabaseName("IX_PTPQuestionInterview_PTPQuestionId");
 
                     b.HasIndex("PTPUserId");
+
+                    b.HasIndex("VInterviewId");
 
                     b.ToTable("PTPQuestionInterviews", (string)null);
                 });
@@ -1518,36 +1526,6 @@ namespace Optern.Infrastructure.Migrations
                     b.ToTable("VInterview", (string)null);
                 });
 
-            modelBuilder.Entity("Optern.Domain.Entities.VQuestionInterview", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PTPQuestionId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("VInterviewId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PTPQuestionId")
-                        .HasDatabaseName("IX_VQuestionInterview_PTPQuestionId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("VInterviewId");
-
-                    b.ToTable("VQuestionInterviews", (string)null);
-                });
-
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
                 {
                     b.Property<int>("Id")
@@ -1880,8 +1858,7 @@ namespace Optern.Infrastructure.Migrations
                     b.HasOne("Optern.Domain.Entities.PTPInterview", "PTPInterview")
                         .WithMany("PTPQuestionInterviews")
                         .HasForeignKey("PTPInterviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Optern.Domain.Entities.PTPQuestions", "PTPQuestion")
                         .WithMany("PTPQuestionInterviews")
@@ -1895,11 +1872,18 @@ namespace Optern.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Optern.Domain.Entities.VInterview", "VInterview")
+                        .WithMany("VQuestionInterviews")
+                        .HasForeignKey("VInterviewId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("PTPInterview");
 
                     b.Navigation("PTPQuestion");
 
                     b.Navigation("PTPUser");
+
+                    b.Navigation("VInterview");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPUsers", b =>
@@ -2212,33 +2196,6 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Optern.Domain.Entities.VQuestionInterview", b =>
-                {
-                    b.HasOne("Optern.Domain.Entities.PTPQuestions", "PTPQuestion")
-                        .WithMany("VQuestionInterviews")
-                        .HasForeignKey("PTPQuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Optern.Domain.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Optern.Domain.Entities.VInterview", "VInterview")
-                        .WithMany("VQuestionInterviews")
-                        .HasForeignKey("VInterviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PTPQuestion");
-
-                    b.Navigation("User");
-
-                    b.Navigation("VInterview");
-                });
-
             modelBuilder.Entity("Optern.Domain.Entities.WorkSpace", b =>
                 {
                     b.HasOne("Optern.Domain.Entities.Room", "Room")
@@ -2325,8 +2282,6 @@ namespace Optern.Infrastructure.Migrations
             modelBuilder.Entity("Optern.Domain.Entities.PTPQuestions", b =>
                 {
                     b.Navigation("PTPQuestionInterviews");
-
-                    b.Navigation("VQuestionInterviews");
                 });
 
             modelBuilder.Entity("Optern.Domain.Entities.PTPUsers", b =>

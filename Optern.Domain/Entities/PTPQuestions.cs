@@ -20,6 +20,8 @@ namespace Optern.Domain.Entities
         public string Answer {  get; set; }
 
         // Navigation Properties
-        public ICollection<PTPQuestionInterview> PTPQuestionInterviews { get; set; } 
+        public ICollection<PTPQuestionInterview> PTPQuestionInterviews { get; set; }
+        public ICollection<VQuestionInterview> VQuestionInterviews { get; set; }
+
     }
 }
