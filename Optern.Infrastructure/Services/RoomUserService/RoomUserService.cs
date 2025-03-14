@@ -295,6 +295,17 @@
 
                 List<UserRoom> requestsToApprove = new();
 
+
+                // handel add notifications
+                var room = _context.Rooms.FirstOrDefault(r=>r.Id == roomId); 
+                var not = new Notifications{
+                    Title = "🎉 Your Room Join Request is Accepted!",
+                    Message = $"👏 Great news! Your request to join the room **{room.Name}** has been accepted. 🎊 We’re excited to have you on board! 🚀",
+                    Url = $"/room/{roomId}"
+                };
+                _context.Notifications.Add(not);
+                await _context.SaveChangesAsync();
+
                 if (userRoomId.HasValue)
                 {
                     var userRoom = await _context.UserRooms.Include(ur => ur.User).FirstOrDefaultAsync(ur => ur.Id == userRoomId.Value);
@@ -307,6 +318,15 @@
                     userRoom.IsAdmin = false;
                     _context.UserRooms.Attach(userRoom);
                     _context.Entry(userRoom).State = EntityState.Modified;
+
+
+
+                    // handel add notifications
+                    var userNot = new UserNotification{
+                        UserId = userRoom.UserId,
+                        NotificationId = not.Id
+                    };
+                    _context.UserNotifications.Add(userNot);
                 }
                 else
                 {
@@ -323,6 +343,17 @@
                         ur.IsAccepted = true;
                         ur.JoinedAt = DateTime.UtcNow;
                         ur.IsAdmin = false;
+                    });
+
+                    // send notifications
+                    requestsToApprove.ForEach(ur =>
+                    {
+                        var userNot = new UserNotification
+                        {
+                            UserId = ur.UserId, 
+                            NotificationId = not.Id 
+                        };
+                        _context.UserNotifications.Add(userNot);
                     });
                 }
                 

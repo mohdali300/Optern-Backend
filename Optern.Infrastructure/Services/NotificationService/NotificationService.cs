@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Optern.Application.DTOs.Notification;
 using Optern.Domain.Entities;
+using Optern.Infrastructure.Hubs;
 
 namespace Optern.Application.Services.NotificationService
 {
-    public class NotificationService(IUnitOfWork unitOfWork, OpternDbContext context, IRoomService roomService, IMapper _mapper) : INotificationService
+    public class NotificationService(IUnitOfWork unitOfWork, OpternDbContext context, IRoomService roomService, IMapper _mapper,IHubContext<NotificationHub> notificationHubContext) : INotificationService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
@@ -25,7 +26,7 @@ namespace Optern.Application.Services.NotificationService
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
-
+        
             try
             {
 

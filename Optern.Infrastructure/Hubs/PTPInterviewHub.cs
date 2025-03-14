@@ -57,10 +57,10 @@ namespace Optern.Infrastructure.Hubs
             try
             {
                 var (isValid, interviewStartDateTime) = await ValidateInterviewJoinProcess(sessionId);
-                if (!isValid)
-                {
-                    return;
-                }
+                // if (!isValid)
+                // {
+                //     return;
+                // }
 
                 var response = await _pTPInterviewService.StartPTPInterviewSessionAsync(sessionId, userId);
                 if (response.IsSuccess)
@@ -235,23 +235,23 @@ namespace Optern.Infrastructure.Hubs
             var interviewEndTime = interviewStartDateTime.AddHours(1);
             var currentTime = DateTime.UtcNow.AddHours(2);
 
-            if (currentTime.Date != interviewDate)
-            {
-                await Clients.Caller.SendAsync("WrongInterviewDate", $"You can only join on the scheduled day: {interview.Data.ScheduledDate}");
-                return (false, DateTime.MinValue);
-            }
+            // if (currentTime.Date != interviewDate)
+            // {
+            //     await Clients.Caller.SendAsync("WrongInterviewDate", $"You can only join on the scheduled day: {interview.Data.ScheduledDate}");
+            //     return (false, DateTime.MinValue);
+            // }
 
-            if (currentTime < interviewStartDateTime)
-            {
-                await Clients.Caller.SendAsync("InterviewNotStarted", $"This Interview Not Started Yet, will start at: {interviewTime}");
-                return (false, DateTime.MinValue);
-            }
+            // if (currentTime < interviewStartDateTime)
+            // {
+            //     await Clients.Caller.SendAsync("InterviewNotStarted", $"This Interview Not Started Yet, will start at: {interviewTime}");
+            //     return (false, DateTime.MinValue);
+            // }
 
-            if (currentTime > interviewEndTime)
-            {
-                await Clients.Caller.SendAsync("InterviewEnded", "This Interview Ended");
-                return (false, DateTime.MinValue);
-            }
+            // if (currentTime > interviewEndTime)
+            // {
+            //     await Clients.Caller.SendAsync("InterviewEnded", "This Interview Ended");
+            //     return (false, DateTime.MinValue);
+            // }
 
             return (true, interviewStartDateTime);
         }
