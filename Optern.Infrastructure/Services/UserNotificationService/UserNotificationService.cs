@@ -149,20 +149,19 @@ namespace Optern.Application.Services.UserNotificationService
         #endregion
 
         #region Get User Notifications (Read - Not Read)
-        public async Task<Response<IEnumerable<GetUserNotificationDTO>>> GetUserNotifications(string userId, string roomId, bool? isRead = null, int lastIdx = 0, int limit = 10)
+        public async Task<Response<IEnumerable<GetUserNotificationDTO>>> GetUserNotifications(string userId, bool? isRead = null)
         {
             try
             {
                 var isUserExist = await _userService.IsUserExist(userId);
-                var isRoomExist = await _unitOfWork.Rooms.AnyAsync(r => r.Id == roomId);  
 
-                if (!isUserExist || !isRoomExist)
+                if (!isUserExist)
                 {
-                    return Response<IEnumerable<GetUserNotificationDTO>>.Failure(new List<GetUserNotificationDTO>(), "Invalid user ID or room ID.", 400);
+                    return Response<IEnumerable<GetUserNotificationDTO>>.Failure(new List<GetUserNotificationDTO>(), "Invalid user ID.", 400);
                 }
                 var query = _context.UserNotifications
                   .AsNoTracking()
-                  .Where(un => un.UserId == userId && un.Notifications.RoomId == roomId);
+                  .Where(un => un.UserId == userId);
 
                 if (isRead.HasValue)
                 {
@@ -171,8 +170,6 @@ namespace Optern.Application.Services.UserNotificationService
                 var userNotifications = await query
                      .Include(un => un.Notifications) 
                      .OrderByDescending(un => un.Notifications.CreatedTime)
-                     .Skip(lastIdx)
-                     .Take(limit)
                      .ToListAsync();
 
                  var notificationDTOs = _mapper.Map<IEnumerable<GetUserNotificationDTO>>(userNotifications);
