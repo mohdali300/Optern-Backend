@@ -615,6 +615,41 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             return Response<PTPInterview>.Success(interview, "Interview Fetched Successfully", 200);
         }
 
+        public Response<InterviewCachedData> LoadInterviewCachedData(int interviewId)
+        {
+            if(interviewId == 0)
+            {
+                return Response<InterviewCachedData>.Failure(new InterviewCachedData(),$"Invalid InterviewID",400);
+            }
+            try
+            {
+                var code = _cacheService.GetData<string>($"session:{interviewId}:code");
+                var output = _cacheService.GetData<string>($"session:{interviewId}:output");
+                var role = _cacheService.GetData<string>($"session:{interviewId}:role");
+                var language = _cacheService.GetData<string>($"session:{interviewId}:language");
+                var timer = _cacheService.GetData<string>($"session:{interviewId}:timer");
+                InterviewCachedData cachedData = new InterviewCachedData()
+                {
+                    Code = code ?? string.Empty,
+                    Output = output ?? string.Empty,
+                    UserRole = role ?? string.Empty,
+                    Language = language ?? string.Empty,
+                    Timer = timer ?? string.Empty
+                };
+                return  Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200) ;
+                                          
+            }
+            catch(Exception ex)
+            {
+                return Response<InterviewCachedData>.Failure(
+                 new InterviewCachedData(),
+                  $"An error occurred: {ex.Message}",
+                  500
+              );
+            }
+
+        }
+
         #region Helpers
 
         public TimeSpan GetTimeSpanFromEnum(InterviewTimeSlot timeSlot)

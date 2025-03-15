@@ -1,9 +1,12 @@
-﻿using System.Collections.Concurrent;
+﻿using Optern.Infrastructure.ExternalServices.CacheService;
+using System.Collections.Concurrent;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 using Task = System.Threading.Tasks.Task;
 
 namespace Optern.Infrastructure.Hubs
 {
-    public class PTPInterviewHub(IPTPInterviewService pTPInterviewService, IUserService userService, IHubContext<PTPInterviewHub> hubContext) : Hub
+    public class PTPInterviewHub(IPTPInterviewService pTPInterviewService, IUserService userService, IHubContext<PTPInterviewHub> hubContext
+        , ICacheService cacheService) : Hub
     {
         private readonly IPTPInterviewService _pTPInterviewService = pTPInterviewService;
         private readonly IUserService _userService = userService;
@@ -11,7 +14,7 @@ namespace Optern.Infrastructure.Hubs
         private readonly IHubContext<PTPInterviewHub> _hubContext = hubContext;
         private static readonly ConcurrentDictionary<int, DateTime> _sessionEndTimeMap = new();
         private static readonly ConcurrentDictionary<int, Timer> _sessionTimers = new();
-
+        private readonly ICacheService _cacheService = cacheService;
         public override async Task OnConnectedAsync()
         {
             try
@@ -38,8 +41,6 @@ namespace Optern.Infrastructure.Hubs
                         int sessionId = currentInterviewResponse.Data.Id;
                         await Groups.AddToGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
                         await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully.");
-
-                        await BroadcastRemainingTime(sessionId);
                     }
                 }
                 await base.OnConnectedAsync();
@@ -72,7 +73,6 @@ namespace Optern.Infrastructure.Hubs
                     {
                         StartInterviewTimer(sessionId, interviewStartDateTime);
                     }
-
                     await BroadcastRemainingTime(sessionId);
                 }
                 else
@@ -132,24 +132,31 @@ namespace Optern.Infrastructure.Hubs
         [HubMethodName("UpdateCode")]
         public async Task UpdateCode(int sessionId, string code)
         {
+               _cacheService.SetData($"session:{sessionId}:code", code, TimeSpan.FromHours(24));
+
             await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("UpdatedCode", code);
+           
         }
 
         [HubMethodName("CodeOutput")]
         public async Task CodeOutput(int sessionId, string output)
         {
+            _cacheService.SetData($"session:{sessionId}:output", output, TimeSpan.FromHours(24));
+
             await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("CodeOutput", output);
         }
 
         [HubMethodName("SwapRole")]
         public async Task SwapRole(int sessionId, string userId)
         {
+            _cacheService.SetData($"session:{sessionId}:SwapRole", userId, TimeSpan.FromHours(24));
             await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("SwapRole", userId);
         }
 
         [HubMethodName("Language")]
         public async Task Language(int sessionId, string language)
         {
+            _cacheService.SetData($"session:{sessionId}:language", language, TimeSpan.FromHours(24));
             await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("ReceiveLanguage", language);
         }
 
@@ -188,11 +195,12 @@ namespace Optern.Infrastructure.Hubs
                         timer.Dispose();
                     }
                     _sessionEndTimeMap.TryRemove(sessionId, out _);
-                    await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("TimerEnded", "The interview session time is over.");
-                    await EndInterviewSession(sessionId);
+                    await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("TimerEnded", "The interview session time is over");
+                   await EndInterviewSession(sessionId);
                 }
                 else
                 {
+                     _cacheService.SetData($"session:{sessionId}:timer", remainingTime.ToString(@"hh\:mm\:ss"), TimeSpan.FromHours(1));
                     await _hubContext.Clients.Group($"ptpInterview{sessionId}").SendAsync("UpdateTimer", remainingTime.ToString(@"hh\:mm\:ss"));
                 }
             }
@@ -228,7 +236,7 @@ namespace Optern.Infrastructure.Hubs
                 await Clients.Caller.SendAsync("NotFoundInterview", "This Interview Not Found");
                 return (false, DateTime.MinValue);
             }
-
+             
             var interviewTime = _pTPInterviewService.GetTimeSpanFromEnum(interview.Data.ScheduledTime);
             var interviewDate = DateTime.Parse(interview.Data.ScheduledDate).Date;
             var interviewStartDateTime = interviewDate.Add(interviewTime);
