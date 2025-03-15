@@ -1,6 +1,4 @@
-﻿
-
-using Optern.Application.DTOs.Question;
+﻿using Optern.Application.DTOs.Question;
 
 namespace Optern.Application.Interfaces.IPTPInterviewService
 {
@@ -14,9 +12,11 @@ namespace Optern.Application.Interfaces.IPTPInterviewService
         public Task<Response<bool>> StartPTPInterviewSessionAsync(int interviewId, string userId);
         public Task<Response<bool>> EndPTPInterviewSessionAsync(int interviewId);
         public Task<Response<PTPInterviewDTO>> GetUserCurrentPTPInterviewSessionAsync(string userId);
-
+        public System.Threading.Tasks.Task HandleInterviewStatus();
         public Task<Response<IEnumerable<PastInterviews>>> PastInterviews(string userId);
-
+        public Task<Response<PTPInterview>> GetInterviewTimeSlot(int interviewId);
+        public TimeSpan GetTimeSpanFromEnum(InterviewTimeSlot timeSlot);
+        public Response<InterviewCachedData> LoadInterviewCachedData(int interviewId);
 
     }
 }

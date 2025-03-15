@@ -110,7 +110,7 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("http://127.0.0.1:5500")//"http://127.0.0.1:5500"   "http://localhost:3000" 
+		policy.WithOrigins("http://localhost:3000")//"http://127.0.0.1:5500"   "http://localhost:3000" 
 
               .AllowAnyHeader()
 			  .AllowAnyMethod()
@@ -142,7 +142,9 @@ app.UseHangfireDashboard("/hangfire");
 using (var scope = app.Services.CreateScope())
 {
 	var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpJob>();
+	var interviewStatusScheduler = scope.ServiceProvider.GetRequiredService<PTPInterviewStatusJob>();
 	userCleanUpScheduler.UserCleanUp();
+	interviewStatusScheduler.InterviewStatus();
 }
 
 app.MapHub<ChatHub>("/Chat");

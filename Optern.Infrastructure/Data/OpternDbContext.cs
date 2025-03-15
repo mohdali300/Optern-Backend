@@ -62,8 +62,7 @@ namespace Optern.Infrastructure.Data
         public DbSet<UserTasks> UserTasks{ get; set; }
         public DbSet<VFeedBack> VFeedBack { get; set; }
         public DbSet<VInterview> VInterview { get; set; }
-
-        
+        public DbSet<VQuestionInterview> VQuestionInterviews { get; set; }
         public DbSet<WorkSpace> WorkSpaces  { get; set; }
         public DbSet<BookMarkedTask> BookMarkedTasks { get; set; }
 

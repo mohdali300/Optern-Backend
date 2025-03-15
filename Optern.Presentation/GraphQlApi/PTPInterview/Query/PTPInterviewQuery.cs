@@ -24,6 +24,9 @@ namespace Optern.Presentation.GraphQlApi.PTPInterview.Query
 
         public async Task<Response<IEnumerable<PastInterviews>>> PastInterviews([Service] IPTPInterviewService PTPInterviewService, string userId)
           => await PTPInterviewService.PastInterviews(userId);
+        [GraphQLDescription("Get Cached Interview Data")]
+        public Response<InterviewCachedData> LoadInterviewCachedData([Service] IPTPInterviewService _pTPInterviewService, int interviewId) =>
+             _pTPInterviewService.LoadInterviewCachedData(interviewId);
 
 
     }
