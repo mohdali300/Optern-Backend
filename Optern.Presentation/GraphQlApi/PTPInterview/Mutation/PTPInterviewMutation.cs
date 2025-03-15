@@ -21,5 +21,7 @@
         [GraphQLDescription("End PTP Interview Session")]
         public async Task<Response<bool>> EndPTPInterviewSessionAsync([Service] IPTPInterviewService _pTPInterviewService, int interviewId)
             => await _pTPInterviewService.EndPTPInterviewSessionAsync(interviewId);
+
+        
     }
 }

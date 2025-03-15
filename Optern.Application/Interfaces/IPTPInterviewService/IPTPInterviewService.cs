@@ -18,6 +18,7 @@ namespace Optern.Application.Interfaces.IPTPInterviewService
         public Task<Response<IEnumerable<PastInterviews>>> PastInterviews(string userId);
         public Task<Response<PTPInterview>> GetInterviewTimeSlot(int interviewId);
         public TimeSpan GetTimeSpanFromEnum(InterviewTimeSlot timeSlot);
+        public Response<InterviewCachedData> LoadInterviewCachedData(int interviewId);
 
     }
 }
