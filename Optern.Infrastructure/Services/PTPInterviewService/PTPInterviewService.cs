@@ -36,19 +36,19 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
                                                   i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress);
 
-                //var filteredInterviews = upcomingInterviews
-                //       .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
-                //(scheduledDate.Date > currentTime.Date ||
-                // (scheduledDate.Date == currentTime.Date && GetTimeSpanFromEnum(i.ScheduledTime) >= currentTime.TimeOfDay)))
-                //.OrderBy(i => i.ScheduledTime)
-                //   .ToList();
+                var filteredInterviews = upcomingInterviews
+                      .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
+                (scheduledDate.Date > currentTime.Date ||
+                (scheduledDate.Date == currentTime.Date && GetTimeSpanFromEnum(i.ScheduledTime) >= currentTime.TimeOfDay)))
+                .OrderBy(i => i.ScheduledTime)
+                  .ToList();
 
-                if (!upcomingInterviews.Any())
+                if (!filteredInterviews.Any())
                 {
                     return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Failure(new List<UpcomingPTPInterviewDTO>(), "No Upcoming Interviews found", 404);
                 }
 
-                var orderedInterviews = upcomingInterviews
+                var orderedInterviews = filteredInterviews
                    .OrderBy(i => DateTime.Parse(i.ScheduledDate!))
                    .ThenBy(i => GetTimeSpanFromEnum(i.ScheduledTime))
                     .ToList();
@@ -61,17 +61,17 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                     interviewDTO.ScheduledTime = interviewEntity!.ScheduledTime.GetDisplayName();
 
-                    //if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
-                    //{
+                    // if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
+                    // {
                     //    interviewDTO.TimeRemaining = "Invalid date format";
                     //    continue;
-                    //}
+                    // }
 
-                    //DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
-                    //DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
-                    //scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
-                    //TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
-                    //interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+                    // DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
+                    // DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
+                    // scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
+                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                    // interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
                 }
@@ -385,10 +385,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     return Response<bool>.Failure(false, "This user isn’t a participant in this interview.", 403);
                 }
 
-                // if (!IsInTime(interview.ScheduledTime, interview.ScheduledDate!))
-                // {
-                //     return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
-                // }
+                if (!IsInTime(interview.ScheduledTime, interview.ScheduledDate!))
+                {
+                    return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
+                }
                 if (interview.SlotState != TimeSlotState.TakenByTwo)
                 {
                     return Response<bool>.Failure(false, "Interview doesn’t have another peer, try to schedule another one with a partner.", 400);
@@ -591,7 +591,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     }
                 }
             }
-        } 
+        }
         #endregion
 
         public async Task<Response<PTPInterview>> GetInterviewTimeSlot(int interviewId)
@@ -617,9 +617,9 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
         public Response<InterviewCachedData> LoadInterviewCachedData(int interviewId)
         {
-            if(interviewId == 0)
+            if (interviewId == 0)
             {
-                return Response<InterviewCachedData>.Failure(new InterviewCachedData(),$"Invalid InterviewID",400);
+                return Response<InterviewCachedData>.Failure(new InterviewCachedData(), $"Invalid InterviewID", 400);
             }
             try
             {
@@ -636,10 +636,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     Language = language ?? string.Empty,
                     Timer = timer ?? string.Empty
                 };
-                return  Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200) ;
-                                          
+                return Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200);
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Response<InterviewCachedData>.Failure(
                  new InterviewCachedData(),
@@ -658,7 +658,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             {
                 InterviewTimeSlot.EightAM => new TimeSpan(8, 0, 0),
                 InterviewTimeSlot.TenAM => new TimeSpan(10, 0, 0),
-                InterviewTimeSlot.TwelvePM => new TimeSpan(12, 0, 0),
+                InterviewTimeSlot.TwelvePM => new TimeSpan(0, 0, 0),
                 InterviewTimeSlot.TwoPM => new TimeSpan(14, 0, 0),
                 InterviewTimeSlot.SixPM => new TimeSpan(18, 0, 0),
                 InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
@@ -682,8 +682,11 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             var scheduledTime = GetTimeSpanFromEnum(timeSlot);
             DateTime scheduledDate = DateTime.Parse(date);
             var interviewStartTime = scheduledDate.Date + scheduledTime;
-
-            return interviewStartTime >= DateTime.UtcNow && interviewStartTime <= DateTime.UtcNow.AddHours(1);
+            interviewStartTime = interviewStartTime.ToLocalTime();
+            var curDate = DateTime.Now;
+            curDate = curDate.AddHours(2);
+            var dateplus = interviewStartTime.AddHours(1);
+            return interviewStartTime <= curDate && curDate <= dateplus;
         }
 
         private async Task DeletePTPInterview(PTPInterview interview)
