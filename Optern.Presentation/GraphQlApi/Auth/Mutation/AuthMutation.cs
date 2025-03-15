@@ -8,7 +8,7 @@
            await _authService.RegisterAsync(request);
 
         [GraphQLDescription("Confirm Account")]
-        public async Task<Response<bool>> ConfirmAccount([Service] IAuthService _authService,string email, string otpCode) =>
+        public async Task<Response<string>> ConfirmAccount([Service] IAuthService _authService,string email, string otpCode) =>
              await _authService.ConfirmAccount(email,otpCode);
 
 

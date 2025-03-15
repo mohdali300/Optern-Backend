@@ -155,7 +155,8 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Notifications.Title ?? string.Empty))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Notifications.Message ?? string.Empty))
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.NotificationId))
-            .ForMember(dest => dest.CreatedTime, opt => opt.MapFrom(src => src.Notifications.CreatedTime));
+            .ForMember(dest => dest.CreatedTime, opt => opt.MapFrom(src => src.Notifications.CreatedTime))
+            .ForMember(dest => dest.url, opt => opt.MapFrom(src => src.Notifications.Url));
             #endregion
 
             #region Interview

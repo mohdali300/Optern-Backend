@@ -24,6 +24,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddHangfireServer();
             services.AddScoped<UserCleanUpService>();
             services.AddTransient<UserCleanUpJob>();
+            services.AddTransient<PTPInterviewStatusJob>();
 
             // Add Redis Cache
             services.AddStackExchangeRedisCache(option =>

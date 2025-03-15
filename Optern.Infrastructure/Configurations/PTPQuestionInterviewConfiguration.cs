@@ -21,8 +21,7 @@ namespace Optern.Infrastructure.Persistence.Configurations
             builder.Property(q => q.PTPQuestionId)
                    .IsRequired();
 
-            builder.Property(q => q.PTPInterviewId)
-                   .IsRequired();
+            
 
             // Indexes
 
@@ -41,8 +40,9 @@ namespace Optern.Infrastructure.Persistence.Configurations
                 .WithMany(i => i.PTPQuestionInterviews)
                 .HasForeignKey(q => q.PTPInterviewId)
             .OnDelete(DeleteBehavior.Cascade);
+            
 
-        builder.HasOne(q => q.PTPUser)
+            builder.HasOne(q => q.PTPUser)
         .WithMany(u => u.PTPQuestionInterviews)
         .HasForeignKey(q => q.PTPUserId)
         .OnDelete(DeleteBehavior.Cascade);
