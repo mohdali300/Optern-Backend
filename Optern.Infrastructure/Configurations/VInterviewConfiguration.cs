@@ -35,10 +35,6 @@
                 .HasForeignKey(v => v.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(v => v.VirtualFeedBack)
-           .WithOne()
-           .HasForeignKey<VFeedBack>(vf => vf.VInterviewID) 
-           .OnDelete(DeleteBehavior.Cascade);
 
 
             #endregion

@@ -4,21 +4,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Optern.Domain.Entities
+namespace Optern.Application.DTOs.VFeedback
 {
-    public class VFeedBack
+    public class VFeedbackDTO
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public int PerformanceScore { get; set; }
         public string? Strengths { get; set; }
         public string? Weaknesses { get; set; }
         public string? Recommendations { get; set; }
-
-        // Foreign Key
         public int VirtualInterviewId { get; set; }
 
-        // Navigation Property
-        public virtual VInterview VirtualInterview { get; set; }
+        public VFeedbackDTO()
+        {
+            Id = 0;
+            PerformanceScore = 0;
+            Strengths = "N/A";
+            Weaknesses = "N/A";
+            Recommendations = "N/A";
+            VirtualInterviewId = 0;
+        }
     }
 
 }

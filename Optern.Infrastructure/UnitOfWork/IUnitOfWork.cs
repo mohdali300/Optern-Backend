@@ -52,6 +52,8 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<Experience> Experience { get; }
         IGenericRepository<VInterview> VInterviews { get; }
 
+        IGenericRepository<VFeedBack> VFeedBack { get; }
+
         Task<int> SaveAsync();
     }
 }

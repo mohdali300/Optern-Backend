@@ -128,6 +128,17 @@ global using Optern.Presentation.GraphQlApi.UserSkills.Query;
 global using Optern.Presentation.GraphQlApi.Skill.Mutation;
 global using Optern.Application.DTOs.Skills;
 global using Optern.Application.Interfaces.IUserSkillsService;
+global using Optern.Presentation.GraphQlApi.Experience.Mutation;
+global using Optern.Presentation.GraphQlApi.Experience.Query;
+global using Optern.Presentation.GraphQlApi.User.Query;
+
+// VFeedBack
+global using Optern.Presentation.GraphQlApi.VFeedback.Mutation;
+global using Optern.Presentation.GraphQlApi.VFeedback.Query;
+global using Optern.Presentation.GraphQlApi.VInterview.Mutation;
+global using Optern.Application.DTOs.VFeedback;
+global using Optern.Application.Interfaces.IVFeedbackService;
+
 
 
 

@@ -14,7 +14,7 @@ namespace Optern.Infrastructure.Configurations
 
             // Table Name
             builder.ToTable("VFeedBack");
-           
+
             // Primary Key
             builder.HasKey(f => f.Id);
             builder.Property(ur => ur.Id)
@@ -22,19 +22,8 @@ namespace Optern.Infrastructure.Configurations
 
             // Properties
 
-            builder.Property(f => f.PerformanceScore)
-              .IsRequired();
 
-            builder.Property(f => f.Strengths)
-                   .HasMaxLength(500);
-
-            builder.Property(f => f.Weaknesses)
-                   .HasMaxLength(500);
-
-            builder.Property(f => f.Recommendations)
-                   .HasMaxLength(1000);
-
-            builder.Property(f => f.VInterviewID)
+            builder.Property(f => f.VirtualInterviewId)
                    .IsRequired();
 
             builder.Property(f => f.PerformanceScore)
@@ -47,7 +36,7 @@ namespace Optern.Infrastructure.Configurations
             #region Relations
             builder.HasOne(f => f.VirtualInterview)
                    .WithOne(v => v.VirtualFeedBack)
-                   .HasForeignKey<VFeedBack>(f => f.VInterviewID)
+                   .HasForeignKey<VFeedBack>(f => f.VirtualInterviewId)
                    .OnDelete(DeleteBehavior.Cascade);
             #endregion
 

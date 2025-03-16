@@ -12,8 +12,6 @@ namespace Optern.Application.DTOs.PTPInterview
         public int Id { get; set; }
         [JsonIgnore] 
         public DateTime? InterviewDate { get; set; }
-
-        public string InterviewDateFormatted => InterviewDate?.ToString("dd-MM-yyyy") ?? "N/A";
         public string? InterviewType { get; set; } 
         public string? Category { get; set; }
         public PartnerDTO Partner { get; set; } = new PartnerDTO(); 
