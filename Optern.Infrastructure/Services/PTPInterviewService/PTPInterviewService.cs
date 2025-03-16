@@ -61,17 +61,17 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                     interviewDTO.ScheduledTime = interviewEntity!.ScheduledTime.GetDisplayName();
 
-                    // if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
-                    // {
-                    //    interviewDTO.TimeRemaining = "Invalid date format";
-                    //    continue;
-                    // }
+                    if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
+                    {
+                       interviewDTO.TimeRemaining = "Invalid date format";
+                       continue;
+                    }
 
-                    // DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
-                    // DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
-                    // scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
-                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
-                    // interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+                    DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
+                    DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
+                    scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
+                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                    interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
                 }
@@ -625,7 +625,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             {
                 var code = _cacheService.GetData<string>($"session:{interviewId}:code");
                 var output = _cacheService.GetData<string>($"session:{interviewId}:output");
-                var role = _cacheService.GetData<string>($"session:{interviewId}:role");
+                var role = _cacheService.GetData<string>($"session:{interviewId}:interviewer");
                 var language = _cacheService.GetData<string>($"session:{interviewId}:language");
                 var timer = _cacheService.GetData<string>($"session:{interviewId}:timer");
 
@@ -688,10 +688,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             var scheduledTime = GetTimeSpanFromEnum(timeSlot);
             DateTime scheduledDate = DateTime.Parse(date);
-            var interviewStartTime = scheduledDate.Date + scheduledTime;
-
-            return interviewStartTime >= DateTime.UtcNow && interviewStartTime <= DateTime.UtcNow.AddHours(1);
-         
+            var interviewStartTime = scheduledDate.Date + scheduledTime;         
             interviewStartTime = interviewStartTime.ToLocalTime();
             var curDate = DateTime.Now;
             curDate = curDate.AddHours(2);
