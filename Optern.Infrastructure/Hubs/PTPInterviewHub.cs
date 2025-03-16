@@ -67,13 +67,31 @@ namespace Optern.Infrastructure.Hubs
                 if (response.IsSuccess)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                    await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully");
+
+                    var interviewerId =  _cacheService.GetData<string>($"session:{sessionId}:interviewer");
+
+                    if (string.IsNullOrEmpty(interviewerId))
+                    {
+                         _cacheService.SetData($"session:{sessionId}:interviewer", userId, TimeSpan.FromHours(1));
+                        await Clients.Caller.SendAsync("AssignRole", "Interviewer");
+                    }
+                    else
+                    {
+                        var candidateId =  _cacheService.GetData<string>($"session:{sessionId}:candidate");
+                        if (string.IsNullOrEmpty(candidateId))
+                        {
+                             _cacheService.SetData($"session:{sessionId}:candidate", userId, TimeSpan.FromHours(1));
+                        }
+                        await Clients.Caller.SendAsync("AssignRole", "Candidate");
+                    }
 
                     if (!_sessionEndTimeMap.ContainsKey(sessionId))
                     {
                         StartInterviewTimer(sessionId, interviewStartDateTime);
                     }
+
                     await BroadcastRemainingTime(sessionId);
+                    await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully");
                 }
                 else
                 {
@@ -86,6 +104,7 @@ namespace Optern.Infrastructure.Hubs
             }
         }
 
+
         [HubMethodName("EndInterviewSession")]
         public async Task EndInterviewSession(int sessionId)
         {
@@ -95,16 +114,16 @@ namespace Optern.Infrastructure.Hubs
                 if (response.IsSuccess)
                 {
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"ptpInterview{sessionId}");
-                    await Clients.Group($"ptpInterview{sessionId}").SendAsync("EndSession", "Interview session ended.");
+                    await Clients.Group($"ptpInterview{sessionId}").SendAsync("EndSession", "Interview session ended");
                 }
                 else
                 {
-                    await Clients.Caller.SendAsync("FailedEndSession", "Failed to end Interview session.");
+                    await Clients.Caller.SendAsync("FailedEndSession", "Failed to end Interview session");
                 }
             }
             catch
             {
-                await Clients.Caller.SendAsync("EndSessionError", "Unexpected error occurred while ending session.");
+                await Clients.Caller.SendAsync("EndSessionError", "Unexpected error occurred while ending session");
             }
         }
 
@@ -146,12 +165,37 @@ namespace Optern.Infrastructure.Hubs
             await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("CodeOutput", output);
         }
 
+
         [HubMethodName("SwapRole")]
-        public async Task SwapRole(int sessionId, string userId)
+        public async Task SwapRole(int sessionId)
         {
-            _cacheService.SetData($"session:{sessionId}:SwapRole", userId, TimeSpan.FromHours(24));
-            await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("SwapRole", userId);
+            var currentUserId = (await _userService.GetCurrentUserAsync())?.Id; 
+
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                await Clients.Caller.SendAsync("SwapError", "User not found");
+                return;
+            }
+
+            var interviewerId =  _cacheService.GetData<string>($"session:{sessionId}:interviewer");
+            var candidateId =   _cacheService.GetData<string>($"session:{sessionId}:candidate");
+
+            if (!string.IsNullOrEmpty(interviewerId) && !string.IsNullOrEmpty(candidateId))
+            {
+                 _cacheService.SetData($"session:{sessionId}:interviewer", candidateId, TimeSpan.FromHours(1));
+                 _cacheService.SetData($"session:{sessionId}:candidate", interviewerId, TimeSpan.FromHours(1));
+
+                string targetUserId = interviewerId == currentUserId ? candidateId : interviewerId;
+
+                await Clients.Group($"ptpInterview{sessionId}").SendAsync("SwapRole", new
+                {
+                    byUserId = currentUserId,
+                    toUserId = targetUserId
+                });
+            }
         }
+
+
 
         [HubMethodName("Language")]
         public async Task Language(int sessionId, string language)
@@ -173,6 +217,22 @@ namespace Optern.Infrastructure.Hubs
                         if (userConnections.Count == 0)
                             _userConnectionMap.TryRemove(user.Id, out _);
                     }
+                }
+            }
+            var sessionId = (await _pTPInterviewService.GetUserCurrentPTPInterviewSessionAsync(user.Id)).Data.Id; 
+
+            if (sessionId != 0)
+            {
+                var interviewerId =  _cacheService.GetData<string>($"session:{sessionId}:interviewer");
+                var candidateId =    _cacheService.GetData<string>($"session:{sessionId}:candidate");
+
+                if (interviewerId == user.Id)
+                {
+                    await _cacheService.RemoveDataAsync($"session:{sessionId}:interviewer");
+                }
+                else if (candidateId == user.Id)
+                {
+                    await _cacheService.RemoveDataAsync($"session:{sessionId}:candidate");
                 }
             }
             await base.OnDisconnectedAsync(exception);
