@@ -58,7 +58,10 @@ namespace Optern.Infrastructure.Hubs
             try
             {
                 var (isValid, interviewStartDateTime) = await ValidateInterviewJoinProcess(sessionId);
-                if (!isValid) return;
+                if (!isValid)
+                {
+                    return;
+                }
 
                 var response = await _pTPInterviewService.StartPTPInterviewSessionAsync(sessionId, userId);
                 if (response.IsSuccess)
