@@ -628,16 +628,23 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 var role = _cacheService.GetData<string>($"session:{interviewId}:role");
                 var language = _cacheService.GetData<string>($"session:{interviewId}:language");
                 var timer = _cacheService.GetData<string>($"session:{interviewId}:timer");
+
                 InterviewCachedData cachedData = new InterviewCachedData()
                 {
-                    Code = code ?? string.Empty,
+                    Code = code ??
+                 @"function greet(name) {
+                    console.log(""Hello, "" + name + ""!"");
+                }
+
+                greet(""OpternTeam"");",
                     Output = output ?? string.Empty,
                     UserRole = role ?? string.Empty,
-                    Language = language ?? string.Empty,
+                    Language = language ?? "javascript",
                     Timer = timer ?? string.Empty
                 };
-                return Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200);
 
+                return Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200) ;
+                                          
             }
             catch (Exception ex)
             {
@@ -660,7 +667,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 InterviewTimeSlot.TenAM => new TimeSpan(10, 0, 0),
                 InterviewTimeSlot.TwelvePM => new TimeSpan(0, 0, 0),
                 InterviewTimeSlot.TwoPM => new TimeSpan(14, 0, 0),
-                InterviewTimeSlot.SixPM => new TimeSpan(18, 0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(18,0, 0),
                 InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
                 _ => TimeSpan.Zero
             };
@@ -682,6 +689,9 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             var scheduledTime = GetTimeSpanFromEnum(timeSlot);
             DateTime scheduledDate = DateTime.Parse(date);
             var interviewStartTime = scheduledDate.Date + scheduledTime;
+
+            return interviewStartTime >= DateTime.UtcNow && interviewStartTime <= DateTime.UtcNow.AddHours(1);
+         
             interviewStartTime = interviewStartTime.ToLocalTime();
             var curDate = DateTime.Now;
             curDate = curDate.AddHours(2);
