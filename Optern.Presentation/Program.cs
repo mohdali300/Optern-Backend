@@ -58,6 +58,7 @@ builder.Services
 .AddType<UserSkillsQuery>()
 .AddType<UserQuery>()
 .AddType<ExperienceQuery>()
+.AddType<VFeedBackQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()
@@ -86,6 +87,7 @@ builder.Services
 .AddType<SkillMutation>()
 .AddType<ExperienceMutation>()
 .AddType<VInterviewMutation>()
+.AddType<VFeedbackMutation>()
 .AddFluentValidation()
 .AddType<UploadType>(); 
 

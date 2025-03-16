@@ -55,6 +55,8 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<Experience> Experience { get; private set; }
         public IGenericRepository<VInterview> VInterviews { get; private set; }
 
+        public IGenericRepository<VFeedBack> VFeedBack {  get; private set; }
+
 
         public UnitOfWork(OpternDbContext context) 
         {
@@ -97,6 +99,7 @@ namespace Optern.Infrastructure.UnitOfWork
             UserSkills= new GenericRepository<UserSkills>(context);
             Experience = new GenericRepository<Experience>(context);
             VInterviews= new GenericRepository<VInterview>(context);
+            VFeedBack = new GenericRepository<VFeedBack>(context);
         }
 
         public async Task<int> SaveAsync()
