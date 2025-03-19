@@ -389,10 +389,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 {
                     return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
                 }
-                if (interview.SlotState != TimeSlotState.TakenByTwo)
-                {
-                    return Response<bool>.Failure(false, "Interview doesn’t have another peer, try to schedule another one with a partner.", 400);
-                }
 
                 interview.Status = InterviewStatus.InProgress;
                 await _unitOfWork.PTPInterviews.UpdateAsync(interview);
@@ -490,11 +486,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "Invalid parameter: userId is required.", 400);
                 }
 
-                var currentTime = DateTime.UtcNow;
-
-                var virtualInterviews = await _unitOfWork.VInterviews
-                    .GetAllByExpressionAsync(i => i.UserId == userId && i.InterviewDate < currentTime) ?? new List<VInterview>();
-
                 var ptpInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(
                         i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) && i.Status == InterviewStatus.Completed,
@@ -502,26 +493,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                                       .ThenInclude(u => u.User)
                     );
 
-                if (!virtualInterviews.Any() && !ptpInterviews.Any())
+                if (!ptpInterviews.Any())
                 {
                     return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "No Past Interviews found.", 404);
                 }
 
                 var interviews = new List<PastInterviews>();
-
-                // Virtual Interviews
-                foreach (var interview in virtualInterviews)
-                {
-                    interviews.Add(new PastInterviews
-                    {
-                        Id = interview.Id,
-                        InterviewDate = interview.InterviewDate,
-                        InterviewType = "Virtual",
-                        Category = interview.Category.ToString(),
-                        Partner = new PartnerDTO(),
-                        Questions = await GetUserQuestionsForInterview(interview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
-                    }); ;
-                }
 
                 // Peer-to-Peer Interviews
                 foreach (var interview in ptpInterviews)
@@ -539,6 +516,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         InterviewDate = interviewDateTime ?? DateTime.MinValue,
                         InterviewType = "Peer-to-Peer",
                         Category = interview.Category.ToString(),
+                        hasFeedback = _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id),
                         Partner = new PartnerDTO
                         {
                             Id = partner?.UserID ?? string.Empty,
@@ -663,10 +641,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             return timeSlot switch
             {
-                InterviewTimeSlot.EightAM => new TimeSpan(8, 0, 0),
-                InterviewTimeSlot.TenAM => new TimeSpan(10, 0, 0),
-                InterviewTimeSlot.TwelvePM => new TimeSpan(0, 0, 0),
-                InterviewTimeSlot.TwoPM => new TimeSpan(14, 0, 0),
+                InterviewTimeSlot.EightAM => new TimeSpan(0, 0, 0),
+                InterviewTimeSlot.TenAM => new TimeSpan(1, 0, 0),
+                InterviewTimeSlot.TwelvePM => new TimeSpan(2, 0, 0),
+                InterviewTimeSlot.TwoPM => new TimeSpan(3, 0, 0),
                 InterviewTimeSlot.SixPM => new TimeSpan(18,0, 0),
                 InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
                 _ => TimeSpan.Zero

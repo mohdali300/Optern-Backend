@@ -23,7 +23,6 @@ namespace Optern.Infrastructure.Services.PTPFeedbackService
 
             try
             {
-
                 if (!await IsInterviewExist(model.PTPInterviewId))
                 {
                     return Response<string>.Failure("", "Interview Not Found", 404);
