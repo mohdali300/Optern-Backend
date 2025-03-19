@@ -74,7 +74,7 @@ namespace Optern.Infrastructure.Hubs
                     if (string.IsNullOrEmpty(interviewerId))
                     {
                          _cacheService.SetData($"session:{sessionId}:interviewer", userId, TimeSpan.FromHours(1));
-                        await Clients.Caller.SendAsync("AssignRole", "Interviewer");
+                        await Clients.Caller.SendAsync("SwapRole", userId);
                     }
                     else if(interviewerId != userId && string.IsNullOrEmpty(candidateId))
                     {
@@ -86,7 +86,7 @@ namespace Optern.Infrastructure.Hubs
                     {
                         StartInterviewTimer(sessionId, interviewStartDateTime);
                     }
-
+                    
                     await BroadcastRemainingTime(sessionId);
                     await Clients.Caller.SendAsync("JoinToSession", "Joined to interview session successfully");
                 }
@@ -150,8 +150,7 @@ namespace Optern.Infrastructure.Hubs
         {
                _cacheService.SetData($"session:{sessionId}:code", code, TimeSpan.FromHours(24));
 
-            await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("UpdatedCode", code);
-           
+            await Clients.OthersInGroup($"ptpInterview{sessionId}").SendAsync("UpdatedCode", code);  
         }
 
         [HubMethodName("CodeOutput")]
@@ -303,6 +302,7 @@ namespace Optern.Infrastructure.Hubs
             if (currentTime > interviewEndTime)
             {
                 await Clients.Caller.SendAsync("InterviewEnded", "This Interview Ended");
+                await EndInterviewSession(sessionId);
                 return (false, DateTime.MinValue);
             }
 

@@ -112,13 +112,14 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("http://localhost:3000" )//"http://127.0.0.1:5500"   "http://localhost:3000" 
+		policy.WithOrigins("http://localhost:3000","https://optern-tests-projects-8110e514.vercel.app","https://23c4-156-207-50-246.ngrok-free.app" )//"http://127.0.0.1:5500"   "http://localhost:3000" 
 
               .AllowAnyHeader()
 			  .AllowAnyMethod()
 			  .AllowCredentials();
 	});
 });
+
 // register SignalR
 builder.Services.AddSignalR(options =>
 {
