@@ -16,7 +16,7 @@ namespace Optern.Application.DTOs.PTPInterview
         public string? Category { get; set; }
         public PartnerDTO Partner { get; set; } = new PartnerDTO(); 
 
-        public bool hasFeedback {get;set;}
+        public FeedbackStatus FeedbackStatus {get;set;}
 
         public List<PTPUpcomingQuestionDTO>? Questions { get; set; }
 

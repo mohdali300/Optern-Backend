@@ -34,7 +34,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 var upcomingInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
-                                                  i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress);
+                                                  (i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress));
 
                 var filteredInterviews = upcomingInterviews
                       .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
@@ -510,13 +510,20 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         interviewDateTime = GetScheduledDateTime(interview.ScheduledDate, interview.ScheduledTime);
                     }
 
+                    var ptpUser = _context.PTPUsers.FirstOrDefault(pu=>pu.UserID == userId && pu.PTPIId == interview.Id);
+
+
+
                     interviews.Add(new PastInterviews
                     {
                         Id = interview.Id,
                         InterviewDate = interviewDateTime ?? DateTime.MinValue,
                         InterviewType = "Peer-to-Peer",
                         Category = interview.Category.ToString(),
-                        hasFeedback = _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id),
+                        FeedbackStatus = _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)
+                        && _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.ReceivedByUserId == ptpUser.Id)
+                         ? FeedbackStatus.ShowFeedback:
+                        _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)? FeedbackStatus.Pending : FeedbackStatus.AddFeedback,
                         Partner = new PartnerDTO
                         {
                             Id = partner?.UserID ?? string.Empty,
@@ -645,8 +652,8 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 InterviewTimeSlot.TenAM => new TimeSpan(1, 0, 0),
                 InterviewTimeSlot.TwelvePM => new TimeSpan(2, 0, 0),
                 InterviewTimeSlot.TwoPM => new TimeSpan(3, 0, 0),
-                InterviewTimeSlot.SixPM => new TimeSpan(18,0, 0),
-                InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(22,0, 0),
+                InterviewTimeSlot.TenPM => new TimeSpan(23, 0, 0),
                 _ => TimeSpan.Zero
             };
         }
