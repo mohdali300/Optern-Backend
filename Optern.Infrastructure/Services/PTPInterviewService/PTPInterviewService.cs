@@ -34,7 +34,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                 var upcomingInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) &&
-                                                  i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress);
+                                                  (i.Status == InterviewStatus.Scheduled || i.Status == InterviewStatus.InProgress));
 
                 var filteredInterviews = upcomingInterviews
                       .Where(i => DateTime.TryParse(i.ScheduledDate, out DateTime scheduledDate) &&
@@ -61,17 +61,17 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                     interviewDTO.ScheduledTime = interviewEntity!.ScheduledTime.GetDisplayName();
 
-                    // if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
-                    // {
-                    //    interviewDTO.TimeRemaining = "Invalid date format";
-                    //    continue;
-                    // }
+                    if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
+                    {
+                       interviewDTO.TimeRemaining = "Invalid date format";
+                       continue;
+                    }
 
-                    // DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
-                    // DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
-                    // scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
-                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
-                    // interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
+                    DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
+                    DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
+                    scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
+                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                    interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
                 }
@@ -389,10 +389,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 {
                     return Response<bool>.Failure(false, "Interview start time has not come yet or it is too late.", 400);
                 }
-                if (interview.SlotState != TimeSlotState.TakenByTwo)
-                {
-                    return Response<bool>.Failure(false, "Interview doesn’t have another peer, try to schedule another one with a partner.", 400);
-                }
 
                 interview.Status = InterviewStatus.InProgress;
                 await _unitOfWork.PTPInterviews.UpdateAsync(interview);
@@ -490,11 +486,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "Invalid parameter: userId is required.", 400);
                 }
 
-                var currentTime = DateTime.UtcNow;
-
-                var virtualInterviews = await _unitOfWork.VInterviews
-                    .GetAllByExpressionAsync(i => i.UserId == userId && i.InterviewDate < currentTime) ?? new List<VInterview>();
-
                 var ptpInterviews = await _unitOfWork.PTPInterviews
                     .GetAllByExpressionAsync(
                         i => i.PeerToPeerInterviewUsers.Any(u => u.UserID == userId) && i.Status == InterviewStatus.Completed,
@@ -502,26 +493,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                                       .ThenInclude(u => u.User)
                     );
 
-                if (!virtualInterviews.Any() && !ptpInterviews.Any())
+                if (!ptpInterviews.Any())
                 {
                     return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "No Past Interviews found.", 404);
                 }
 
                 var interviews = new List<PastInterviews>();
-
-                // Virtual Interviews
-                foreach (var interview in virtualInterviews)
-                {
-                    interviews.Add(new PastInterviews
-                    {
-                        Id = interview.Id,
-                        InterviewDate = interview.InterviewDate,
-                        InterviewType = "Virtual",
-                        Category = interview.Category.ToString(),
-                        Partner = new PartnerDTO(),
-                        Questions = await GetUserQuestionsForInterview(interview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
-                    }); ;
-                }
 
                 // Peer-to-Peer Interviews
                 foreach (var interview in ptpInterviews)
@@ -533,12 +510,20 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         interviewDateTime = GetScheduledDateTime(interview.ScheduledDate, interview.ScheduledTime);
                     }
 
+                    var ptpUser = _context.PTPUsers.FirstOrDefault(pu=>pu.UserID == userId && pu.PTPIId == interview.Id);
+
+
+
                     interviews.Add(new PastInterviews
                     {
                         Id = interview.Id,
                         InterviewDate = interviewDateTime ?? DateTime.MinValue,
                         InterviewType = "Peer-to-Peer",
                         Category = interview.Category.ToString(),
+                        FeedbackStatus = _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)
+                        && _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.ReceivedByUserId == ptpUser.Id)
+                         ? FeedbackStatus.ShowFeedback:
+                        _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)? FeedbackStatus.Pending : FeedbackStatus.AddFeedback,
                         Partner = new PartnerDTO
                         {
                             Id = partner?.UserID ?? string.Empty,
@@ -625,7 +610,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             {
                 var code = _cacheService.GetData<string>($"session:{interviewId}:code");
                 var output = _cacheService.GetData<string>($"session:{interviewId}:output");
-                var role = _cacheService.GetData<string>($"session:{interviewId}:role");
+                var role = _cacheService.GetData<string>($"session:{interviewId}:interviewer");
                 var language = _cacheService.GetData<string>($"session:{interviewId}:language");
                 var timer = _cacheService.GetData<string>($"session:{interviewId}:timer");
 
@@ -663,12 +648,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             return timeSlot switch
             {
-                InterviewTimeSlot.EightAM => new TimeSpan(8, 0, 0),
-                InterviewTimeSlot.TenAM => new TimeSpan(10, 0, 0),
-                InterviewTimeSlot.TwelvePM => new TimeSpan(0, 0, 0),
-                InterviewTimeSlot.TwoPM => new TimeSpan(14, 0, 0),
-                InterviewTimeSlot.SixPM => new TimeSpan(18,0, 0),
-                InterviewTimeSlot.TenPM => new TimeSpan(22, 0, 0),
+                InterviewTimeSlot.EightAM => new TimeSpan(0, 0, 0),
+                InterviewTimeSlot.TenAM => new TimeSpan(1, 0, 0),
+                InterviewTimeSlot.TwelvePM => new TimeSpan(2, 0, 0),
+                InterviewTimeSlot.TwoPM => new TimeSpan(3, 0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(22,0, 0),
+                InterviewTimeSlot.TenPM => new TimeSpan(23, 0, 0),
                 _ => TimeSpan.Zero
             };
         }
@@ -688,10 +673,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             var scheduledTime = GetTimeSpanFromEnum(timeSlot);
             DateTime scheduledDate = DateTime.Parse(date);
-            var interviewStartTime = scheduledDate.Date + scheduledTime;
-
-            return interviewStartTime >= DateTime.UtcNow && interviewStartTime <= DateTime.UtcNow.AddHours(1);
-         
+            var interviewStartTime = scheduledDate.Date + scheduledTime;         
             interviewStartTime = interviewStartTime.ToLocalTime();
             var curDate = DateTime.Now;
             curDate = curDate.AddHours(2);
