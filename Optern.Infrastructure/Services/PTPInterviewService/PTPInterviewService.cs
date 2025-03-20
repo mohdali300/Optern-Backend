@@ -652,7 +652,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             return timeSlot switch
             {
-                InterviewTimeSlot.EightAM => new TimeSpan(17, 0, 0),
+                InterviewTimeSlot.EightAM => new TimeSpan(18, 0, 0),
                 InterviewTimeSlot.TenAM => new TimeSpan(19, 0, 0),
                 InterviewTimeSlot.TwelvePM => new TimeSpan(20, 0, 0),
                 InterviewTimeSlot.TwoPM => new TimeSpan(21, 0, 0),

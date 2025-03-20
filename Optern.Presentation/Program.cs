@@ -97,11 +97,6 @@ builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
-// decrease number of threads
-int minThreads, maxThreads;
-ThreadPool.GetMinThreads(out minThreads, out maxThreads);
-ThreadPool.SetMinThreads(minThreads, maxThreads - 10);
-
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
