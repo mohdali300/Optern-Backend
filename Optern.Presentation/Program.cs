@@ -97,7 +97,6 @@ builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
-
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
@@ -112,7 +111,7 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", policy =>
 	{
-		policy.WithOrigins("https://optern.vercel.app/" )//"http://127.0.0.1:5500"   "http://localhost:3000" 
+		policy.WithOrigins("https://optern.vercel.app","http://localhost:3000")//"http://127.0.0.1:5500"   "http://localhost:3000" 
 
               .AllowAnyHeader()
 			  .AllowAnyMethod()
