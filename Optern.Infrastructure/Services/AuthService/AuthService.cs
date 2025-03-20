@@ -285,7 +285,7 @@ namespace Optern.Infrastructure.Services.AuthService
                 var refreshToken = await GetOrCreateRefreshToken(user);
 
                 var userRoles = await _userManager.GetRolesAsync(user);
-                var cookieOptions = new CookieOptions
+                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = false,
