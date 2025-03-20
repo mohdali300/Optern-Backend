@@ -149,7 +149,7 @@ namespace Optern.Application.Services.UserNotificationService
         #endregion
 
         #region Get User Notifications (Read - Not Read)
-        public async Task<Response<IEnumerable<GetUserNotificationDTO>>> GetUserNotifications(string userId, bool? isRead = null)
+        public async Task<Response<IEnumerable<GetUserNotificationDTO>>> GetUserNotifications(string userId, string roomId, bool? isRead = null,int lastIdx = 0, int limit = 10)
         {
             try
             {
@@ -161,7 +161,7 @@ namespace Optern.Application.Services.UserNotificationService
                 }
                 var query = _context.UserNotifications
                   .AsNoTracking()
-                  .Where(un => un.UserId == userId);
+                  .Where(un => un.UserId == userId && un.Notifications.RoomId == roomId);
 
                 if (isRead.HasValue)
                 {
@@ -170,6 +170,8 @@ namespace Optern.Application.Services.UserNotificationService
                 var userNotifications = await query
                      .Include(un => un.Notifications) 
                      .OrderByDescending(un => un.Notifications.CreatedTime)
+                     .Skip(lastIdx)
+                     .Take(limit)
                      .ToListAsync();
 
                  var notificationDTOs = _mapper.Map<IEnumerable<GetUserNotificationDTO>>(userNotifications);
