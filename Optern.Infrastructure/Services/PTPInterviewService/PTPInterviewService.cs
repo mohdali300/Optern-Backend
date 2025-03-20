@@ -72,9 +72,9 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
                     
                     // local Time
-                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
                     // server Time
-                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
+                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
                     interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
                     interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
