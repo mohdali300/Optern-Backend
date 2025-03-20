@@ -18,9 +18,9 @@ namespace Optern.Domain.Specifications.NotificationSpecification
         {
             return string.IsNullOrWhiteSpace(_keyword) ? query :
              query.Where(n =>
-                 EF.Functions.Like(n.Notifications.Title, $"%{_keyword}%") ||
-                 EF.Functions.Like(n.Notifications .Message, $"%{_keyword}%"));
-        
+               EF.Functions.ILike(n.Notifications.Title ?? "", $"%{_keyword}%") ||
+               EF.Functions.ILike(n.Notifications.Message ?? "", $"%{_keyword}%"));
+
         }
     }
 
