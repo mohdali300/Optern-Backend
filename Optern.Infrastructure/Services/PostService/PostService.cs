@@ -224,7 +224,7 @@
 				if (!string.IsNullOrEmpty(tagName))
 				{
 					tasks.Add(_context.PostTags
-						.Where(pt => EF.Functions.Like(pt.Tag.Name, $"%{tagName.ToLower()}%"))
+						.Where(pt => EF.Functions.ILike(pt.Tag.Name, $"%{tagName.ToLower()}%"))
 						.Include(pt => pt.Post)
 							.ThenInclude(p => p.Creator)
 						.Include(pt => pt.Post.PostTags)
