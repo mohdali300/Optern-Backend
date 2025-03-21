@@ -91,7 +91,7 @@ namespace Optern.Infrastructure.DependencyInjection
             services.AddScoped<IUserSkillsService, UserSkillsService>();
             services.AddScoped<IExperienceService, ExperienceService>();
             services.AddScoped<IVInterviewService, VInterviewService>();
-            services.AddScoped<IVFeedbackService,VFeedbackService>();   
+            services.AddScoped<IVFeedbackService,VFeedbackService>();
 
 
             return services;
