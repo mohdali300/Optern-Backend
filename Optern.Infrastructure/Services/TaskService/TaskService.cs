@@ -1,18 +1,22 @@
 ﻿
+using Optern.Application.DTOs.Notification;
+using Optern.Application.DTOs.UserNotification;
 using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.Services.TaskService
 {
-	public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICloudinaryService cloudinaryService) : ITaskService
+	public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICloudinaryService cloudinaryService, INotificationService notificationService, IUserNotificationService userNotificationService) : ITaskService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
 		private readonly IMapper _mapper = mapper;
 		private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
+        private readonly INotificationService _notificationService= notificationService;
+        private readonly IUserNotificationService _userNotificationService= userNotificationService;
 
-		#region Add Task
+        #region Add Task
 
-		public async Task<Response<TaskResponseDTO>> AddTaskAsync(AddTaskDTO taskDto, string userId)
+        public async Task<Response<TaskResponseDTO>> AddTaskAsync(AddTaskDTO taskDto, string userId)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 			try
@@ -72,7 +76,15 @@ namespace Optern.Infrastructure.Services.TaskService
 				await _unitOfWork.TaskActivites.AddAsync(taskActivity);
 				await _unitOfWork.SaveAsync();
 
-				foreach (var assignedUserId in taskDto.AssignedUserIds)
+                //var userNot = new UserNotificationDTO
+                //{
+                //    UserId = user.Id,
+                //    NotificationId = 2 
+                //};
+                //await _userNotificationService.SaveNotification(userNot);
+
+
+                foreach (var assignedUserId in taskDto.AssignedUserIds)
 				{
 					var assignedUser = await _unitOfWork.Users.GetByIdAsync(assignedUserId);
 					var taskAssignedActivity = new TaskActivity

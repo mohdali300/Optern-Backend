@@ -126,20 +126,12 @@ namespace Optern.Infrastructure.Services.AuthService
                 await _userManager.UpdateAsync(user);
 
                 _httpContextAccessor.HttpContext.Response.Cookies.Delete("OtpRegister");
-                var model = new NotificationDTO
-                {
-                    Title = "Welcome to Optern! 🎉",
-                    Message = "We're thrilled to have you join our community! \n\n" +
-							  "To make the most out of your experience and enjoy all the amazing features, please complete your profile. " +
-							  "Click here to get started now!",
-                    Url = "/profile"
-                };
-                // var not = await _notificationService.AddNotification(model);
-				var userNot = new UserNotificationDTO{
-					UserId = user.Id,
-					NotificationId = 191
-				};
-				await _userNotificationService.SaveNotification(userNot);
+  
+				//var userNot = new UserNotificationDTO{
+				//	UserId = user.Id,
+				//	NotificationId = 1
+				//};
+				//await _userNotificationService.SaveNotification(userNot);
                 return Response<string>.Success(user.Id, "Account Confirmed Successfully", 200);
             }
             catch (Exception ex)

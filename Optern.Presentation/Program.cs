@@ -1,14 +1,5 @@
 // Initialize builder
 
-
-using Optern.Presentation.GraphQlApi.Experience.Mutation;
-using Optern.Presentation.GraphQlApi.Experience.Query;
-using Optern.Presentation.GraphQlApi.PTPInterview.Mutation;
-using Optern.Presentation.GraphQlApi.Skill.Mutation;
-using Optern.Presentation.GraphQlApi.User.Mutation;
-using Optern.Presentation.GraphQlApi.User.Query;
-using Optern.Presentation.GraphQlApi.VInterview.Mutation;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
