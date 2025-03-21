@@ -2,11 +2,10 @@
 
 namespace Optern.Infrastructure.Services.RoomSkillService
 {
-    public class RoomSkillService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper) : IRoomSkillService
+    public class RoomSkillService(IUnitOfWork unitOfWork, OpternDbContext context) : IRoomSkillService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
-        private readonly IMapper _mapper = mapper;
 
         #region Add Room Skills
         public async Task<Response<bool>> AddRoomSkills(string roomID, IEnumerable<int> data)
@@ -17,6 +16,10 @@ namespace Optern.Infrastructure.Services.RoomSkillService
             }  
             try
             {
+                var isRoomExist= await _unitOfWork.Rooms.GetByIdAsync(roomID);
+                if (isRoomExist == null) {
+                    return Response<bool>.Failure(false, "Room Not Found", 404);
+                }
                 var roomSkills = data.Select(roomSkill => new RoomSkills
                 {
                     SkillId=roomSkill,
@@ -50,6 +53,11 @@ namespace Optern.Infrastructure.Services.RoomSkillService
                 if (!roomSkills.Any())
                 {
                     return Response<bool>.Failure(false, "No matching Room Skills found to delete", 404);
+                }
+                var isRoomExist = await _unitOfWork.Rooms.GetByIdAsync(roomID);
+                if (isRoomExist == null)
+                {
+                    return Response<bool>.Failure(false, "Room Not Found", 404);
                 }
 
                 await _unitOfWork.RoomSkills.DeleteRangeAsync(roomSkills);
