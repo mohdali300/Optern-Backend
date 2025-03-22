@@ -15,6 +15,10 @@ namespace Optern.Infrastructure.Services.PositionService
         #region Add
         public async Task<Response<PositionDTO>> AddAsync(string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                return Response<PositionDTO>.Failure(new PositionDTO(), $"Position Name Must Be Not Empty", 400);
+            }
             try
             {
                 var position = new Position
@@ -30,7 +34,7 @@ namespace Optern.Infrastructure.Services.PositionService
                 }
 
                 await _unitOfWork.Positions.AddAsync(position);
-                return Response<PositionDTO>.Success(new PositionDTO { Id = position.Id, Name = position.Name }, "Position added successfully.", 200);
+                return Response<PositionDTO>.Success(new PositionDTO { Id = position.Id, Name = position.Name }, "Position added successfully.", 201);
             }
             catch (Exception ex)
             {
@@ -54,7 +58,7 @@ namespace Optern.Infrastructure.Services.PositionService
                         Name = s.Name,
                     }).ToList();
 
-                    return Response<List<PositionDTO>>.Success(positionDtos);
+                    return Response<List<PositionDTO>>.Success(positionDtos,"Positions Fetched Successfully",200);
                 }
 
                 return Response<List<PositionDTO>>.Success(new List<PositionDTO>(),"No positions found!", 204);
