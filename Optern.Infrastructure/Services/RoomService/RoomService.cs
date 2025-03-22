@@ -305,7 +305,7 @@ namespace Optern.Infrastructure.Services.RoomService
 
 				var roomDto = _mapper.Map<ResponseRoomDTO>(room);
 
-				return Response<ResponseRoomDTO>.Success(roomDto, "Room Added Successfully", 201);
+				return Response<ResponseRoomDTO>.Success(roomDto, "Room Added Successfully", 200);
 
 			}
 			catch (Exception ex)

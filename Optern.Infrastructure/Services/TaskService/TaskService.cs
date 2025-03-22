@@ -76,14 +76,6 @@ namespace Optern.Infrastructure.Services.TaskService
 				await _unitOfWork.TaskActivites.AddAsync(taskActivity);
 				await _unitOfWork.SaveAsync();
 
-                //var userNot = new UserNotificationDTO
-                //{
-                //    UserId = user.Id,
-                //    NotificationId = 2 
-                //};
-                //await _userNotificationService.SaveNotification(userNot);
-
-
                 foreach (var assignedUserId in taskDto.AssignedUserIds)
 				{
 					var assignedUser = await _unitOfWork.Users.GetByIdAsync(assignedUserId);
@@ -96,7 +88,16 @@ namespace Optern.Infrastructure.Services.TaskService
 					};
 
 					await _unitOfWork.TaskActivites.AddAsync(taskAssignedActivity);
-				}
+
+                    // Add User Notification (you assigned to task)
+
+                    var userNotification1 = new UserNotificationDTO
+                    {
+                        UserId = assignedUser.Id,
+                        NotificationId = 3
+                    };
+                    await _userNotificationService.SaveNotification(userNotification1);
+                }
 
 				await _unitOfWork.SaveAsync();
 
@@ -111,7 +112,16 @@ namespace Optern.Infrastructure.Services.TaskService
 					return Response<TaskResponseDTO>.Failure(new TaskResponseDTO(), "Task retrieval failed after creation.", 500);
 				}
 
-				var taskResponseDto = _mapper.Map<TaskResponseDTO>(task);
+                // Add User Notification (you add task)
+
+                var userNotification = new UserNotificationDTO
+                {
+                    UserId = userId,
+                    NotificationId = 2
+                };
+                await _userNotificationService.SaveNotification(userNotification);
+
+                var taskResponseDto = _mapper.Map<TaskResponseDTO>(task);
 				return Response<TaskResponseDTO>.Success(taskResponseDto, "Task created successfully.", 200);
 			}
 			catch (DbUpdateException ex)
@@ -220,7 +230,16 @@ namespace Optern.Infrastructure.Services.TaskService
 					{
 						var userremoved = await _unitOfWork.Users.GetByIdAsync(userTask.UserId);
 						taskActivityContents.Add($"Removed {userremoved.FirstName} {userremoved.LastName} from this task.");
-					}
+
+                        // Add User Notification (you have been removed from task)
+
+                        var userNotification = new UserNotificationDTO
+                        {
+                            UserId = userremoved.Id,
+                            NotificationId = 6
+                        };
+                        await _userNotificationService.SaveNotification(userNotification);
+                    }
 
 					// Add new assigned users
 					var existingUserIds = task.AssignedTasks.Select(at => at.UserId).ToList();
@@ -234,7 +253,16 @@ namespace Optern.Infrastructure.Services.TaskService
 					{
 						var useradded = await _unitOfWork.Users.GetByIdAsync(userr.UserId);
 						taskActivityContents.Add($"Assigned {useradded.FirstName} {useradded.LastName} to this task.");
-					}
+
+                        // Add User Notification (you have assigned to task)
+
+                        var userNotification = new UserNotificationDTO
+                        {
+                            UserId = useradded.Id,
+                            NotificationId = 3
+                        };
+                        await _userNotificationService.SaveNotification(userNotification);
+                    }
 				}
 
 				var validate = new TaskValidator().Validate(task);
@@ -307,7 +335,16 @@ namespace Optern.Infrastructure.Services.TaskService
 				await _unitOfWork.SaveAsync();
 				await transaction.CommitAsync();
 
-				return Response<string>.Success("Task deleted successfully.", "Task deleted successfully.", 200);
+                // Add User Notification (you removed a task)
+
+                var userNotification = new UserNotificationDTO
+                {
+                    UserId = userId,
+                    NotificationId = 4
+                };
+                await _userNotificationService.SaveNotification(userNotification);
+
+                return Response<string>.Success("Task deleted successfully.", "Task deleted successfully.", 200);
 			}
 			catch (DbUpdateException ex)
 			{
