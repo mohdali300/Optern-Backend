@@ -124,7 +124,7 @@ namespace Optern.Test.RoomTest.RoomSkillsTests
         #region DeleteRoomSkillsTest
         [Test]
         [Category("DeleteRoomSkills")]
-        public async Task DeleteRoomSkills_ShouldReturn400Failed_WhenDataisInvalid()
+        public async Task DeleteRoomSkills_ShouldReturn400Failed_WhenDataIsInvalid()
         {
             string roomId = string.Empty;
             List<int> data = new List<int>();
@@ -186,12 +186,12 @@ namespace Optern.Test.RoomTest.RoomSkillsTests
             _mockUnitOfWork.Setup(r => r.Rooms.GetByIdAsync(It.IsAny<string>()))
                .ReturnsAsync(new Room { Id = "room1", Name = "C#" });
             _mockUnitOfWork.Setup(r => r.RoomSkills.DeleteRangeAsync(It.IsAny<IEnumerable<RoomSkills>>()))
-                         .Returns(Task.CompletedTask);
-                _mockUnitOfWork.Setup(r => r.RoomSkills.GetAllByExpressionAsync(It.IsAny<Expression<Func<RoomSkills, bool>>>()))
-                    .ReturnsAsync((Expression<Func<RoomSkills, bool>> expr) =>
-                    {
-                        return _roomSkills.AsQueryable().Where(expr).ToList();
-                    });
+               .Returns(Task.CompletedTask);
+            _mockUnitOfWork.Setup(r => r.RoomSkills.GetAllByExpressionAsync(It.IsAny<Expression<Func<RoomSkills, bool>>>()))
+               .ReturnsAsync((Expression<Func<RoomSkills, bool>> expr) =>
+                {
+                  return _roomSkills.AsQueryable().Where(expr).ToList();
+                });
 
             var result = await _roomSkillService.DeleteRoomSkills(roomId, data);
             Assert.That(result.IsSuccess, Is.True);
