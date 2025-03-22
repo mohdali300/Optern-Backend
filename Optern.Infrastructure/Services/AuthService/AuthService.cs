@@ -16,10 +16,9 @@ namespace Optern.Infrastructure.Services.AuthService
         private readonly IMailService _mailService;
         private readonly IJWTService _jWTService;
         private readonly OTP _OTP;
-        private readonly INotificationService _notificationService;
 		private readonly IUserNotificationService _userNotificationService;
         public AuthService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager,
-            IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP _OTP, IJWTService _jWTService, INotificationService notificationService,IUserNotificationService userNotificationService)
+            IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP _OTP, IJWTService _jWTService,IUserNotificationService userNotificationService)
         {
             this._userManager = _userManager;
             this._roleManager = _roleManager;
@@ -27,7 +26,6 @@ namespace Optern.Infrastructure.Services.AuthService
             this._mailService = _mailService;
             this._OTP = _OTP;
             this._jWTService = _jWTService;
-            this._notificationService = notificationService;
 			this._userNotificationService = userNotificationService;
         }
 
@@ -126,12 +124,16 @@ namespace Optern.Infrastructure.Services.AuthService
                 await _userManager.UpdateAsync(user);
 
                 _httpContextAccessor.HttpContext.Response.Cookies.Delete("OtpRegister");
-  
-				//var userNot = new UserNotificationDTO{
-				//	UserId = user.Id,
-				//	NotificationId = 1
-				//};
-				//await _userNotificationService.SaveNotification(userNot);
+
+                // Add User Notification
+
+                var userNotification = new UserNotificationDTO
+                {
+                    UserId = user.Id,
+                    NotificationId = 1
+                };
+                await _userNotificationService.SaveNotification(userNotification);
+
                 return Response<string>.Success(user.Id, "Account Confirmed Successfully", 200);
             }
             catch (Exception ex)
