@@ -26,7 +26,6 @@ namespace Optern.Domain.Entities
         public virtual ICollection<UserRoom> UserRooms { get; set; }
         public virtual Chat Chat { get; set; }
         public virtual Repository Repository { get; set; }
-        public virtual ICollection<Notifications> Notifications { get; set; }
         public virtual ICollection<WorkSpace> WorkSpaces { get; set; }
         public virtual ICollection<RoomSkills> RoomSkills { get; set;}
         public virtual ICollection<RoomPosition> RoomPositions { get; set; }

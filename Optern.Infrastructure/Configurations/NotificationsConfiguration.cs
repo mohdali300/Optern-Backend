@@ -26,13 +26,6 @@
                    .IsRequired()
                    .HasMaxLength(500);
 
-            builder.Property(n => n.CreatedTime)
-                   .HasDefaultValueSql("NOW()");
-
-            builder.Property(r => r.RoomId)
-               .IsRequired(false);
-
-
             #endregion
 
             #region Relations
@@ -41,10 +34,6 @@
                    .HasForeignKey(un => un.NotificationId) 
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(n => n.Room)
-             .WithMany(r => r.Notifications)
-             .HasForeignKey(n => n.RoomId)
-             .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
     }
