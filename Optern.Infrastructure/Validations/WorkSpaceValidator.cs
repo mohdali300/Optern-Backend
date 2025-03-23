@@ -8,6 +8,7 @@
                 .NotEmpty()
                 .WithMessage("Title is required.")
                 .MinimumLength(5)
+                 .WithMessage("Min Length for Title 5 characters ")
                 .MaximumLength(150)
                 .WithMessage("Title cannot exceed 150 characters.");
 
