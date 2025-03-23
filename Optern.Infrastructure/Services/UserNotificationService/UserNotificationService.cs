@@ -43,7 +43,10 @@ namespace Optern.Application.Services.UserNotificationService
                 {
                     UserId = model.UserId,
                     NotificationId = model.NotificationId,
-                    IsRead = false
+                    IsRead = false,
+                    Url = model.Url,
+                    CreatedTime= DateTime.UtcNow
+               
                 };
                 await _unitOfWork.UserNotification.AddAsync(userNotification);
                 await _unitOfWork.SaveAsync();
@@ -169,7 +172,6 @@ namespace Optern.Application.Services.UserNotificationService
                 }
                 var userNotifications = await query
                      .Include(un => un.Notifications) 
-                     .OrderByDescending(un => un.Notifications.CreatedTime)
                      .ToListAsync();
 
                  var notificationDTOs = _mapper.Map<IEnumerable<GetUserNotificationDTO>>(userNotifications);
@@ -207,9 +209,6 @@ namespace Optern.Application.Services.UserNotificationService
 
                 if (!string.IsNullOrWhiteSpace(model.Keyword))
                     specifications.Add(new NotificationByKeywordSpecification(model.Keyword));
-
-                if (model.CreatedDate.HasValue)
-                    specifications.Add(new NotificationByCreatedDateSpecification(model.CreatedDate, model.isDescending ?? false));
 
                 if (specifications.Any())
                 {

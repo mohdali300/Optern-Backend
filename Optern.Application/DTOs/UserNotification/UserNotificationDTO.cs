@@ -11,5 +11,8 @@ namespace Optern.Application.DTOs.UserNotification
         public string UserId { get; set; }
         public int NotificationId { get; set; }
 
+        public string Url { get; set; }=string.Empty;
+
+
     }
 }

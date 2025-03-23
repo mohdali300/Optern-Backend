@@ -1,14 +1,19 @@
-﻿namespace Optern.Infrastructure.Services.RoomUserService
+﻿using Optern.Application.DTOs.UserNotification;
+using Optern.Domain.Entities;
+
+namespace Optern.Infrastructure.Services.RoomUserService
 {
-    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService, ICacheService cacheService) : IRoomUserService
+    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService, ICacheService cacheService, IUserNotificationService userNotificationService) : IRoomUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly IChatService _chatService = chatService;
         private readonly ICacheService _cacheService = cacheService;
+        private readonly IUserNotificationService _userNotificationService = userNotificationService;
 
 
+        #region Get All Collaborators
         public async Task<Response<List<RoomUserDTO>>> GetAllCollaboratorsAsync(string roomId, bool? isAdmin = null)
         {
             try
@@ -56,7 +61,9 @@
                 );
             }
         }
+        #endregion
 
+        #region Get Pending Requests 
         public async Task<Response<List<RoomUserDTO>>> GetPendingRequestsAsync(string roomId, string leaderId)
         {
             try
@@ -101,7 +108,9 @@
                 return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "An error occurred while retrieving requests", 500);
             }
         }
+        #endregion
 
+        #region Request to join room
         public async Task<Response<string>> RequestToRoom(JoinRoomDTO model)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -154,7 +163,9 @@
                 return Response<string>.Failure($"Server error. Please try again later. Error: {ex.Message}", 500);
             }
         }
+        #endregion
 
+        #region Delete Collaborator
         public async Task<Response<RoomUserDTO>> DeleteCollaboratorAsync(string RoomId, string TargetUserId, string leaderId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -211,6 +222,18 @@
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+
+                // Add User Notification (you removed from room)
+
+                var userNotification1 = new UserNotificationDTO
+                {
+                    UserId = TargetUserId,
+                    NotificationId = 11,
+                    Url=$"/room/{RoomId}"
+
+                };
+                await _userNotificationService.SaveNotification(userNotification1);
+
                 return Response<RoomUserDTO>.Success(removedUserDto, "Collaborator removed successfully", 200);
             }
             catch (Exception ex)
@@ -219,7 +242,9 @@
                 return Response<RoomUserDTO>.Failure(new RoomUserDTO(), $"An error occurred while removing collaborator: {ex.Message}", 500);
             }
         }
+        #endregion
 
+        #region Toggle Leadership
         public async Task<Response<RoomUserDTO>> ToggleLeadershipAsync(string roomId, string targetUserId, string leaderId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -272,8 +297,37 @@
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                if (isPromoting)
+                {
+
+                    // Add User Notification (you assigned as admin)
+
+                    var userNotification1 = new UserNotificationDTO
+                    {
+                        UserId = targetUserId,
+                        NotificationId = 5,
+                        Url =$"/room/{roomId}",
+                    };
+                    await _userNotificationService.SaveNotification(userNotification1);
+                }
+                else
+                {
+
+                    // Add User Notification (you removed from being as admin)
+
+                    var userNotification1 = new UserNotificationDTO
+                    {
+                        UserId = targetUserId,
+                        NotificationId = 10,
+                        Url = $"/room/{roomId}",
+
+                    };
+                    await _userNotificationService.SaveNotification(userNotification1);
+                }
+
                 var updatedUserDto = _mapper.Map<RoomUserDTO>(targetUserRoom);
                 return Response<RoomUserDTO>.Success(updatedUserDto, isPromoting ? "User Assigned to leader" : "User Revoked from leader", 200);
+
             }
             catch (Exception ex)
             {
@@ -281,7 +335,9 @@
                 return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "An error occurred while updating leadership status", 500);
             }
         }
+        #endregion
 
+        #region Accept Requests
         public async Task<Response<List<RoomUserDTO>>> AcceptRequestsAsync(string roomId, string leaderId, int? userRoomId = null, bool? approveAll = null)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -297,14 +353,14 @@
 
 
                 // handel add notifications
-                var room = _context.Rooms.FirstOrDefault(r=>r.Id == roomId); 
-                var not = new Notifications{
-                    Title = "🎉 Your Room Join Request is Accepted!",
-                    Message = $"👏 Great news! Your request to join the room **{room.Name}** has been accepted. 🎊 We’re excited to have you on board! 🚀",
-                    Url = $"/room/{roomId}"
-                };
-                _context.Notifications.Add(not);
-                await _context.SaveChangesAsync();
+                //var room = _context.Rooms.FirstOrDefault(r=>r.Id == roomId); 
+                //var not = new Notifications{
+                //    Title = "🎉 Your Room Join Request is Accepted!",
+                //    Message = $"👏 Great news! Your request to join the room **{room.Name}** has been accepted. 🎊 We’re excited to have you on board! 🚀",
+                //    Url = $"/room/{roomId}"
+                //};
+                //_context.Notifications.Add(not);
+                //await _context.SaveChangesAsync();
 
                 if (userRoomId.HasValue)
                 {
@@ -321,12 +377,17 @@
 
 
 
-                    // handel add notifications
-                    var userNot = new UserNotification{
+                    //add notifications
+                    var userNotification = new UserNotificationDTO{
                         UserId = userRoom.UserId,
-                        NotificationId = not.Id
+                        NotificationId = 12,
+                        Url = $"/room/{roomId}"
+
                     };
-                    _context.UserNotifications.Add(userNot);
+
+                    await _userNotificationService.SaveNotification(userNotification);
+
+
                 }
                 else
                 {
@@ -336,7 +397,7 @@
 
                     List<string> UsersIds = new List<string>();
                     requestsToApprove.ForEach(ur => UsersIds.Add(ur.UserId));
-                    await _chatService.JoinAllToRoomChatAsync(roomId, UsersIds); // add all to room caht
+                    await _chatService.JoinAllToRoomChatAsync(roomId, UsersIds); // add all to room chat
 
                     requestsToApprove.ForEach(ur =>
                     {
@@ -348,12 +409,14 @@
                     // send notifications
                     requestsToApprove.ForEach(ur =>
                     {
-                        var userNot = new UserNotification
+                        var userNot = new UserNotificationDTO
                         {
                             UserId = ur.UserId, 
-                            NotificationId = not.Id 
+                            NotificationId = 12,
+                            Url = $"/room/{roomId}"
                         };
-                        _context.UserNotifications.Add(userNot);
+                         _userNotificationService.SaveNotification(userNot);
+
                     });
                 }
                 
@@ -378,7 +441,9 @@
                 return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(),$"An error occurred processing the request: {ex.Message}", 500);
             }
         }
+        #endregion
 
+        #region Reject Requests
         public async Task<Response<string>> RejectRequestsAsync(string roomId, string leaderId, int? userRoomId = null, bool? rejectAll = null)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -399,6 +464,17 @@
                         return Response<string>.Failure("Request not found", 404);
 
                     requestsToReject.Add(userRoom);
+
+                    // add notifications
+                    var userNotification = new UserNotificationDTO
+                    {
+                        UserId = userRoom.UserId,
+                        NotificationId = 13,
+                        Url = $"/room/{roomId}",
+
+                    };
+
+                    await _userNotificationService.SaveNotification(userNotification);
                 }
                 else
                 {
@@ -411,6 +487,20 @@
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                // send notifications
+                requestsToReject.ForEach(ur =>
+                {
+                    var userNot = new UserNotificationDTO
+                    {
+                        UserId = ur.UserId,
+                        NotificationId = 13,
+                        Url = $"/room/{roomId}",
+
+                    };
+                    _userNotificationService.SaveNotification(userNot);
+
+                });
+
                 return Response<string>.Success("Requests rejected successfully.");
             }
             catch (Exception ex)
@@ -419,7 +509,9 @@
                 return Response<string>.Failure($"An error occurred processing the request: {ex.Message}", 500);
             }
         }
+        #endregion
 
+        #region get Latest UserRooms
         public async Task<Response<IEnumerable<ProfileUserRoomDTO>>> getLatestUserRoomsAsync(string userId, bool? isPublic = null)
         {
             if (string.IsNullOrEmpty(userId))
@@ -467,6 +559,7 @@
                 return Response<IEnumerable<ProfileUserRoomDTO>>.Success(new List<ProfileUserRoomDTO>(), $"Server error: {ex.Message}", 500);
             }
         }
+        #endregion
 
     }
 }

@@ -14,6 +14,10 @@ namespace Optern.Domain.Entities
         public string  UserId { get; set; } 
         public int NotificationId { get; set; }
 
+        public string Url { get; set; }
+
+        public DateTime CreatedTime { get; set; }
+
         public bool IsRead { get; set; } = false;
 
         // Navigation Properties

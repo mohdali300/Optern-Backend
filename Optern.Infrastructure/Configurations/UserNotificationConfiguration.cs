@@ -19,6 +19,10 @@
 
             builder.Property(n=>n.NotificationId)
                 .IsRequired();
+
+
+            builder.Property(n => n.CreatedTime)
+                   .HasDefaultValueSql("NOW()");
             #endregion
 
             #region Relations
