@@ -6,7 +6,7 @@ using Optern.Domain.Entities;
 	public class WorkSpaceQuery
 	{
 		[GraphQLDescription("Get All WorkSpace")]
-		public async Task<Response<List<WorkSpace>>> GetRoomWorkSpaces([Service] IWorkSpaceService _workSpaceService,string roomId)
+		public async Task<Response<IEnumerable<WorkSpace>>> GetRoomWorkSpaces([Service] IWorkSpaceService _workSpaceService,string roomId)
 			=> await _workSpaceService.GetAllWorkSpace(roomId);
 			
 		[GraphQLDescription("Get WorkSpace By Id")]

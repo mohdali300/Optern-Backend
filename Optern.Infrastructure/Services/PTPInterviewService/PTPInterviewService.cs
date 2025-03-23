@@ -210,6 +210,16 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             try
             {
+                if (!DateTime.TryParse(scheduledDate, out DateTime parsedDate))
+                {
+                    return Response<List<PTPInterviewTimeSlotDTO>>.Failure(new List<PTPInterviewTimeSlotDTO>(), "Invalid date format.", 400);
+                }
+
+                if (!Enum.IsDefined(typeof(InterviewCategory), category) ||
+                    !Enum.IsDefined(typeof(InterviewQuestionType), questionType))
+                {
+                    return Response<List<PTPInterviewTimeSlotDTO>>.Failure(new List<PTPInterviewTimeSlotDTO>(), "Invalid category or question type", 400);
+                }
                 //string cacheKey = $"InterviewTimeSlots_{category}_{questionType}_{scheduledDate}";
 
                 //var cachedData = _cacheService.GetData<List<PTPInterviewTimeSlotDTO>>(cacheKey);
