@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using NUnit.Framework;
 using Optern.Application.DTOs.Room;
+using Optern.Application.DTOs.Skills;
 using Optern.Application.Interfaces.IChatService;
 using Optern.Application.Interfaces.IRoomSettingService;
 using Optern.Application.Interfaces.IRoomSkillService;
@@ -104,7 +105,9 @@ namespace Optern.Test.RoomTest.RoomSettingsTests
                 Name = "Updeted name",
                 Description = "Updeted description",
                 RoomType = RoomType.Private,
-                Positions = new List<int> { 1 }
+                Positions = new List<int> { 1 },
+                //Skills=new List<SkillDTO> { new SkillDTO { Id=4,Name="MicroServices"} },
+                Tracks=new List<int> { 3}
             };
 
             var result = await _roomSettingService.EditRoom("room2", model);
@@ -392,6 +395,50 @@ namespace Optern.Test.RoomTest.RoomSettingsTests
                     var room = _rooms.FirstOrDefault(x => x.Id == id);
                     return room!;
                 });
+
+            _mockUnitOfWork.Setup(uow => uow.Skills.AddRangeAsync(It.IsAny<List<Skills>>()))
+                .Returns((List<Skills> entities) =>
+                {
+                    var id = 4;
+                    foreach (var entity in entities)
+                    {
+                        entity.Id = id++;
+                    }
+                    return Task.CompletedTask;
+                });
+
+                _mockUnitOfWork.Setup(uow => uow.RoomSkills.AddRangeAsync(It.IsAny<List<RoomSkills>>()))
+                .Returns((List<RoomSkills> entities) =>
+                {
+                    var id = 4;
+                    foreach (var entity in entities)
+                    {
+                        entity.Id = id++;
+                    }
+                    return Task.CompletedTask;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.RoomTracks.AddRangeAsync(It.IsAny<List<RoomTrack>>()))
+                .Returns((List<RoomTrack> entities) =>
+                {
+                    var id = 4;
+                    foreach (var entity in entities)
+                    {
+                        entity.Id = id++;
+                    }
+                    return Task.CompletedTask;
+                });
+
+            _mockUnitOfWork.Setup(uow => uow.Skills.DeleteAsync(It.IsAny<Skills>()))
+                .Returns(Task.CompletedTask);
+
+            _mockUnitOfWork.Setup(uow => uow.RoomSkills.DeleteAsync(It.IsAny<RoomSkills>()))
+                .Returns(Task.CompletedTask);
+
+            _mockUnitOfWork.Setup(uow => uow.Tracks.DeleteAsync(It.IsAny<Track>()))
+                .Returns(Task.CompletedTask);
+            _mockUnitOfWork.Setup(uow => uow.RoomTracks.DeleteAsync(It.IsAny<RoomTrack>()))
+                .Returns(Task.CompletedTask);
         }
 
         #endregion Helpers

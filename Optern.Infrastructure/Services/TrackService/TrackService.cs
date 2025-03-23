@@ -4,12 +4,10 @@ namespace Optern.Infrastructure.Services.TrackService
     public class TrackService :ITrackService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly OpternDbContext _context;
 
-        public TrackService(IUnitOfWork unitOfWork, OpternDbContext context)
+        public TrackService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _context = context;
         }
 
         #region GetAll
