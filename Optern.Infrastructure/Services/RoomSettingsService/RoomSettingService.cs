@@ -1,26 +1,22 @@
-﻿
-namespace Optern.Infrastructure.Services.RoomSettings
+﻿namespace Optern.Infrastructure.Services.RoomSettings
 {
-    public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IUserService userService,
-        ICloudinaryService cloudinaryService, IRoomService roomService, ISkillService skillService, IRoomSkillService roomSkillService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, IChatService chatService) : IRoomSettingService
+    public class RoomSettingService(IUnitOfWork unitOfWork, OpternDbContext context, ICloudinaryService cloudinaryService,
+        ISkillService skillService, IRoomSkillService roomSkillService, IRoomPositionService roomPositionService, IRoomTrackService roomTrackService, IChatService chatService) : IRoomSettingService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
-        private readonly IMapper _mapper = mapper;
-        private readonly IUserService _userService = userService;
         private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
-        private readonly IRoomService _roomService = roomService;
         private readonly ISkillService _skillService = skillService;
         private readonly IRoomSkillService _roomSkillService = roomSkillService;
         private readonly IRoomPositionService _roomPositionService = roomPositionService;
         private readonly IRoomTrackService _roomTrackService = roomTrackService;
         private readonly IChatService _chatService = chatService;
 
-
         #region EditRoom Settings
+
         public async Task<Response<string>> EditRoom(string id, EditRoomDTO model)
         {
-            if (model == null)
+            if (model == null || string.IsNullOrEmpty(id))
             {
                 return Response<string>.Failure("Invalid Data Model", 400);
             }
@@ -89,7 +85,6 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
                 return Response<string>.Success($"{room.CoverPicture}", "Room Image Updated Successfully", 200);
-
             }
             catch (Exception ex)
             {
@@ -97,9 +92,11 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 return Response<string>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
             }
         }
-        #endregion
+
+        #endregion EditRoom Settings
 
         #region Delete Room
+
         public async Task<Response<bool>> DeleteRoom(string roomId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -108,7 +105,7 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
                 if (room == null)
                 {
-                    return Response<bool>.Failure(false, "Room not Found !", 404);
+                    return Response<bool>.Failure(false, "Room not Found!", 404);
                 }
                 await _unitOfWork.Rooms.DeleteAsync(room);
                 await _unitOfWork.SaveAsync();
@@ -121,7 +118,8 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
         }
-        #endregion
+
+        #endregion Delete Room
 
         #region Reset Room
 
@@ -152,18 +150,16 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 }
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
-                return Response<bool>.Success(true, "Room Rested Successfully", 200);
-
+                return Response<bool>.Success(true, "Room Reseted Successfully", 200);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 return Response<bool>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
-
         }
 
-        #endregion
+        #endregion Reset Room
 
         #region Leave Room
 
@@ -191,14 +187,11 @@ namespace Optern.Infrastructure.Services.RoomSettings
                         var remainingAdmins = await _context.UserRooms.CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != userId);
                         if (remainingAdmins == 0)
                         {
-
                             return Response<bool>.Failure(false, "You must specify a new admin before leaving as the last admin", 400);
-
                         }
                     }
                     else
                     {
-
                         _context.Rooms.Remove(userRoom.Room);
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
@@ -206,12 +199,9 @@ namespace Optern.Infrastructure.Services.RoomSettings
                     }
                 }
 
-
                 _context.UserRooms.Remove(userRoom);
                 await _chatService.RemoveFromRoomChatAsync(userRoom.Room.ChatId, userId); // remove from room chat
                 await _context.SaveChangesAsync();
-
-
 
                 await transaction.CommitAsync();
                 return Response<bool>.Success(true, "Successfully left the room", 200);
@@ -222,11 +212,13 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 return Response<bool>.Failure(false, $"An error occurred while leaving the room: {ex.Message}", 500);
             }
         }
-        #endregion
 
+        #endregion Leave Room
 
         // Helpers Functions
+
         #region Update Skills For Room
+
         private async Task<bool> UpdateRoomSkills(Room room, List<SkillDTO>? newSkills)
         {
             if (newSkills == null || !newSkills.Any())
@@ -291,10 +283,10 @@ namespace Optern.Infrastructure.Services.RoomSettings
             return true;
         }
 
-
-        #endregion
+        #endregion Update Skills For Room
 
         #region Update Positions For Room
+
         private async Task<bool> UpdateRoomPositions(Room room, List<int>? newPositions)
         {
             if (newPositions == null || !newPositions.Any())
@@ -319,9 +311,11 @@ namespace Optern.Infrastructure.Services.RoomSettings
             }
             return true;
         }
-        #endregion
+
+        #endregion Update Positions For Room
 
         #region Update Tracks For Room
+
         public async Task<bool> UpdateRoomTracks(Room room, IEnumerable<int> newTracks)
         {
             if (newTracks == null || !newTracks.Any())
@@ -343,16 +337,12 @@ namespace Optern.Infrastructure.Services.RoomSettings
                 {
                     var roomTrakcs = new List<RoomTrack> { new RoomTrack { TrackId = roomTrack } };
                     var response = await _roomTrackService.AddRoomTrack(room.Id, roomTrakcs.Select(r => r.TrackId).ToList());
-
                 }
             }
             await _unitOfWork.SaveAsync();
             return true;
         }
-        #endregion
 
-
-
-
+        #endregion Update Tracks For Room
     }
 }
