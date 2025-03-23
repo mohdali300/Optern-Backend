@@ -617,7 +617,398 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
                 Assert.That(user2Questions.Any(), Is.False);
             });
         }
+
         #endregion
+
+        #region Get User PTPInterview Questions Tests
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_WithEmptyUserId_ReturnsBadRequest()
+        {
+            // Arrange
+            int interviewId = 110; 
+            string emptyUserId = ""; // invalid
+
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(interviewId, emptyUserId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when user ID is empty.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result.Message, Does.Contain("Invalid")
+                    .Or.Contain("required"), "Expected error message about invalid user ID.");
+            });
+        }
+
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_WithInvalidInterviewID_ReturnsNotFound()
+        {
+            // Arrange
+            int invalidInterviewId = 0; 
+            string userId = "user1";
+
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(invalidInterviewId, userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when interview ID is invalid.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Does.Contain("Interview not found"));
+            });
+        }
+
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_WithNonExistentInterview_ReturnsNotFound()
+        {
+            // Arrange
+            int nonExistentInterviewId = 999; // Interview ID that does not exist
+            string userId = "user1";
+
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(nonExistentInterviewId, userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when interview is not found.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound), "Expected status 404 for non-existent interview.");
+                Assert.That(result.Message, Does.Contain("Interview not found"), "Expected error message to mention 'Interview not found'.");
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count, Is.EqualTo(0), "Expected an empty list of questions.");
+            });
+        }
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_WithUserNotAssociated_ReturnsUnauthorized()
+        {
+            // Arrange
+            int interviewId = 110;
+
+            string userId = "user2"; // user2 is not associated
+
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(interviewId, userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when user is not associated with the interview.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden), "Expected status 403 for unauthorized access.");
+                Assert.That(result.Message, Does.Contain("Unauthorized"), "Expected error message to mention unauthorized.");
+            });
+        }
+
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_WhenNoQuestionsAssigned_ReturnsEmptyList()
+        {
+            // Arrange
+            int interviewId = 18;
+            var interview = new PTPInterview
+            {
+                Id = interviewId,
+                ScheduledDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd"),
+                ScheduledTime = InterviewTimeSlot.TenPM,
+                Category = InterviewCategory.SQL,
+                QusestionType = InterviewQuestionType.Beginner,
+                Status = InterviewStatus.Scheduled,
+                PeerToPeerInterviewUsers = new List<PTPUsers>
+                {
+                    new PTPUsers { Id = 27, UserID = "user3" }
+                },
+                PTPQuestionInterviews = new List<PTPQuestionInterview>() // No questions assigned
+            };
+            _context.PTPInterviews.Add(interview);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(interviewId, "user3");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected success even if no questions are assigned.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK), "Expected status 200.");
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count, Is.EqualTo(0), "Expected an empty list of questions.");
+                Assert.That(result.Message, Does.Contain("No questions found"), "Expected message indicating no questions were found.");
+            });
+        }
+
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_WithQuestionsAssigned_ReturnsQuestionList()
+        {
+            // Arrange
+            int interviewId = 110;
+           
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(interviewId, "user1");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected success when questions are assigned.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Count, Is.EqualTo(1), "Expected 1 assigned questions.");
+                // Optionally, check properties of one of the questions
+                Assert.That(result.Data.First().Title, Is.EqualTo("Question 1"));
+                Assert.That(result.Message, Does.Contain("retrieved successfully"));
+            });
+        }
+
+        [Test]
+        [Category("GetUserPTPInterviewQuestionsTests")]
+        public async Task GetUserPTPInterviewQuestionsAsync_MultipleUsersIgnoresOtherUsersQuestions()
+        {
+            // Arrange
+            int interviewId = 102;
+            
+
+            // Act
+            var result = await _ptpInterviewService.GetUserPTPInterviewQuestionsAsync(interviewId, "user2");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected success for a valid interview and user.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null);
+                // Only the questions assigned to user2 should be returned
+                Assert.That(result.Data.Count, Is.EqualTo(1), "Expected exactly 1 question for user2.");
+                // Optionally, assert the content of the question
+                Assert.That(result.Data.First().Title, Is.EqualTo("Question 1"));
+            });
+        }
+
+
+        #endregion
+
+        #region Start PTP Interview Session Tests
+        [Test]
+        [Category("StartPTPInterviewSessionTests")]
+        public async Task StartPTPInterviewSessionAsync_WithEmptyUserIdOrInvaildInterviewId_ReturnsBadRequest()
+        {
+            // Arrange
+            int invalidInterviewId = 0;
+            string emptyUserId = ""; //or null
+
+            // Act
+            var result1 = await _ptpInterviewService.StartPTPInterviewSessionAsync(invalidInterviewId, "user1");
+            var result2 = await _ptpInterviewService.StartPTPInterviewSessionAsync(100, emptyUserId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result1.IsSuccess, Is.False, "Expected failure when interviewId is Invaild.");
+                Assert.That(result1.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result1.Message, Does.Contain("Invalid user or interview id"));
+
+                Assert.That(result2.IsSuccess, Is.False, "Expected failure when userId is empty.");
+                Assert.That(result2.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result2.Message, Does.Contain("Invalid user or interview id"));
+            });
+        }
+
+        [Test]
+        [Category("StartPTPInterviewSessionTests")]
+        public async Task StartPTPInterviewSessionAsync_WithNonExistentInterview_ReturnsNotFound()
+        {
+            // Arrange
+            int nonExistentInterviewId = 999; // invaild id 
+            string userId = "user1";
+
+            // Act
+            var result = await _ptpInterviewService.StartPTPInterviewSessionAsync(nonExistentInterviewId, userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when interview is not found.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Does.Contain("Interview not found"));
+            });
+        }
+
+        [Test]
+        [Category("StartPTPInterviewSessionTests")]
+        public async Task StartPTPInterviewSessionAsync_WithUserNotAssociated_ReturnsUnauthorized()
+        {
+            // Arrange: 
+            int interviewId = 110;
+
+            string userId = "user2"; // not associated with the interview
+
+            // Act
+            var result = await _ptpInterviewService.StartPTPInterviewSessionAsync(interviewId, userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when user is not associated with the interview.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden));
+                Assert.That(result.Message, Does.Contain("user isn’t a participant"));
+            });
+        }
+
+        [Test]
+        [Category("StartPTPInterviewSessionTests")]
+        public async Task StartPTPInterviewSessionAsync_WhenInValidTimeRange_ReturnsBadRequest()
+        {
+            // Arrange: Seed an interview where the current time is not within the valid window.
+            int notComeInterviewId = 110;
+            int tooLateInterviewId = 102;
+
+            // Act
+            var result1 = await _ptpInterviewService.StartPTPInterviewSessionAsync(notComeInterviewId, "user1");
+            var result2 = await _ptpInterviewService.StartPTPInterviewSessionAsync(tooLateInterviewId, "user2");
+
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result1.IsSuccess, Is.False);
+                Assert.That(result1.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result1.Message, Does.Contain("not come yet"));
+
+                Assert.That(result2.IsSuccess, Is.False);
+                Assert.That(result2.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result2.Message, Does.Contain("is too late"));
+            });
+        }
+
+        [Test]
+        [Category("StartPTPInterviewSessionTests")]
+        public async Task StartPTPInterviewSessionAsync_WithValidData_StartsSessionSuccessfully() //fine tuning date to match
+        {
+            // Arrange: 
+            int interviewId = 113;
+            
+            var scheduledDate = DateTime.Now.AddMinutes(23).ToString("yyyy-MM-dd"); 
+            TestContext.WriteLine($"ScheduledDate: {scheduledDate}");                      
+            var interview = new PTPInterview
+            {
+                Id = interviewId,
+                ScheduledDate = scheduledDate,
+                ScheduledTime = InterviewTimeSlot.SixPM,
+                Category = InterviewCategory.SQL,
+                QusestionType = InterviewQuestionType.Beginner,
+                SlotState = TimeSlotState.TakenByOne,
+                Status = InterviewStatus.Scheduled,
+                PeerToPeerInterviewUsers = new List<PTPUsers>
+                {
+                    new PTPUsers { Id = 35, UserID = "user2" }
+                },
+                PTPQuestionInterviews = new List<PTPQuestionInterview>()
+            };
+            _context.PTPInterviews.Add(interview);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _ptpInterviewService.StartPTPInterviewSessionAsync(interviewId, "user2");
+
+            // Assert
+            Assert.Multiple(async () =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected the session to start successfully with valid inputs.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Message, Does.Contain("Interview session strated").Or.Contain("started"));
+
+                // Optionally, verify that the interview's status is updated in the database:
+                var updatedInterview = await _context.PTPInterviews.FindAsync(interviewId);
+                Assert.That(updatedInterview.Status, Is.EqualTo(InterviewStatus.InProgress));
+            });
+        }
+
+
+
+        #endregion
+
+        #region End PTP Interview Session Tests
+
+        [Test]
+        [Category("EndPTPInterviewSessionTests")]
+        public async Task EndPTPInterviewSessionAsync_WithNonExistentInterview_ReturnsNotFound()
+        {
+            // Arrange
+            int nonExistentInterviewId = 999; 
+
+            // Act
+            var result = await _ptpInterviewService.EndPTPInterviewSessionAsync(nonExistentInterviewId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when interview is not found.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Does.Contain("Interview not found"));
+            });
+        }
+
+        [Test]
+        [Category("EndPTPInterviewSessionTests")]
+        public async Task EndPTPInterviewSessionAsync_WithInterviewNotInProgress_ReturnsBadRequest()
+        {
+            // Arrange
+            int interviewId = 110;
+           
+            // Act
+            var result = await _ptpInterviewService.EndPTPInterviewSessionAsync(interviewId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result.Message, Does.Contain("didn’t begin"), "Expected message indicating the interview has not started.");
+            });
+        }
+
+        [Test]
+        [Category("EndPTPInterviewSessionTests")]
+        public async Task EndPTPInterviewSessionAsync_WithValidData_StartsSessionSuccessfully()
+        {
+            // Arrange
+            int interviewId = _interviewIdCounter++;
+            var interview = new PTPInterview
+            {
+                Id = interviewId,
+                ScheduledDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd"),
+                ScheduledTime = InterviewTimeSlot.TenPM,
+                Category = InterviewCategory.SQL,
+                QusestionType = InterviewQuestionType.Beginner,
+                Status = InterviewStatus.InProgress, // Valid state to end
+                PeerToPeerInterviewUsers = new List<PTPUsers>
+                {
+                    new PTPUsers { Id = 2, UserID = "user1" }
+                },
+                PTPQuestionInterviews = new List<PTPQuestionInterview>()
+            };
+            _context.PTPInterviews.Add(interview);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _ptpInterviewService.EndPTPInterviewSessionAsync(interviewId);
+
+            // Assert
+            Assert.Multiple(async () =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected successful response for valid end session.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Message, Does.Contain("Interview session ended"));
+                var updatedInterview = await _context.PTPInterviews.FindAsync(interviewId);
+                Assert.That(updatedInterview.Status, Is.EqualTo(InterviewStatus.Completed));
+            });
+        }
+        #endregion
+
         #region Helpers
         private async void CreateSampleData()
         {
@@ -643,6 +1034,16 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
                    PeerToPeerInterviewUsers = new List<PTPUsers>
                    {
                        new PTPUsers { Id = 150, UserID = "user1" }
+                   },
+                   PTPQuestionInterviews=new List<PTPQuestionInterview>
+                   {
+                       new PTPQuestionInterview
+                       {
+                           Id = 301,
+                           PTPInterviewId = 110,
+                           PTPQuestionId = 101,
+                           PTPUserId = 150
+                       }
                    }
                },
                new PTPInterview
@@ -701,7 +1102,24 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
                 {
                     new PTPUsers { Id = 22, UserID = "user2" },
                     new PTPUsers { Id = 33, UserID = "user3" }
-                }
+                },
+                PTPQuestionInterviews=new List<PTPQuestionInterview>
+                   {
+                       new PTPQuestionInterview
+                       {
+                           Id = 22,
+                           PTPInterviewId = 102,
+                           PTPQuestionId = 101,
+                           PTPUserId = 22
+                       },
+                       new PTPQuestionInterview
+                       {
+                           Id = 33,
+                           PTPInterviewId = 102,
+                           PTPQuestionId = 102,
+                           PTPUserId = 33
+                       }
+                   }
                },
                new PTPInterview
                {

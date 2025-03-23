@@ -333,6 +333,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Response<List<PTPQuestionDTO>>.Failure(new List<PTPQuestionDTO>(), "Invalid parameter: userId is required.", 400);
+                }
                 var interview = await _context.PTPInterviews
                     .Include(i => i.PeerToPeerInterviewUsers)
                     .Include(i => i.PTPQuestionInterviews)
