@@ -6,18 +6,24 @@ namespace Optern.Infrastructure.Services.WorkSpaceService
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
 		private readonly IMapper _mapper = mapper;
+		
 
 		#region Get WorkSpace Title
 		public async Task<Response<WorkSpace>> GetWorkSpace(int id)
 		{
-			try
+			if(id == 0)
+			{
+                return Response<WorkSpace>.Failure(new WorkSpace(), "Invalid Id", 400);
+
+            }
+            try
 			{
 				var workSpace = await _unitOfWork.WorkSpace.GetByIdAsync(id);
 				if (workSpace == null)
 				{
 					return Response<WorkSpace>.Failure(new WorkSpace(), "WorkSpace Not Found!", 404);
 				}
-				return Response<WorkSpace>.Success(workSpace, "Workspace Fetched Successfully", 201);
+				return Response<WorkSpace>.Success(workSpace, "Workspace Fetched Successfully", 200);
 			}
 			catch (Exception ex)
 			{
@@ -29,7 +35,8 @@ namespace Optern.Infrastructure.Services.WorkSpaceService
 		#region Create New WorkSpace
 		public async Task<Response<WorkSpaceDTO>> CreateWorkSpace(WorkSpaceDTO model)
 		{
-			using var transaction = await _context.Database.BeginTransactionAsync();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
 			try
 			{
 				var room = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
@@ -65,22 +72,23 @@ namespace Optern.Infrastructure.Services.WorkSpaceService
 		#endregion
 		
 		  #region get all WorkSpace
-		public async Task<Response<List<WorkSpace>>> GetAllWorkSpace(string roomId)
+		public async Task<Response<IEnumerable<WorkSpace>>> GetAllWorkSpace(string roomId)
 		{
 			try
 			{
 				var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
 				if (room == null)
 				{
-					return Response<List<WorkSpace>>.Failure(new List<WorkSpace>(), "Room Not Found!", 404);
+					return Response<IEnumerable<WorkSpace>>.Failure(new List<WorkSpace>(), "Room Not Found!", 404);
 				}
-				var workSpaces = await _context.WorkSpaces.Where(ws=>ws.RoomId == roomId).ToListAsync();
+				var workSpaces = await _unitOfWork.WorkSpace.GetAllByExpressionAsync(ws => ws.RoomId == roomId);    
 
-				return Response<List<WorkSpace>>.Success(workSpaces, "Workspace Fetched Successfully", 201);
+				return workSpaces.Any()? Response<IEnumerable<WorkSpace>>.Success(workSpaces, "Workspace Fetched Successfully", 200):
+										 Response<IEnumerable<WorkSpace>>.Success(workSpaces, "Workspace Fetched Successfully", 204);
 			}
 			catch (Exception ex)
 			{
-				return Response<List<WorkSpace>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
+				return Response<IEnumerable<WorkSpace>>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
 			}
 		}
 		#endregion
