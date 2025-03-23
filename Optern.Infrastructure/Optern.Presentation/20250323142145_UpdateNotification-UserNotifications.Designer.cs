@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250323142145_UpdateNotification-UserNotifications")]
+    partial class UpdateNotificationUserNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -638,6 +641,9 @@ namespace Optern.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("RoomId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Title")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
@@ -645,6 +651,8 @@ namespace Optern.Infrastructure.Migrations
                         .HasDefaultValue("");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
 
                     b.ToTable("Notifications", (string)null);
                 });
@@ -1819,6 +1827,13 @@ namespace Optern.Infrastructure.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("Optern.Domain.Entities.Notifications", b =>
+                {
+                    b.HasOne("Optern.Domain.Entities.Room", null)
+                        .WithMany("Notifications")
+                        .HasForeignKey("RoomId");
+                });
+
             modelBuilder.Entity("Optern.Domain.Entities.PTPFeedBack", b =>
                 {
                     b.HasOne("Optern.Domain.Entities.PTPUsers", "GivenByUser")
@@ -2324,6 +2339,8 @@ namespace Optern.Infrastructure.Migrations
 
             modelBuilder.Entity("Optern.Domain.Entities.Room", b =>
                 {
+                    b.Navigation("Notifications");
+
                     b.Navigation("Repository")
                         .IsRequired();
 

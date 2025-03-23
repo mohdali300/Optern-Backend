@@ -125,7 +125,6 @@ namespace Optern.Infrastructure.Hubs
                 {
                     Title = title,
                     Message = message,
-                    Url = Url
                 };
 
                 var notificationResult = await _notificationService.AddNotification(notification);
@@ -140,7 +139,8 @@ namespace Optern.Infrastructure.Hubs
                     var userNotification = new UserNotificationDTO()
                     {
                         UserId = user.Id,
-                        NotificationId = notificationResult.Data.Id
+                        NotificationId = notificationResult.Data.Id,
+                        Url = Url
                     };
                     await _userNotificationService.SaveNotification(userNotification);
                 }
@@ -165,7 +165,6 @@ namespace Optern.Infrastructure.Hubs
                 {
                     Title = title,
                     Message = message,
-                    Url = Url
                 };
 
                 var notificationResult = await _notificationService.AddNotification(notification);
@@ -177,7 +176,8 @@ namespace Optern.Infrastructure.Hubs
                 var userNotification = new UserNotificationDTO()
                 {
                     UserId = userId,
-                    NotificationId = notificationResult.Data.Id
+                    NotificationId = notificationResult.Data.Id,
+                    Url = Url
                 };
                 var userNotificationResult = await _userNotificationService.SaveNotification(userNotification);
 
@@ -201,6 +201,7 @@ namespace Optern.Infrastructure.Hubs
 
 
         #region Send Notification To All in Room
+        /*
         public async Task<Response<bool>> SendNotificationToAllInRoom(string roomId, string? title, string message,string Url)
         {
             if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(roomId))
@@ -214,8 +215,6 @@ namespace Optern.Infrastructure.Hubs
                 {
                     Title = title,
                     Message = message,
-                    RoomId = roomId,
-                    Url = Url
                 };
 
                 var notificationResult = await _notificationService.AddNotification(notification);
@@ -245,6 +244,7 @@ namespace Optern.Infrastructure.Hubs
                 return Response<bool>.Failure("An error occurred while sending the notification", 500);
             }
         } 
+        */
         #endregion
 
 

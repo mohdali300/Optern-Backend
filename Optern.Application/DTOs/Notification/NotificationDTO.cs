@@ -11,7 +11,5 @@ namespace Optern.Application.DTOs.Notification
 
         public string? Title { get; set; }
         public string Message { get; set; }
-        public string RoomId { get; set; }
-        public string Url { get; set; }
     }
 }

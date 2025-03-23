@@ -5,13 +5,12 @@ using Task = Optern.Domain.Entities.Task;
 
 namespace Optern.Infrastructure.Services.TaskService
 {
-	public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICloudinaryService cloudinaryService, INotificationService notificationService, IUserNotificationService userNotificationService) : ITaskService
+	public class TaskService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, ICloudinaryService cloudinaryService, IUserNotificationService userNotificationService) : ITaskService
 	{
 		private readonly IUnitOfWork _unitOfWork = unitOfWork;
 		private readonly OpternDbContext _context = context;
 		private readonly IMapper _mapper = mapper;
 		private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
-        private readonly INotificationService _notificationService= notificationService;
         private readonly IUserNotificationService _userNotificationService= userNotificationService;
 
         #region Add Task
@@ -94,7 +93,8 @@ namespace Optern.Infrastructure.Services.TaskService
                     var userNotification1 = new UserNotificationDTO
                     {
                         UserId = assignedUser.Id,
-                        NotificationId = 3
+                        NotificationId = 3,
+						Url = $"/task/{task.Id}"
                     };
                     await _userNotificationService.SaveNotification(userNotification1);
                 }
@@ -117,7 +117,9 @@ namespace Optern.Infrastructure.Services.TaskService
                 var userNotification = new UserNotificationDTO
                 {
                     UserId = userId,
-                    NotificationId = 2
+                    NotificationId = 2,
+                    Url = $"/task/{task.Id}"
+
                 };
                 await _userNotificationService.SaveNotification(userNotification);
 
@@ -236,7 +238,9 @@ namespace Optern.Infrastructure.Services.TaskService
                         var userNotification = new UserNotificationDTO
                         {
                             UserId = userremoved.Id,
-                            NotificationId = 6
+                            NotificationId = 6,
+                            Url = $"/task/{task.Id}"
+
                         };
                         await _userNotificationService.SaveNotification(userNotification);
                     }
@@ -259,7 +263,8 @@ namespace Optern.Infrastructure.Services.TaskService
                         var userNotification = new UserNotificationDTO
                         {
                             UserId = useradded.Id,
-                            NotificationId = 3
+                            NotificationId = 3,
+                            Url = $"/task/{task.Id}"
                         };
                         await _userNotificationService.SaveNotification(userNotification);
                     }
