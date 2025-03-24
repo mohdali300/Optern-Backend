@@ -1,9 +1,5 @@
 ﻿using NUnit.Framework;
 using Moq;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using AutoMapper;
@@ -16,14 +12,10 @@ using Optern.Application.DTOs.Question;
 using Optern.Application.Interfaces.IPTPInterviewService;
 using Optern.Domain.Extensions;
 using Optern.Infrastructure.Services.PTPInterviewService;
-using Optern.Application.DTOs.Post;
 using Optern.Infrastructure.ExternalInterfaces.ICacheService;
 using Task = System.Threading.Tasks.Task;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
-using System.Runtime.Intrinsics.X86;
 using System.Linq.Expressions;
-using Hangfire.States;
 
 
 namespace Optern.Test.InterviewTest.PTPInterviewTests
@@ -1009,6 +1001,164 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
         }
         #endregion
 
+        #region Get User Current PTP Interview Session Tests
+
+        [Test]
+        [Category("GetUserCurrentPTPInterviewSessionTests")]
+        public async Task GetUserCurrentPTPInterviewSessionAsync_WithInvaildUserId_ReturnsBadRequest()
+        {
+            // Arrange
+            string emptyUserId = "";  //or null
+
+            // Act
+            var result = await _ptpInterviewService.GetUserCurrentPTPInterviewSessionAsync(emptyUserId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False, "Expected failure when user id is empty.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result.Message, Does.Contain("Invalid user id"));
+            });
+        }
+
+        [Test]
+        [Category("GetUserCurrentPTPInterviewSessionTests")]
+        public async Task GetUserCurrentPTPInterviewSessionAsync_WithNoRunningInterview_ReturnsNoContent()
+        {
+            // Arrange
+            string userId = "user2"; //no interview with Status InProgress exists
+
+
+            // Act
+            var result = await _ptpInterviewService.GetUserCurrentPTPInterviewSessionAsync(userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected success response even if no interview is found.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
+                Assert.That(result.Message, Does.Contain("no running interviews"));
+                Assert.That(result.Data, Is.Not.Null);
+            });
+        }
+
+        [Test]
+        [Category("GetUserCurrentPTPInterviewSessionTests")]
+        public async Task GetUserCurrentPTPInterviewSessionAsync_WithActiveInterview_ReturnsInterview()
+        {
+            // Arrange
+            string userId = "user4";
+            int interviewId = 117;
+            var interview = new PTPInterview
+            {
+                Id = interviewId,
+                ScheduledDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd"),
+                ScheduledTime = InterviewTimeSlot.TenPM,
+                Category = InterviewCategory.SQL,
+                QusestionType = InterviewQuestionType.Beginner,
+                Status = InterviewStatus.InProgress,
+                PeerToPeerInterviewUsers = new List<PTPUsers>
+            {
+                new PTPUsers { Id = 17, UserID = userId }
+            }
+            };
+            _context.PTPInterviews.Add(interview);
+            await _context.SaveChangesAsync();
+
+            
+
+            // Act
+            var result = await _ptpInterviewService.GetUserCurrentPTPInterviewSessionAsync(userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected success when an active interview exists for the user.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Message, Does.Contain("Interview found"));
+                Assert.That(result.Data, Is.Not.Null);
+                Assert.That(result.Data.Id, Is.EqualTo(interviewId));
+                Assert.That(result.Data.ScheduledTimeDisplay, Is.EqualTo(interview.ScheduledTime.GetDisplayName()));
+            });
+        }
+
+
+        #endregion
+
+        #region Past Interviews Tests
+        [Test]
+        [Category("PastInterviewsTests")]
+        public async Task PastInterviews_WithInvaildUserId_ReturnsBadRequest()
+        {
+            // Arrange
+            string emptyUserId = ""; //or null
+
+            // Act
+            var result = await _ptpInterviewService.PastInterviews(emptyUserId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+                Assert.That(result.Message, Does.Contain("Invalid parameter: userId is required."));
+            });
+        }
+
+        [Test]
+        [Category("PastInterviewsTests")]
+        public async Task PastInterviews_WithNoPastInterviewsFound_ReturnsNotFound()
+        {
+            // Arrange
+            string userId = "userNotInInterviews";
+
+            // Act
+            var result = await _ptpInterviewService.PastInterviews(userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+                Assert.That(result.Message, Does.Contain("No Past Interviews found"));
+                Assert.That(result.Data, Is.Empty);
+            });
+        }
+
+        [Test]
+        [Category("PastInterviewsTests")]
+        public async Task PastInterviews_WithPastInterviews_ReturnsOrderedPastInterviews()
+        {
+            // Arrange
+            string userId = "user2"; // user2 has two past interviews
+
+            // Act
+            var result = await _ptpInterviewService.PastInterviews(userId);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True, "Expected success when past interviews exist.");
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.Data, Is.Not.Null, "Expected non-null data.");
+
+                var interviews = result.Data.ToList();
+                // Expecting exactly 2 interviews for user2.
+                Assert.That(interviews.Count, Is.EqualTo(2), "Expected exactly 2 past interviews for user2.");
+
+                DateTime date103 = DateTime.Parse(_context.PTPInterviews.First(i => i.Id == 103).ScheduledDate);
+                DateTime date104 = DateTime.Parse(_context.PTPInterviews.First(i => i.Id == 104).ScheduledDate);
+
+                // The more recent interview (Id 103, scheduled yesterday) should have a later date than the older one (Id 104).
+                Assert.That(date103, Is.GreaterThan(date104), "Expected the interview with Id 103 to have a later date than interview with Id 104.");
+            });
+        }
+
+
+
+        #endregion
+
         #region Helpers
         private async void CreateSampleData()
         {
@@ -1083,10 +1233,24 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
                    Category = InterviewCategory.SQL,
                    QusestionType = InterviewQuestionType.Beginner,
                    SlotState = TimeSlotState.TakenByOne,
-                   Status = InterviewStatus.Scheduled,
+                   Status = InterviewStatus.Completed,
                    PeerToPeerInterviewUsers = new List<PTPUsers>
                    {
                     new PTPUsers { Id = 3, UserID = "user2" }
+                   }
+               },
+               new PTPInterview
+               {
+                   Id = 104,
+                   ScheduledDate = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd"),
+                   ScheduledTime = InterviewTimeSlot.TenPM,
+                   Category = InterviewCategory.SQL,
+                   QusestionType = InterviewQuestionType.Beginner,
+                   SlotState = TimeSlotState.TakenByOne,
+                   Status = InterviewStatus.Completed,
+                   PeerToPeerInterviewUsers = new List<PTPUsers>
+                   {
+                    new PTPUsers { Id = 4, UserID = "user2" }
                    }
                },
                new PTPInterview
@@ -1170,6 +1334,24 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
                  {
                      return _samplePTPInterviews.Where(predicate.Compile());
                  });
+            _mockUnitOfWork.Setup(uow => uow.PTPInterviews.GetAllByExpressionAsync(
+            It.IsAny<Expression<Func<PTPInterview, bool>>>(),
+            It.IsAny<Func<IQueryable<PTPInterview>, IQueryable<PTPInterview>>>()))
+            .ReturnsAsync((Expression<Func<PTPInterview, bool>> predicate, Func<IQueryable<PTPInterview>, IQueryable<PTPInterview>> include) =>
+            {
+                // Compile and filter the list, then convert back to IQueryable.
+                IEnumerable<PTPInterview> filtered = _samplePTPInterviews.Where(predicate.Compile());
+                IQueryable<PTPInterview> query = filtered.AsQueryable();
+
+                if (include != null)
+                {
+                    // Apply the include function. Note: This is just a simulation for in-memory tests.
+                    query = include(query);
+                }
+
+                return query.ToList();
+            });
+
             _mockUnitOfWork.Setup(uow => uow.PTPUsers.AddAsync(It.IsAny<PTPUsers>()))
                 .ReturnsAsync((PTPUsers ptpUser) =>
                 {
