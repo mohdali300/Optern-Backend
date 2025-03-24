@@ -183,7 +183,6 @@ namespace Optern.Application.Mappings
 
             #region Profile
             CreateMap<Education, EducationDTO>()
-                .ForMember(dest => dest.MajorDegree, opt => opt.MapFrom(src => $"{src.Major} {src.Degree}"))
                 .ReverseMap();
             #endregion
 
