@@ -16,9 +16,9 @@ namespace Optern.Infrastructure.Services.AuthService
         private readonly IMailService _mailService;
         private readonly IJWTService _jWTService;
         private readonly OTP _OTP;
-		private readonly IUserNotificationService _userNotificationService;
+        private readonly IUserNotificationService _userNotificationService;
         public AuthService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager,
-            IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP _OTP, IJWTService _jWTService,IUserNotificationService userNotificationService)
+            IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP _OTP, IJWTService _jWTService, IUserNotificationService userNotificationService)
         {
             this._userManager = _userManager;
             this._roleManager = _roleManager;
@@ -26,7 +26,7 @@ namespace Optern.Infrastructure.Services.AuthService
             this._mailService = _mailService;
             this._OTP = _OTP;
             this._jWTService = _jWTService;
-			this._userNotificationService = userNotificationService;
+            this._userNotificationService = userNotificationService;
         }
 
         #region Register
@@ -131,7 +131,7 @@ namespace Optern.Infrastructure.Services.AuthService
                 {
                     UserId = user.Id,
                     NotificationId = 1,
-                    Url="/profile"
+                    Url = "/profile"
                 };
                 await _userNotificationService.SaveNotification(userNotification);
 
@@ -280,7 +280,7 @@ namespace Optern.Infrastructure.Services.AuthService
                 var refreshToken = await GetOrCreateRefreshToken(user);
 
                 var userRoles = await _userManager.GetRolesAsync(user);
-                 var cookieOptions = new CookieOptions
+                var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = false,
@@ -311,6 +311,22 @@ namespace Optern.Infrastructure.Services.AuthService
             catch (Exception ex)
             {
                 return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(), "There is a server error. Please try again later.", 500);
+            }
+        }
+        #endregion
+
+
+        #region LogOut
+        public async Task<Response<bool>> LogOut()
+        {
+            try
+            {
+                _httpContextAccessor.HttpContext.Response.Cookies.Delete("secure_rtk");
+                return Response<bool>.Success(true,"User logout successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, "There is a server error. Please try again later.", 500);
             }
         }
         #endregion
