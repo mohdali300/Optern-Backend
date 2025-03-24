@@ -9,13 +9,13 @@ namespace Optern.Application.DTOs.UserNotification
         public DateTime CreatedTime { get; set; }
         public bool IsRead { get; set; }
 
-        public string url {get;set;}
+        public string Url {get;set;}
 
         public GetUserNotificationDTO()
         {
             Message = string.Empty;
             Title = string.Empty;
-            url = string.Empty;
+            Url = string.Empty;
         }
     }
 

@@ -5,8 +5,6 @@ namespace Optern.Application.DTOs.UserNotification
     {
         public string UserId { get; set; }
         public string? Keyword { get; set; } =string.Empty; 
-        public DateTime? CreatedDate { get; set; }
-        public bool? isDescending { get; set; }
         public bool? IsRead { get; set; } 
     }
 }

@@ -10,8 +10,6 @@
             RuleFor(n => n.Message)
                 .NotEmpty().WithMessage("Message content Cannot be empty!");
 
-            RuleFor(n => n.CreatedTime).LessThanOrEqualTo(DateTime.Now);
-
 
 		}
     }

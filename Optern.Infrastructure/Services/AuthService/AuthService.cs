@@ -130,7 +130,8 @@ namespace Optern.Infrastructure.Services.AuthService
                 var userNotification = new UserNotificationDTO
                 {
                     UserId = user.Id,
-                    NotificationId = 1
+                    NotificationId = 1,
+                    Url="/profile"
                 };
                 await _userNotificationService.SaveNotification(userNotification);
 

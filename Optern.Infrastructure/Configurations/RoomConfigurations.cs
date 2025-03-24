@@ -59,11 +59,6 @@
                 .HasForeignKey(ur => ur.RoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(r => r.Notifications)
-                .WithOne(r=>r.Room)
-                .HasForeignKey(r => r.RoomId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasMany(r => r.WorkSpaces)
                 .WithOne(r => r.Room)
                 .HasForeignKey(r => r.RoomId)
