@@ -15,5 +15,6 @@ namespace Optern.Application.DTOs.User
         public string? Country { get; set; }
         public string? JobTitle { get; set; }
         public string? AboutMe { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }

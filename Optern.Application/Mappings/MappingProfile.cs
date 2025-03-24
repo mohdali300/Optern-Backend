@@ -5,6 +5,7 @@ using Optern.Application.DTOs.Message;
 using Optern.Application.DTOs.PTPFeedback;
 using Optern.Application.DTOs.PTPInterview;
 using Optern.Application.DTOs.Question;
+using Optern.Application.DTOs.User;
 using Optern.Application.DTOs.VFeedback;
 using Optern.Application.DTOs.VInterview;
 
@@ -184,6 +185,8 @@ namespace Optern.Application.Mappings
             #region Profile
             CreateMap<Education, EducationDTO>()
                 .ReverseMap();
+                
+            CreateMap<ApplicationUser, EditProfileDTO>();
             #endregion
 
         }
