@@ -32,7 +32,7 @@ namespace Optern.Infrastructure.Services.TaskActivityService
                  .AnyAsync(ut => ut.TaskId == model.TaskId && ut.UserId == userId);
 
                 if (!isAdmin||!isUserAssignedToTask)
-                    return Response<TaskActivityDTO>.Failure(new TaskActivityDTO(),"You do not have permission to add this task Comment.",400);
+                    return Response<TaskActivityDTO>.Failure(new TaskActivityDTO(),"You do not have permission to add this task Comment.",403);
 
                 var newTaskActivity = new TaskActivity
                 {
@@ -42,7 +42,7 @@ namespace Optern.Infrastructure.Services.TaskActivityService
                     CouldDelete = true,
                     CreatorId = userId
                 };
-
+                            
                 var validate = new TaskActivityValidator().Validate(newTaskActivity);
                 if (!validate.IsValid)
                 {
@@ -58,13 +58,13 @@ namespace Optern.Infrastructure.Services.TaskActivityService
                   .FirstOrDefaultAsync(ta => ta.Id == newTaskActivity.Id);
 
                 if (taskActivity == null)
-                    return Response<TaskActivityDTO>.Failure("Task activity not found.");
+                    return Response<TaskActivityDTO>.Failure("Task activity not found.",404);
 
                 var taskActivityDto = _mapper.Map<TaskActivityDTO>(taskActivity);
 
                 await transaction.CommitAsync();
 
-                return Response<TaskActivityDTO>.Success(taskActivityDto, "Task activity added successfully.",200);
+                return Response<TaskActivityDTO>.Success(taskActivityDto, "Task activity added successfully.",201);
             }
             catch (Exception ex)
             {
@@ -198,7 +198,7 @@ namespace Optern.Infrastructure.Services.TaskActivityService
 
                 if (taskActivities == null || taskActivities.Count == 0)
                 {
-                    return Response<IEnumerable<TaskActivityDTO>>.Failure(new List<TaskActivityDTO>(), "No task activities found for the specified task.", 404);
+                    return Response<IEnumerable<TaskActivityDTO>>.Success(new List<TaskActivityDTO>(), "No task activities found for the specified task.", 204);
                 }
 
                 var taskActivityDtos = _mapper.Map<List<TaskActivityDTO>>(taskActivities);
