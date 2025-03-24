@@ -1,32 +1,34 @@
-﻿
-
-namespace Optern.Infrastructure.Services.RoomTracksService
+﻿namespace Optern.Infrastructure.Services.RoomTracksService
 {
-    public class RoomTrackService(IUnitOfWork unitOfWork, OpternDbContext context) : IRoomTrackService
+    public class RoomTrackService(IUnitOfWork unitOfWork) : IRoomTrackService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly OpternDbContext _context = context;
 
         public async Task<Response<bool>> AddRoomTrack(string roomID, IEnumerable<int> data)
         {
-            if (data == null || !data.Any())
+            if (string.IsNullOrEmpty(roomID) || !data.Any())
             {
                 return Response<bool>.Failure(false, "Invalid Data Model", 400);
-            }     
+            }
             try
             {
-                var roomTracks= data.Select(roomTrack=>new RoomTrack
+                if(!await _unitOfWork.Rooms.AnyAsync(r=>r.Id== roomID))
                 {
-                    TrackId=roomTrack,
-                    RoomId=roomID,
-                }).ToList();
-                await  _unitOfWork.RoomTracks.AddRangeAsync(roomTracks);
-                await _unitOfWork.SaveAsync();
-                return Response<bool>.Success(true, "RoomTracks Added Successfully",201);
-            }
-            catch (Exception ex) {
-                return Response<bool>.Failure(false,$"There is a server error. Please try again later.{ex.Message}", 500);
+                    return Response<bool>.Failure(false, "This room is not found", 404);
+                }
 
+                var roomTracks = data.Select(roomTrack => new RoomTrack
+                {
+                    TrackId = roomTrack,
+                    RoomId = roomID,
+                }).ToList();
+                await _unitOfWork.RoomTracks.AddRangeAsync(roomTracks);
+                await _unitOfWork.SaveAsync();
+                return Response<bool>.Success(true, "RoomTracks Added Successfully", 201);
+            }
+            catch (Exception ex)
+            {
+                return Response<bool>.Failure(false, $"There is a server error. Please try again later.{ex.Message}", 500);
             }
         }
 
@@ -57,6 +59,5 @@ namespace Optern.Infrastructure.Services.RoomTracksService
                 return Response<bool>.Failure(false, $"There is a server error. Please try again later. {ex.Message}", 500);
             }
         }
-
     }
 }
