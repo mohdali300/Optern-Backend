@@ -35,7 +35,7 @@ namespace Optern.Infrastructure.Services.RoomService
 
 			if (cachedrooms is not null)
 			{
-				return Response<IEnumerable<ResponseRoomDTO>>.Success(cachedrooms, "", 200);
+				return Response<IEnumerable<ResponseRoomDTO>>.Success(cachedrooms, "Cached Data Retrieved Successfully", 200);
 			}
 
 			try
@@ -55,7 +55,7 @@ namespace Optern.Infrastructure.Services.RoomService
 			{
 				return Response<IEnumerable<ResponseRoomDTO>>.Failure($"There is a server error. Please try again later. {ex.Message}", 500);
 			}
-		}
+		 }
 		#endregion
 
 		#region GetPopularRooms
@@ -65,7 +65,7 @@ namespace Optern.Infrastructure.Services.RoomService
 
 			if (cachedrooms is not null)
 			{
-				return Response<IEnumerable<ResponseRoomDTO>>.Success(cachedrooms, "", 200);
+				return Response<IEnumerable<ResponseRoomDTO>>.Success(cachedrooms, "Cached Data Retrieved Successfully", 200);
 			}
 
 			try
@@ -101,8 +101,8 @@ namespace Optern.Infrastructure.Services.RoomService
 
 				_cacheService.SetData("PopulerRooms", rooms, TimeSpan.FromMinutes(5));
 
-				return rooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(rooms, "", 200) :
-									 Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "There Are No Created Rooms Until Now", 404);
+				return rooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(rooms, "Populer Rooms Rooms Fetched Successfully", 200) :
+									 Response<IEnumerable<ResponseRoomDTO>>.Success(rooms, "There Are No Created Rooms Until Now", 204);
 			}
 			catch (Exception ex)
 			{
@@ -114,8 +114,17 @@ namespace Optern.Infrastructure.Services.RoomService
 		#region GetCreatedRooms
 		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetCreatedRooms(string id, int lastIdx = 0, int limit = 1)
 		{
+			if (string.IsNullOrEmpty(id))
+			{
+				return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Invalid CreatorId", 400); ;
+            }
 			try
 			{
+				var isUserExist = await _unitOfWork.Users.GetByIdAsync(id);
+				if (isUserExist == null)
+				{
+                   return  Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "User Not Found", 404);
+                }
 				var createdRooms = await _context.Rooms
 					.Include(r => r.UserRooms)
 					.Include(r => r.RoomTracks)
@@ -140,10 +149,8 @@ namespace Optern.Infrastructure.Services.RoomService
 					})
 					.ToListAsync();
 
-
-
-				return createdRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(createdRooms, "", 200, _context.Rooms.Where(r => r.CreatorId == id).Count()) :
-											Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "There is no Created Rooms Until Now", 404);
+				return createdRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(createdRooms, "Created Rooms Fetched Successfully", 200, _context.Rooms.Where(r => r.CreatorId == id).Count()) :
+											Response<IEnumerable<ResponseRoomDTO>>.Success(createdRooms, "There Are no Created Rooms Until Now", 204);
 
 			}
 			catch (Exception ex)
@@ -157,9 +164,19 @@ namespace Optern.Infrastructure.Services.RoomService
 		#region GetJoinedRooms
 		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetJoinedRooms(string id, int lastIdx = 0, int limit = 8)
 		{
-			try
+            if (string.IsNullOrEmpty(id))
+            {
+                return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Invalid UserId", 400); ;
+            }
+            try
 			{
-				var joinedRooms = await _context.Rooms.Include(r => r.UserRooms)
+                var isUserExist = await _unitOfWork.Users.GetByIdAsync(id);
+                if (isUserExist == null)
+                {
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "User Not Found", 404);
+                }
+
+                var joinedRooms = await _context.Rooms.Include(r => r.UserRooms)
 					 .Where(r => r.UserRooms.Any(r => r.UserId == id && r.IsAccepted))
 					 .Skip(lastIdx)
 					 .Take(limit)
@@ -181,7 +198,7 @@ namespace Optern.Infrastructure.Services.RoomService
 					.ToListAsync();
 
 				return joinedRooms.Any() ? Response<IEnumerable<ResponseRoomDTO>>.Success(joinedRooms, "", 200, _context.Rooms.Include(r => r.UserRooms).Where(r => r.UserRooms.Any(r => r.UserId == id && r.IsAccepted)).Count()) :
-										   Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "You have not joined any room yet.", 404);
+										   Response<IEnumerable<ResponseRoomDTO>>.Success(joinedRooms, "You have not joined any room yet.", 204);
 			}
 			catch (Exception ex)
 			{
@@ -199,15 +216,16 @@ namespace Optern.Infrastructure.Services.RoomService
 			{
 				if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.RoomId))
 				{
-					return Response<string>.Failure("Either Room or User is not found!", 400);
+                    return Response<string>.Failure($"Invalid Data", 400);
+                 
 				}
 				var roomExist = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
 				var userExist = await _unitOfWork.Users.GetByIdAsync(model.UserId);
 
 				if (roomExist == null || userExist == null)
 				{
-					return Response<string>.Failure($"Invalid Data", 400);
-				}
+                    return Response<string>.Failure("Either Room or User is not found!", 404);
+                }
 
 				var isUserInRoom = await _unitOfWork.UserRoom
 					.GetByExpressionAsync(u => u.UserId == model.UserId && u.RoomId == model.RoomId);
@@ -320,6 +338,10 @@ namespace Optern.Infrastructure.Services.RoomService
 
 		public async Task<Response<ResponseRoomDTO>> GetRoomById(string id, string? userId)
 		{
+			if (string.IsNullOrEmpty(id))
+			{
+			   return	Response<ResponseRoomDTO>.Failure(new ResponseRoomDTO(), "Invalid Room Id", 400);
+            }
 			try
 			{
 				var room = await _context.Rooms
@@ -375,9 +397,18 @@ namespace Optern.Infrastructure.Services.RoomService
 
 		public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetRoomsByTrack(int trackId, int lastIdx = 0, int limit = 10)
 		{
-			try
+            if (trackId==0)
+            {
+                return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Invalid Room Id", 400);
+            }
+            try
 			{
-				var rooms = await _context.Rooms
+				var isTrackExist = await _unitOfWork.Tracks.GetByIdAsync(trackId);
+				if(isTrackExist == null)
+				{
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Track Not Found", 404);
+                }
+                var rooms = await _context.Rooms
 					.Where(r => r.RoomTracks.Any(rt => rt.TrackId == trackId))
 					.Include(r => r.UserRooms)
 					.Include(r => r.RoomTracks)
