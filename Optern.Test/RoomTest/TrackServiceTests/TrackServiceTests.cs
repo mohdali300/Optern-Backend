@@ -90,7 +90,7 @@ namespace Optern.Test.RoomTest.TrackServiceTests
             Assert.Multiple(() =>
             {
                 Assert.That(result.IsSuccess, Is.True);
-                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+                Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
                 Assert.That(result.Data, Is.Not.Null);
                 Assert.That(result.Message, Does.Contain("successfully"));
                 Assert.That(result.Data.Name, Is.EqualTo("Track1"));

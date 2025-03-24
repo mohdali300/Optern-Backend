@@ -54,7 +54,7 @@ namespace Optern.Infrastructure.Services.TrackService
                 }
 
                 await _unitOfWork.Tracks.AddAsync(track);
-                return Response<TrackDTO>.Success(new TrackDTO { Id = track.Id, Name = track.Name }, "Track added successfully.", 200);
+                return Response<TrackDTO>.Success(new TrackDTO { Id = track.Id, Name = track.Name }, "Track added successfully.", 201);
             }
             catch (Exception ex)
             {
