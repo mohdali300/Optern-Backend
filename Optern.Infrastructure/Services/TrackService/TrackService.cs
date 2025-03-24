@@ -4,12 +4,10 @@ namespace Optern.Infrastructure.Services.TrackService
     public class TrackService :ITrackService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly OpternDbContext _context;
 
-        public TrackService(IUnitOfWork unitOfWork, OpternDbContext context)
+        public TrackService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _context = context;
         }
 
         #region GetAll
@@ -56,7 +54,7 @@ namespace Optern.Infrastructure.Services.TrackService
                 }
 
                 await _unitOfWork.Tracks.AddAsync(track);
-                return Response<TrackDTO>.Success(new TrackDTO { Id = track.Id, Name = track.Name }, "Track added successfully.", 200);
+                return Response<TrackDTO>.Success(new TrackDTO { Id = track.Id, Name = track.Name }, "Track added successfully.", 201);
             }
             catch (Exception ex)
             {
