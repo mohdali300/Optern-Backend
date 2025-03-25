@@ -269,7 +269,10 @@ namespace Optern.Infrastructure.Services.RoomService
 				// current login User  
 				var currentUser = await _userService.GetCurrentUserAsync();
 				var chat = await _chatService.CreateRoomChatAsync(model.CreatorId, ChatType.Group); // create chat for room
-
+				if (!chat.IsSuccess)
+				{
+					return Response<ResponseRoomDTO>.Failure($"{chat.Message}", 400);
+				}
 				var room = new Room
 				{
 					Name = model.Name,
