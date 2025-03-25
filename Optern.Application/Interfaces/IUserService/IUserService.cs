@@ -14,5 +14,6 @@ namespace Optern.Application.Interfaces.IUserService
         public Task<Response<bool>> AddSocialLinks(string userId, Dictionary<string, string> links);
         public Task<Response<bool>> DeleteSocialLink(string userId, List<string> links);
         public Task<Response<Dictionary<string, string>>> GetSocialLinks(string userId);
+          public Task<Response<EditProfileDTO>> GetUserProfile(string userId);
     }
 }

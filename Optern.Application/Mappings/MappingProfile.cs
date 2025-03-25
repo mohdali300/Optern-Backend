@@ -5,46 +5,48 @@ using Optern.Application.DTOs.Message;
 using Optern.Application.DTOs.PTPFeedback;
 using Optern.Application.DTOs.PTPInterview;
 using Optern.Application.DTOs.Question;
+using Optern.Application.DTOs.User;
 using Optern.Application.DTOs.VFeedback;
 using Optern.Application.DTOs.VInterview;
 
 namespace Optern.Application.Mappings
 {
-	public class MappingProfile : Profile
-	{
-		public MappingProfile()
-		{
-			#region Blogs
+    public class MappingProfile : Profile
+    {
+        public MappingProfile()
+        {
+            #region Blogs
 
-			CreateMap<Tags, TagDTO>();
+            CreateMap<Tags, TagDTO>();
 
-			CreateMap<PostTags, TagDTO>()
-				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
-				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
-
-
-			CreateMap<AddToFavoriteDTO, FavoritePosts>();
+            CreateMap<PostTags, TagDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Tag.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Tag.Name));
 
 
-		   CreateMap<Post, PostWithDetailsDTO>()
-		  .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
-		  .ForMember(dest => dest.ReactCount, opt => opt.MapFrom(src => src.Reacts.Count))
-		  .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count));
+            CreateMap<AddToFavoriteDTO, FavoritePosts>();
+
+
+            CreateMap<Post, PostWithDetailsDTO>()
+           .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
+           .ForMember(dest => dest.ReactCount, opt => opt.MapFrom(src => src.Reacts.Count))
+           .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count));
 
             //post
             CreateMap<Post, PostDTO>()
             .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.Creator.ProfilePicture))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Creator.Id))
             .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
 
 
             CreateMap<Post, PostWithDetailsDTO>()
-			.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName));
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName));
 
-			//comment
-			CreateMap<Comment, CommentDTO>()
-			.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
-			.ForMember(dest => dest.Reacts, opt => opt.MapFrom(src => src.CommentReacts));
+            //comment
+            CreateMap<Comment, CommentDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
+            .ForMember(dest => dest.Reacts, opt => opt.MapFrom(src => src.CommentReacts));
 
 
             CreateMap<Reacts, ReactDTO>()
@@ -61,15 +63,15 @@ namespace Optern.Application.Mappings
               .ForMember(dest => dest.NumberOfParticipants,
                opt => opt.MapFrom(src => src.UserRooms.Count));
 
-			//CreateMap<Room, ResponseRoomDTO>();
-			CreateMap<Room, ResponseRoomDTO>();
+            //CreateMap<Room, ResponseRoomDTO>();
+            CreateMap<Room, ResponseRoomDTO>();
 
             CreateMap<WorkSpace, WorkSpaceDTO>();
 
-			CreateMap<Sprint, SprintResponseDTO>();
+            CreateMap<Sprint, SprintResponseDTO>();
 
             CreateMap<AddTaskDTO, Task>()
-             .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore()) 
+             .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore())
              .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
              .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.DueDate));
 
@@ -93,7 +95,7 @@ namespace Optern.Application.Mappings
         .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TaskId))
         .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title ?? string.Empty))
         .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description ?? string.Empty))
-        .ForMember(dest => dest.EndDate, opt => opt.Ignore()) 
+        .ForMember(dest => dest.EndDate, opt => opt.Ignore())
         .ForMember(dest => dest.AssignedTasks, opt => opt.Ignore());
 
             CreateMap<TaskActivity, TaskActivityDTO>()
@@ -117,7 +119,7 @@ namespace Optern.Application.Mappings
                             FullName = $"{ut.User.FirstName} {ut.User.LastName}".Trim(),
                             ProfilePicture = ut.User.ProfilePicture
                         },
-                         AttachmentDate = ut.Attachmentdate
+                        AttachmentDate = ut.Attachmentdate
                     })).ToList()))
                 .ForMember(dest => dest.Activities, opt => opt.MapFrom(src => src.Activities.Select(a => new TaskActivityDTO
                 {
@@ -156,7 +158,7 @@ namespace Optern.Application.Mappings
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Notifications.Title ?? string.Empty))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Notifications.Message ?? string.Empty))
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.NotificationId));
-           
+
             #endregion
 
             #region Interview
@@ -169,7 +171,7 @@ namespace Optern.Application.Mappings
             CreateMap<PTPInterview, UpcomingPTPInterviewDTO>()
            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()))
            .ForMember(dest => dest.Questions, opt => opt.Ignore());
-           //.ForMember(dest => dest.TimeRemaining, opt => opt.Ignore());
+            //.ForMember(dest => dest.TimeRemaining, opt => opt.Ignore());
 
             CreateMap<PTPQuestions, PTPQuestionDTO>();
             CreateMap<PTPInterview, PTPInterviewDTO>();
@@ -183,8 +185,9 @@ namespace Optern.Application.Mappings
 
             #region Profile
             CreateMap<Education, EducationDTO>()
-                .ForMember(dest => dest.MajorDegree, opt => opt.MapFrom(src => $"{src.Major} {src.Degree}"))
                 .ReverseMap();
+                
+            CreateMap<ApplicationUser, EditProfileDTO>();
             #endregion
 
         }

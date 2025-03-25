@@ -26,11 +26,6 @@ namespace Optern.Infrastructure.Configurations
             builder.Property(f => f.VirtualInterviewId)
                    .IsRequired();
 
-            builder.Property(f => f.PerformanceScore)
-         .IsRequired()
-         .HasColumnType("integer")
-         .HasComment("Performance score must be between 0 and 100 inclusive.");
-
             #endregion
 
             #region Relations

@@ -39,7 +39,8 @@
 					CreatedDate = p.CreatedDate,
 					EditedDate = p.EditedDate,
 					ReactsCount = p.Reacts.Count,
-					CommentsCount = p.Comments.Count
+					CommentsCount = p.Comments.Count,
+					UserId = p.Creator.Id
 				})
 									   .ToListAsync();
 

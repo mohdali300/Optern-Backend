@@ -15,12 +15,12 @@ namespace Optern.Application.DTOs.VInterview
             Category = InterviewCategory.Behavioral;
             QusestionType = InterviewQuestionType.Beginner;
             UserId=string.Empty;    
-            Questions = new();
+            VQuestionInterviews = new();
         }
         public int Id { get; set; }
         public InterviewCategory Category { get; set; }
         public InterviewQuestionType QusestionType { get; set; }
         public string UserId { get; set; }
-        public List<PTPQuestionDTO> Questions { get; set; } = new();
+        public List<VQuestionInterview> VQuestionInterviews { get; set; } = new();
     }
 }

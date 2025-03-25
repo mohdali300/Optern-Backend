@@ -50,6 +50,7 @@ builder.Services
 .AddType<UserQuery>()
 .AddType<ExperienceQuery>()
 .AddType<VFeedBackQuery>()
+.AddType<VInterviewQuery>()
 .AddMutationType(m => m.Name("Mutation"))
 .AddType<AuthMutation>()
 .AddType<RoomMutation>()

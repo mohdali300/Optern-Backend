@@ -63,9 +63,7 @@ namespace Optern.Infrastructure.Services.VInterviewService
 
                 
                 var interviewDto = _mapper.Map<VInterviewDTO>(interview);
-                interviewDto.Questions = _mapper.Map<List<PTPQuestionDTO>>(randomQuestions);
-                interviewDto.UserId = userId; 
-
+  
                 return Response<VInterviewDTO>.Success(interviewDto, $"Interview created with {questionCount} random question(s).", 200);
             }
             catch (Exception ex)
@@ -73,6 +71,35 @@ namespace Optern.Infrastructure.Services.VInterviewService
                 await transaction.RollbackAsync();
                 return Response<VInterviewDTO>.Failure(new VInterviewDTO(), $"Failed to create interview: {ex.Message}", 500);
             }
+        }
+
+        #endregion
+
+
+          #region Get virtual Interview
+        public async Task<Response<VInterviewDTO>> GetInterviewQuestion(int interviewId,string userId)
+        {
+             try
+            {
+                 var interview = await _context.VInterview
+                    .Include(i => i.VQuestionInterviews)
+                        .ThenInclude(qi => qi.PTPQuestion)
+                    .FirstOrDefaultAsync(i => i.Id == interviewId);
+
+
+                if (interview == null)
+                {
+                    return Response<VInterviewDTO>.Failure(new VInterviewDTO{}, "Interview not found.", 404);
+                }
+
+                 var interviewDto = _mapper.Map<VInterviewDTO>(interview);
+                return Response<VInterviewDTO>.Success(interviewDto, "User interview questions retrieved successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<VInterviewDTO>.Failure(new VInterviewDTO{}, $"An error occurred while retrieving user questions: {ex.Message}", 500);
+            }
+               
         }
 
         #endregion

@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250323193349_prof2")]
+    partial class prof2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1441,14 +1444,21 @@ namespace Optern.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Intro")
-                        .HasColumnType("text");
+                    b.Property<int>("PerformanceScore")
+                        .HasColumnType("integer")
+                        .HasComment("Performance score must be between 0 and 100 inclusive.");
 
                     b.Property<string>("Recommendations")
                         .HasColumnType("text");
 
+                    b.Property<string>("Strengths")
+                        .HasColumnType("text");
+
                     b.Property<int>("VirtualInterviewId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Weaknesses")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
