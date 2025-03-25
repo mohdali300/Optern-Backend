@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using NUnit.Framework;
+using Optern.Application.DTOs.Chat;
 using Optern.Application.DTOs.Room;
 using Optern.Application.Interfaces.IChatService;
 using Optern.Application.Interfaces.IRepositoryService;
@@ -13,6 +14,7 @@ using Optern.Application.Interfaces.IRoomTrackService;
 using Optern.Application.Interfaces.ISkillService;
 using Optern.Application.Interfaces.IUserService;
 using Optern.Application.Interfaces.IWorkSpaceService;
+using Optern.Application.Response;
 using Optern.Domain.Entities;
 using Optern.Domain.Enums;
 using Optern.Infrastructure.Data;
@@ -220,7 +222,7 @@ namespace Optern.Test.RoomTest.RoomServiceTests
             Assert.That(result.Message, Does.Contain("There Are No Created Rooms Until Now"));
         }
 
-        #endregion
+        #endregion 
 
         #region Get Created Rooms
         [Test]
@@ -577,7 +579,7 @@ namespace Optern.Test.RoomTest.RoomServiceTests
             Assert.That(result.Message, Does.Contain("This Room Not Found"));
         }
         #endregion
-
+        
         #region GetRoomsByTrackTests
         [Test]
         [Category("GetRoomsByTrackTests")]
@@ -660,6 +662,145 @@ namespace Optern.Test.RoomTest.RoomServiceTests
             Assert.That(result.Message, Does.Contain("Server error"));
 
         }
+        #endregion
+
+        #region CreateRoomTests
+        [Test]
+        [Category("CreateRoomTests")]
+        public async Task CreateRoom_ShouldReturn400InvalidModel_WhenModelIsNull()
+        {
+            CreateRoomDTO room = null;
+            var result = await _roomService.CreateRoom(room);
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.Message, Does.Contain("Invalid Data Model"));
+        }
+
+        [Test]
+        [Category("CreateRoomTests")]
+        public async Task CreateRoom_ShouldReturn400InvalidData_WhenCreatorIdIsNull()
+        {
+
+            CreateRoomDTO room = new CreateRoomDTO()
+            {
+                Name = "room7",
+                Description = "New Room",
+                RoomType = RoomType.Private,
+                CreatorId = null,
+            };
+
+            _mockChatService.Setup(c => c.CreateRoomChatAsync(It.IsAny<string>(), It.IsAny<ChatType>()))
+                      .ReturnsAsync(Response<ChatDTO>.Failure(new ChatDTO(), "Invalid creator Id.", 400));
+
+            _mockUnitOfWork.Setup(u => u.SaveAsync())
+                  .Returns(Task.FromResult(1));
+
+            var result = await _roomService.CreateRoom(room);
+
+
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.Message, Does.Contain("Invalid creator Id."));
+        }
+
+        [Test]
+        [Category("CreateRoomTests")]
+        public async Task CreateRoom_ShouldReturn400InvalidData_WhenModelIsNotValid()
+        {
+
+            CreateRoomDTO room = new CreateRoomDTO()
+            {
+                Name = "room7",
+                Description = "",
+                RoomType = RoomType.Private,
+                CreatorId = "user1",
+            };
+
+            _mockChatService.Setup(c => c.CreateRoomChatAsync(It.IsAny<string>(), It.IsAny<ChatType>()))
+             .ReturnsAsync(Response<ChatDTO>.Success(new ChatDTO { Id = 1, Type = ChatType.Group }, "Chat Created Successfully", 200));
+            _mockUnitOfWork.Setup(u => u.SaveAsync())
+                  .Returns(Task.FromResult(1));
+
+            var result = await _roomService.CreateRoom(room);
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+            Assert.That(result.Data, Is.InstanceOf<ResponseRoomDTO>());
+            Assert.That(result.Message, Does.Contain("Room description is required."));
+
+        }
+
+        [Test]
+        [Category("CreateRoomTests")]
+        public async Task CreateRoom_ShouldReturn200Success_WhenModelIsValid()
+        {
+            CreateRoomDTO room = new CreateRoomDTO()
+            {
+                Name = "room7",
+                Description = "New Room",
+                RoomType = RoomType.Public,
+                CreatorId = "user1",
+                Tracks = _tracks.Select(t => t.Id).ToList(),
+                Skills = _roomSkills.Select(s => new Application.DTOs.Skills.SkillDTO { Id = s.SkillId, Name = s.Skill.Name }).ToList()
+            };
+
+            _mockChatService.Setup(c => c.CreateRoomChatAsync(It.IsAny<string>(), It.IsAny<ChatType>()))
+         .ReturnsAsync(Response<ChatDTO>.Success(new ChatDTO { Id = 1, Type = ChatType.Group }, "Chat Created Successfully", 200));
+
+            _mockUnitOfWork.Setup(uow => uow.Rooms.AddAsync(It.IsAny<Room>()))
+            .ReturnsAsync((Room room) =>
+            {
+                room.Id = "room7";
+                room.Name = "room7";
+                room.CreatorId = "user1";
+                return room;
+            });
+
+            _mockUnitOfWork.Setup(uow => uow.UserRoom.AddAsync(It.IsAny<UserRoom>()))
+              .ReturnsAsync((UserRoom room) =>
+              {
+                  room.UserId = "user1";
+                  room.RoomId = "room7";
+                  room.IsAdmin = true;
+                  room.IsAccepted = true;
+                  return room;
+              });
+            MapCreateRoom();
+            var result = await _roomService.CreateRoom(room);
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
+            Assert.That(result.Data.Name, Is.SameAs("room7"));
+            Assert.That(result.Data.CreatorId, Is.EqualTo("user1"));
+            Assert.That(result.Data.Description, Is.EqualTo(room.Description));
+            Assert.That(result.Message, Does.Contain("Room Added Successfully"));
+        }
+        [Test]
+        [Category("CreateRoomTests")]
+        public async Task CreateRoom_ShouldReturn500_WhenExceptionOccurs()
+        {
+            CreateRoomDTO room = new CreateRoomDTO()
+            {
+                Name = "room7",
+                Description = "New Room",
+                RoomType = RoomType.Private,
+                CreatorId = "user123",
+            };
+
+            _mockChatService.Setup(c => c.CreateRoomChatAsync(It.IsAny<string>(), It.IsAny<ChatType>()))
+                .ThrowsAsync(new Exception("Database connection failed"));
+
+            _mockUnitOfWork.Setup(u => u.SaveAsync())
+                .ThrowsAsync(new Exception("Unexpected database error"));
+
+            var result = await _roomService.CreateRoom(room);
+
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status500InternalServerError));
+            Assert.That(result.Message, Does.Contain("There is a server error"));
+        }
+
+
         #endregion
 
         #region Load Data
@@ -834,6 +975,24 @@ namespace Optern.Test.RoomTest.RoomServiceTests
             _context.Tracks.AddRange(_tracks);
             _context.RoomTracks.AddRange(_roomTracks);
             _context.SaveChanges();
+        }
+        #endregion
+
+        #region Mapping
+        private void MapCreateRoom()
+        {
+            _mockMapper.Setup(m => m.Map<ResponseRoomDTO>(It.IsAny<Room>()))
+                .Returns((Room src) => new ResponseRoomDTO
+                {
+                    Id = src.Id,
+                    Name = src.Name,
+                    Description = src.Description,
+                    RoomType = src.RoomType,
+                    CreatorId = src.CreatorId,
+                    CoverPicture = src.CoverPicture,
+                    CreatedAt = src.CreatedAt,
+                    chatId = src.ChatId
+                });
         } 
         #endregion
     }
