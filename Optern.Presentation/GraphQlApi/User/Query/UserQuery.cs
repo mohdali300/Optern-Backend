@@ -12,8 +12,8 @@ namespace Optern.Presentation.GraphQlApi.User.Query
             await _userService.GetSocialLinks(userId);
 
         public async Task<Response<EditProfileDTO>> GetUserData([Service] IUserService _userService,
-      string userId) =>
-      await _userService.GetUserProfile(userId);
+            string userId) =>
+            await _userService.GetUserProfile(userId);
 
 
     }
