@@ -5,7 +5,7 @@ namespace Optern.Presentation.GraphQlApi.VFeedback.Mutation
     public class VFeedbackMutation
     {
         [GraphQLDescription("Add Vitual FeedBack for The Interview")]
-        public async Task<Response<string>> AddVFeedback ([Service] IVFeedbackService _VFeedbackService, VFeedbackDTO model)
+        public async Task<Response<VFeedBack>> AddVFeedback ([Service] IVFeedbackService _VFeedbackService, VFeedbackDTO model)
        => await _VFeedbackService.AddVFeedback(model);
     }
 }
