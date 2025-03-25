@@ -1,11 +1,7 @@
 ﻿
-using MimeKit;
-using Optern.Domain.Entities;
-using Optern.Infrastructure.Hubs;
-
 namespace Optern.Infrastructure.Services.ChatService
 {
-    public class ChatService:IChatService
+    public class ChatService : IChatService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly OpternDbContext _context;
@@ -17,6 +13,7 @@ namespace Optern.Infrastructure.Services.ChatService
         }
 
         #region CreatePrivateChat
+
         public async Task<Response<ChatDTO>> CreatePrivateChatAsync(string creatorId, string receiverId)
         {
             if (string.IsNullOrEmpty(creatorId) || string.IsNullOrEmpty(receiverId))
@@ -50,7 +47,7 @@ namespace Optern.Infrastructure.Services.ChatService
                 if (await AddChatParticipants(chat.Id, [creatorId, receiverId]))
                 {
                     await transaction.CommitAsync();
-                    return Response<ChatDTO>.Success(new ChatDTO { Id = chat.Id, Type = chat.Type }, "Chat created successfully.", 200);
+                    return Response<ChatDTO>.Success(new ChatDTO { Id = chat.Id, Type = chat.Type }, "Chat created successfully.", 201);
                 }
                 return Response<ChatDTO>.Failure(new ChatDTO(), "Failed to create chat.", 400);
             }
@@ -59,10 +56,12 @@ namespace Optern.Infrastructure.Services.ChatService
                 await transaction.RollbackAsync();
                 return Response<ChatDTO>.Failure(new ChatDTO(), $"Server error: {ex.Message}", 500);
             }
-        } 
-        #endregion
+        }
+
+        #endregion CreatePrivateChat
 
         #region Create room chat
+
         public async Task<Response<ChatDTO>> CreateRoomChatAsync(string creatorId, ChatType type)
         {
             try
@@ -79,7 +78,7 @@ namespace Optern.Infrastructure.Services.ChatService
                     await _unitOfWork.Chats.AddAsync(chat);
                     await _unitOfWork.SaveAsync();
 
-                    return Response<ChatDTO>.Success(new ChatDTO { Id = chat.Id, Type = type });
+                    return Response<ChatDTO>.Success(new ChatDTO { Id = chat.Id, Type = type }, "", 201);
                 }
                 return Response<ChatDTO>.Failure(new ChatDTO(), "Invalid creator Id.", 400);
             }
@@ -88,9 +87,11 @@ namespace Optern.Infrastructure.Services.ChatService
                 return Response<ChatDTO>.Failure(new ChatDTO(), $"Server error: {ex.Message}", 500);
             }
         }
-        #endregion
+
+        #endregion Create room chat
 
         #region Join to room chat
+
         public async Task<Response<bool>> JoinToRoomChatAsync(string roomId, string participantId)
         {
             try
@@ -111,9 +112,9 @@ namespace Optern.Infrastructure.Services.ChatService
                         await _unitOfWork.ChatParticipants.AddAsync(chatParticipant);
                         await _unitOfWork.SaveAsync();
 
-                        return Response<bool>.Success(true, $"{user.FirstName} {user.LastName} joined to room chat.", 200);
+                        return Response<bool>.Success(true, $"{user.FirstName} {user.LastName} joined to room chat.", 201);
                     }
-                    return Response<bool>.Failure(false, "Room or User is not existed!", 400);
+                    return Response<bool>.Failure(false, "Room or User is not existed!", 404);
                 }
                 return Response<bool>.Failure(false, "Invalid Room Or User Id!", 400);
             }
@@ -122,9 +123,11 @@ namespace Optern.Infrastructure.Services.ChatService
                 return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
         }
-        #endregion
+
+        #endregion Join to room chat
 
         #region Join All To Room Chat
+
         public async Task<Response<bool>> JoinAllToRoomChatAsync(string roomId, List<string> participantsIds)
         {
             try
@@ -154,7 +157,7 @@ namespace Optern.Infrastructure.Services.ChatService
 
                         return Response<bool>.Success(true, "New participants joined to room chat.", 201);
                     }
-                    return Response<bool>.Failure(false, "This Room is not existed!", 400);
+                    return Response<bool>.Failure(false, "This Room is not existed!", 404);
                 }
                 return Response<bool>.Failure(false, "Invalid Room or Users IDs!", 400);
             }
@@ -163,9 +166,11 @@ namespace Optern.Infrastructure.Services.ChatService
                 return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
         }
-        #endregion
+
+        #endregion Join All To Room Chat
 
         #region Remove from room chat
+
         public async Task<Response<bool>> RemoveFromRoomChatAsync(int chatId, string userId)
         {
             try
@@ -186,21 +191,24 @@ namespace Optern.Infrastructure.Services.ChatService
                 return Response<bool>.Failure(false, $"Server error: {ex.Message}", 500);
             }
         }
-        #endregion
+
+        #endregion Remove from room chat
 
         #region Get chat participants for user or chat
+
         public async Task<Response<List<ChatParticipants>>> GetChatParticipantsAsync(int? chatId = null, string? userId = null)
         {
             try
             {
-                if ((!chatId.HasValue && string.IsNullOrEmpty(userId)) || (chatId.HasValue && !string.IsNullOrEmpty(userId)))
+                if ( ( (!chatId.HasValue || chatId==0) && string.IsNullOrEmpty(userId) ) || (chatId.HasValue && !string.IsNullOrEmpty(userId)))
                     return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "Specify either ChatId or UserId, only one from them.", 400);
 
                 List<ChatParticipants> participants = new();
                 if (chatId.HasValue)
                 {
-                    if (await _context.Chats.FindAsync(chatId) == null)
-                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This chat not existed.", 400);
+                    var chat = await _context.Chats.Include(c => c.Creator).FirstOrDefaultAsync(c => c.Id == chatId);
+                    if (chat == null)
+                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This chat not existed.", 404);
 
                     participants = await _context.ChatParticipants.Include(p => p.User)
                         .Include(p => p.Chat)
@@ -211,7 +219,7 @@ namespace Optern.Infrastructure.Services.ChatService
                 {
                     var user = await _unitOfWork.Users.GetByIdAsync(userId);
                     if (user == null)
-                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This user not existed.", 400);
+                        return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), "This user not existed.", 404);
 
                     participants = await _context.ChatParticipants.Include(p => p.User)
                         .Include(p => p.Chat)
@@ -220,17 +228,18 @@ namespace Optern.Infrastructure.Services.ChatService
                 }
 
                 return (participants.Any()) ? Response<List<ChatParticipants>>.Success(participants)
-                    : Response<List<ChatParticipants>>.Success(participants, "There is no Chat Participant yet.", 204);
+                    : Response<List<ChatParticipants>>.Success(participants, "There is no Chat Participants yet.", 204);
             }
             catch (Exception ex)
             {
                 return Response<List<ChatParticipants>>.Failure(new List<ChatParticipants>(), $"Server error: {ex.Message}", 500);
             }
-
         }
-        #endregion
+
+        #endregion Get chat participants for user or chat
 
         #region Helper
+
         private async Task<bool> AddChatParticipants(int chatId, List<string> participantsId)
         {
             try
@@ -254,9 +263,9 @@ namespace Optern.Infrastructure.Services.ChatService
             {
                 return false;
             }
-        } 
+        }
 
-        private async Task<bool> IsChatExisted(string creatorId,string receiverId)
+        private async Task<bool> IsChatExisted(string creatorId, string receiverId)
         {
             var existingChat = await _context.Chats.Include(c => c.ChatParticipants)
                     .Where(c => c.Type == ChatType.Private && c.ChatParticipants.Count == 2
@@ -266,6 +275,7 @@ namespace Optern.Infrastructure.Services.ChatService
                 return true;
             return false;
         }
-        #endregion
+
+        #endregion Helper
     }
 }
