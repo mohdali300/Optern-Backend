@@ -9,9 +9,7 @@ namespace Optern.Domain.Entities
     public class VFeedBack
     {
         public int Id { get; set; }
-        public int PerformanceScore { get; set; }
-        public string? Strengths { get; set; }
-        public string? Weaknesses { get; set; }
+        public string? Intro { get; set; }
         public string? Recommendations { get; set; }
 
         // Foreign Key

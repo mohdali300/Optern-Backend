@@ -13,12 +13,8 @@ namespace Optern.Infrastructure.Services.VFeedbackService
 
         #region Add VFeedback
 
-        public async Task<Response<string>> AddVFeedback(VFeedbackDTO model)
+        public async Task<Response<VFeedBack>> AddVFeedback(VFeedbackDTO model)
         {
-            if (model.PerformanceScore < 0)
-            {
-                return Response<string>.Failure("", "The Performance Score Must Exceed Zero", 400);
-            }
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -26,32 +22,34 @@ namespace Optern.Infrastructure.Services.VFeedbackService
             {
                 if (!await IsInterviewExist(model.VirtualInterviewId))
                 {
-                    return Response<string>.Failure("", "Interview Not Found", 404);
+                    return Response<VFeedBack>.Failure(new VFeedBack{}, "Interview Not Found", 404);
                 }
-                bool feedbackExists = await _unitOfWork.VFeedBack.AnyAsync(f => f.VirtualInterviewId == model.VirtualInterviewId);
+                var feedback = await _context.VFeedBack.FirstOrDefaultAsync(f => f.VirtualInterviewId == model.VirtualInterviewId);
 
-                if (feedbackExists)
+                if (feedback is not null && feedback.Recommendations == "")
                 {
-                    return Response<string>.Failure("", "There is only one feedback allowed for each interview", 400);
+                    feedback.Recommendations = model.Recommendations;
+                }
+                else if(feedback is null)
+                {
+                    feedback = _mapper.Map<VFeedBack>(model);
+                    await _unitOfWork.VFeedBack.AddAsync(feedback);
                 }
 
-                var feedback = _mapper.Map<VFeedBack>(model);
-
-                await _unitOfWork.VFeedBack.AddAsync(feedback);
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
-                return Response<string>.Success("Feedback submitted successfully", "Feedback added successfully.", 200);
+                return Response<VFeedBack>.Success(feedback, "Feedback added successfully.", 200);
             }
             catch (DbUpdateException dbEx)
             {
                 await transaction.RollbackAsync();
-                return Response<string>.Failure("Database error occurred while adding feedback.", dbEx.Message, 500);
+                return Response<VFeedBack>.Failure(new VFeedBack{},dbEx.Message, 500);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<string>.Failure("An unexpected error occurred while adding feedback.", ex.Message, 500);
+                return Response<VFeedBack>.Failure(new VFeedBack{}, ex.Message, 500);
             }
         }
 

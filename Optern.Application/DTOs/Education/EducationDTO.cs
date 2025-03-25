@@ -11,7 +11,8 @@ namespace Optern.Application.DTOs.Education
         public int Id { get; set; }
         public string School { get; set; }
         public string University { get; set; }
-        public string MajorDegree { get; set; } // Major + Degree
+        public string Major { get; set; } 
+        public EducationDegree Degree { get; set; } 
         public string StartYear { get; set; }
         public string EndYear { get; set; }
 
@@ -20,7 +21,8 @@ namespace Optern.Application.DTOs.Education
             Id = 0;
             School = string.Empty;
             University = string.Empty;
-            MajorDegree = string.Empty;
+            Degree = EducationDegree.Associate;
+            Major = string.Empty;
             StartYear = string.Empty;
             EndYear = string.Empty;
         }

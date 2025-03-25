@@ -5,13 +5,15 @@ using System.Collections.Generic;
 
 namespace Optern.Infrastructure.Services.UserService
 {
-    public class UserService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager,IUnitOfWork unitOfWork,OpternDbContext context, ICloudinaryService cloudinary) :IUserService
+    public class UserService(IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager,IUnitOfWork unitOfWork,OpternDbContext context, IMapper mapper,ICloudinaryService cloudinary) :IUserService
     {
         private readonly IHttpContextAccessor _httpContextAccessor= httpContextAccessor;
         private readonly UserManager<ApplicationUser> _userManager= userManager;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
         private readonly ICloudinaryService _cloudinary = cloudinary;
+
+        private readonly IMapper _mapper = mapper;
         public async Task<ApplicationUser> GetCurrentUserAsync()
         {
             ClaimsPrincipal currentUser = _httpContextAccessor.HttpContext.User;
@@ -57,6 +59,36 @@ namespace Optern.Infrastructure.Services.UserService
             {
                 await transaction.RollbackAsync();
                 return Response<bool>.Failure(false, $"An error occurred while processing the react: {ex.Message}",500);
+            }
+
+        }
+
+
+         public async Task<Response<EditProfileDTO>> GetUserProfile(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Response<EditProfileDTO>.Failure(new EditProfileDTO{},"Invalid Data",400);
+            }
+
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return Response<EditProfileDTO>.Failure(new EditProfileDTO{}, "User Not Found", 404);
+                }
+
+                var userDto = _mapper.Map<EditProfileDTO>(user);
+
+                return Response<EditProfileDTO>.Success(userDto,"Profile Information Updated Successfully",200);
+
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Response<EditProfileDTO>.Failure(new EditProfileDTO{}, $"An error occurred while processing the react: {ex.Message}",500);
             }
 
         }

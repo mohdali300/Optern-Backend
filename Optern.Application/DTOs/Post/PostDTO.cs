@@ -10,6 +10,8 @@ namespace Optern.Application.DTOs.Post
 		public string? Content { get; set; }
 		public string? CreatorName { get; set; } 
 		public string? ProfilePicture { get; set; }
+
+		public string? UserId {get;set;}
 		public List<string>? Tags { get; set; } = new List<string>();
 		public DateTime? CreatedDate { get; set; }
 

@@ -49,6 +49,13 @@ namespace Optern.Test.RoomTest.RoomTrackTests
                 );
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _context.Database.EnsureDeleted();
+            _context.Dispose();
+        }
+
         #region AddRoomTrack
 
         [Test]

@@ -1,4 +1,5 @@
-﻿using Optern.Application.Interfaces.IUserService;
+﻿using Optern.Application.DTOs.User;
+using Optern.Application.Interfaces.IUserService;
 
 namespace Optern.Presentation.GraphQlApi.User.Query
 {
@@ -9,6 +10,11 @@ namespace Optern.Presentation.GraphQlApi.User.Query
         public async Task<Response<Dictionary<string, string>>> GetLinks([Service] IUserService _userService,
             string userId) =>
             await _userService.GetSocialLinks(userId);
+
+        public async Task<Response<EditProfileDTO>> GetUserData([Service] IUserService _userService,
+            string userId) =>
+            await _userService.GetUserProfile(userId);
+
 
     }
 }
