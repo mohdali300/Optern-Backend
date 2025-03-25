@@ -35,6 +35,7 @@ namespace Optern.Application.Mappings
             //post
             CreateMap<Post, PostDTO>()
             .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.Creator.ProfilePicture))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Creator.Id))
             .ForMember(dest => dest.CreatorName, opt => opt.MapFrom(src => src.Creator.FirstName + " " + src.Creator.LastName))
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name).ToList()));
 
