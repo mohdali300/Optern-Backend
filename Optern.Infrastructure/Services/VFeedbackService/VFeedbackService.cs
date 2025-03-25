@@ -15,10 +15,6 @@ namespace Optern.Infrastructure.Services.VFeedbackService
 
         public async Task<Response<string>> AddVFeedback(VFeedbackDTO model)
         {
-            if (model.PerformanceScore < 0)
-            {
-                return Response<string>.Failure("", "The Performance Score Must Exceed Zero", 400);
-            }
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -28,16 +24,18 @@ namespace Optern.Infrastructure.Services.VFeedbackService
                 {
                     return Response<string>.Failure("", "Interview Not Found", 404);
                 }
-                bool feedbackExists = await _unitOfWork.VFeedBack.AnyAsync(f => f.VirtualInterviewId == model.VirtualInterviewId);
+                var feedback = await _context.VFeedBack.FirstOrDefaultAsync(f => f.VirtualInterviewId == model.VirtualInterviewId);
 
-                if (feedbackExists)
+                if (feedback is not null && feedback.Recommendations is null)
                 {
-                    return Response<string>.Failure("", "There is only one feedback allowed for each interview", 400);
+                    feedback.Recommendations = model.Recommendations;
+                }
+                else 
+                {
+                    var feed = _mapper.Map<VFeedBack>(model);
+                    await _unitOfWork.VFeedBack.AddAsync(feed);
                 }
 
-                var feedback = _mapper.Map<VFeedBack>(model);
-
-                await _unitOfWork.VFeedBack.AddAsync(feedback);
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 

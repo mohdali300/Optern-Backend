@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Optern.Infrastructure.Data;
 
 #nullable disable
 
-namespace Optern.Infrastructure.Migrations
+namespace Optern.Infrastructure.Optern.Presentation
 {
     [DbContext(typeof(OpternDbContext))]
-    partial class OpternDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250325015534_prof3")]
+    partial class prof3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
