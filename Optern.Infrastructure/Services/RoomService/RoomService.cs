@@ -216,7 +216,7 @@ namespace Optern.Infrastructure.Services.RoomService
 			{
 				if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.RoomId))
 				{
-                    return Response<string>.Failure($"Invalid Data", 400);
+                    return Response<string>.Failure($"Invalid Data", $"Invalid Data", 400);
                  
 				}
 				var roomExist = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
@@ -224,14 +224,14 @@ namespace Optern.Infrastructure.Services.RoomService
 
 				if (roomExist == null || userExist == null)
 				{
-                    return Response<string>.Failure("Either Room or User is not found!", 404);
+                    return Response<string>.Failure("Either Room or User is not found!", "Either Room or User is not found!", 404);
                 }
 
 				var isUserInRoom = await _unitOfWork.UserRoom
 					.GetByExpressionAsync(u => u.UserId == model.UserId && u.RoomId == model.RoomId);
 				if (isUserInRoom != null)
 				{
-					return Response<string>.Failure($"You have already requested to join this room!", 400);
+					return Response<string>.Failure($"You have already requested to join this room!", $"You have already requested to join this room!", 400);
 				}
 				var joinRoom = await _unitOfWork.UserRoom.AddAsync(new UserRoom
 				{

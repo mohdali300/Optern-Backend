@@ -3,7 +3,7 @@ using Optern.Domain.Entities;
 
 namespace Optern.Infrastructure.Services.RoomUserService
 {
-    internal class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService, ICacheService cacheService, IUserNotificationService userNotificationService) : IRoomUserService
+    public class RoomUserService(IUnitOfWork unitOfWork, OpternDbContext context, IMapper mapper, IChatService chatService, ICacheService cacheService, IUserNotificationService userNotificationService) : IRoomUserService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly OpternDbContext _context = context;
@@ -23,8 +23,8 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Room ID cannot be empty.", 400);
                 }
 
-                var roomExists = await _context.Rooms.AnyAsync(r => r.Id == roomId);
-                if (!roomExists)
+                var roomExists = await _unitOfWork.Rooms.GetByIdAsync(roomId);
+                if (roomExists == null)
                 {
                     return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Room not found.", 404);
                 }
@@ -66,9 +66,14 @@ namespace Optern.Infrastructure.Services.RoomUserService
         #region Get Pending Requests 
         public async Task<Response<List<RoomUserDTO>>> GetPendingRequestsAsync(string roomId, string leaderId)
         {
+            if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(leaderId))
+            {
+                return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Data cannot be empty", 400);
+            }
+
             try
             {
-                var room = await _context.Rooms.FindAsync(roomId);
+                var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
                 if (room == null)
                 {
                     return Response<List<RoomUserDTO>>.Failure(new List<RoomUserDTO>(), "Room not found", 404);
@@ -122,7 +127,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
                     return Response<string>.Failure("Invalid Data Model", 400);
                 }
 
-                var roomExist = await _context.Rooms.FindAsync(model.RoomId);
+                var roomExist = await _unitOfWork.Rooms.GetByIdAsync(model.RoomId);
                 if (roomExist == null)
                 {
                     return Response<string>.Failure("Room not found", 404);
@@ -166,19 +171,23 @@ namespace Optern.Infrastructure.Services.RoomUserService
         #endregion
 
         #region Delete Collaborator
-        public async Task<Response<RoomUserDTO>> DeleteCollaboratorAsync(string RoomId, string TargetUserId, string leaderId)
+        public async Task<Response<RoomUserDTO>> DeleteCollaboratorAsync(string roomId, string TargetUserId, string leaderId)
         {
+            if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(TargetUserId) || string.IsNullOrEmpty(leaderId))
+            {
+                return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Data cannot be empty", 400);
+            }
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var room = await _context.Rooms.FindAsync(RoomId);
+                var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
                 if (room == null)
                 {
                     return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Room not found", 404);
                 }
 
                 var currentUserRoom = await _context.UserRooms
-                    .FirstOrDefaultAsync(ur => ur.RoomId == RoomId && ur.UserId == leaderId);
+                    .FirstOrDefaultAsync(ur => ur.RoomId == roomId && ur.UserId == leaderId);
 
                 if (currentUserRoom == null || !currentUserRoom.IsAdmin)
                 {
@@ -187,28 +196,33 @@ namespace Optern.Infrastructure.Services.RoomUserService
 
                 var targetUserRoom = await _context.UserRooms
                     .Include(ur => ur.User)
-                    .FirstOrDefaultAsync(ur => ur.RoomId == RoomId && ur.UserId == TargetUserId);
+                    .FirstOrDefaultAsync(ur => ur.RoomId == roomId && ur.UserId == TargetUserId);
 
                 if (targetUserRoom == null)
                 {
                     return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "User not found in this room", 404);
                 }
 
-                if (targetUserRoom.IsAdmin)
-                {
-                    var remainingLeaders = await _context.UserRooms
-                        .CountAsync(ur => ur.RoomId == RoomId && ur.IsAdmin && ur.UserId != TargetUserId);
+                //if (targetUserRoom.IsAdmin)
+                //{
+                //    var remainingLeaders = await _context.UserRooms
+                //        .CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != TargetUserId);
 
-                    if (remainingLeaders < 1)
-                    {
-                        return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove the last leader", 400);
-                    }
+                //    if (remainingLeaders < 1)
+                //    {
+                //        return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove the last leader", 400);
+                //    }
+                //}
+
+                if (room.CreatorId == TargetUserId)
+                {
+                    return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove The Creator For This Room", 400);
                 }
 
                 if (TargetUserId == leaderId && targetUserRoom.IsAdmin)
                 {
                     var otherLeaders = await _context.UserRooms
-                        .CountAsync(ur => ur.RoomId == RoomId && ur.IsAdmin && ur.UserId != leaderId);
+                        .CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != leaderId);
 
                     if (otherLeaders < 1)
                     {
@@ -229,7 +243,7 @@ namespace Optern.Infrastructure.Services.RoomUserService
                 {
                     UserId = TargetUserId,
                     NotificationId = 11,
-                    Url=$"/room/{RoomId}"
+                    Url=$"/room/{roomId}"
 
                 };
                 await _userNotificationService.SaveNotification(userNotification1);
@@ -247,10 +261,14 @@ namespace Optern.Infrastructure.Services.RoomUserService
         #region Toggle Leadership
         public async Task<Response<RoomUserDTO>> ToggleLeadershipAsync(string roomId, string targetUserId, string leaderId)
         {
+            if (string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(targetUserId) || string.IsNullOrEmpty(leaderId))
+            {
+                return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Data cannot be empty", 400);
+            }
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var room = await _context.Rooms.FindAsync(roomId);
+                var room = await _unitOfWork.Rooms.GetByIdAsync(roomId);
                 if (room == null)
                 {
                     return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Room not found", 404);
@@ -275,16 +293,16 @@ namespace Optern.Infrastructure.Services.RoomUserService
 
                 bool isPromoting = !targetUserRoom.IsAdmin; //new status
 
-                if (!isPromoting)
+                if (!isPromoting) // this meant is a leader
                 {
 
                     var remainingLeaders = await _context.UserRooms
                         .CountAsync(ur => ur.RoomId == roomId && ur.IsAdmin && ur.UserId != targetUserId);
 
-                    if (remainingLeaders < 1) //to prevent remove last leader
-                    {
-                        return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove the last leader", 400);
-                    }
+                    //if (remainingLeaders < 1) //to prevent remove last leader
+                    //{
+                    //    return Response<RoomUserDTO>.Failure(new RoomUserDTO(), "Cannot remove the last leader", 400);
+                    //}
 
                     if (targetUserId == leaderId && remainingLeaders == 0)
                     {
