@@ -26,7 +26,7 @@ namespace Optern.Application.Services.UserNotificationService
             {
                 return Response<string>.Failure("Invalid Model Data", "Invalid Model Data", 400);
             }
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            //using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var isUserExist = await _userService.IsUserExist(model.UserId);
@@ -50,13 +50,13 @@ namespace Optern.Application.Services.UserNotificationService
                 };
                 await _unitOfWork.UserNotification.AddAsync(userNotification);
                 await _unitOfWork.SaveAsync();
-                await transaction.CommitAsync();
+                //await transaction.CommitAsync();
                 return Response<string>.Success("Notification Saved Successfully", "Notification Saved Successfully", 200);
 
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                //await transaction.RollbackAsync();
                 return Response<string>.Failure($"There is a server error. Please try again later.{ex.Message}", 500);
             }
         }
