@@ -239,10 +239,15 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                                     i.QusestionType == questionType)
                         .FirstOrDefaultAsync();
 
+                    DateTime fullSlotTime = parsedDate.Add(GetTimeSpanFromEnum(slot));
+
+                    bool isPast = fullSlotTime < DateTime.UtcNow;
+
                     var dto = new PTPInterviewTimeSlotDTO
                     {
                         TimeSlot = slot,
-                        SlotState = interview != null ? interview.SlotState : TimeSlotState.Empty,
+                        SlotState = isPast ? TimeSlotState.TakenByTwo :
+                                    (interview != null ? interview.SlotState : TimeSlotState.Empty),
                         TimeSlotName = slot.GetDisplayName(),
                     };
 
