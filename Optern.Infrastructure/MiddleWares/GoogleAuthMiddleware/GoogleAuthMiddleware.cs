@@ -28,7 +28,7 @@ public class GoogleAuthMiddleware
                 variables = new { code }
             });
             var client = _httpClient.CreateClient();
-            var response = await client.PostAsync("https://localhost:7214/ui/graphql",
+            var response = await client.PostAsync("http://localhost:5217/ui/graphql",
                 new StringContent(jsonPayload, Encoding.UTF8, "application/json"));
 
             var responseData = await response.Content.ReadAsStringAsync();

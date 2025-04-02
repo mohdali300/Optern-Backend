@@ -81,7 +81,7 @@ builder.Services
 .AddType<VInterviewMutation>()
 .AddType<VFeedbackMutation>()
 .AddFluentValidation()
-.AddType<UploadType>(); 
+.AddType<UploadType>();
 
 #endregion
 
@@ -95,9 +95,9 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Logging.ClearProviders()
-	.AddSerilog()
-	.AddConsole()
-	.SetMinimumLevel(LogLevel.Information);
+    .AddSerilog()
+    .AddConsole()
+    .SetMinimumLevel(LogLevel.Information);
 
 builder.Services.AddCors(options =>
 {
@@ -106,9 +106,9 @@ builder.Services.AddCors(options =>
 		policy.WithOrigins("https://optern.vercel.app","http://localhost:3000", "http://127.0.0.1:5500")//"http://127.0.0.1:5500"   "http://localhost:3000" 
 
               .AllowAnyHeader()
-			  .AllowAnyMethod()
-			  .AllowCredentials();
-	});
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 // register SignalR
@@ -122,12 +122,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseCors("AllowSpecificOrigin");
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
 
@@ -135,10 +135,10 @@ app.UseAuthorization();
 app.UseHangfireDashboard("/hangfire");
 using (var scope = app.Services.CreateScope())
 {
-	var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpJob>();
-	var interviewStatusScheduler = scope.ServiceProvider.GetRequiredService<PTPInterviewStatusJob>();
-	userCleanUpScheduler.UserCleanUp();
-	interviewStatusScheduler.InterviewStatus();
+    var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpJob>();
+    var interviewStatusScheduler = scope.ServiceProvider.GetRequiredService<PTPInterviewStatusJob>();
+    userCleanUpScheduler.UserCleanUp();
+    interviewStatusScheduler.InterviewStatus();
 }
 
 app.MapHub<ChatHub>("/Chat");

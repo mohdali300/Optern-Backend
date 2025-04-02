@@ -89,10 +89,10 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
                 { "redirect_uri", _configuration["GoogleAuth:redirect_uri"] },
                 { "grant_type", _configuration["GoogleAuth:grant_type"] }
             };
-
             var content = new FormUrlEncodedContent(values);
             var response = await client.PostAsync("https://oauth2.googleapis.com/token", content);
             var responseString = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Google OAuth Response: " + responseString);
 
             var tokenResponse = JsonSerializer.Deserialize<GoogleTokenResponse>(responseString);
 

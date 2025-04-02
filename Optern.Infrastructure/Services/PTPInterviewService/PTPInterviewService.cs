@@ -70,7 +70,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
                     DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
                     scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
-                    
                     // local Time
                     // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
                     // server Time
