@@ -76,7 +76,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
                     interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
-                    interviewDTO.Questions = await GetUserQuestionsForInterview(interviewEntity.Id, userId);
+                    interviewDTO.Questions = await GetUserQuestionsForPTPInterview(interviewEntity.Id, userId);
                 }
 
                 return Response<IEnumerable<UpcomingPTPInterviewDTO>>.Success(upcomingInterviewsDTO, "Upcoming interviews retrieved successfully", 200);
@@ -534,8 +534,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                     var ptpUser = _context.PTPUsers.FirstOrDefault(pu=>pu.UserID == userId && pu.PTPIId == interview.Id);
 
-
-
                     interviews.Add(new PastInterviews
                     {
                         Id = interview.Id,
@@ -552,12 +550,34 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                             Name = partner?.User.FirstName ?? string.Empty,
                             ProfilePicture = partner?.User.ProfilePicture ?? string.Empty
                         },
-                        Questions = await GetUserQuestionsForInterview(interview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
+                        Questions = await GetUserQuestionsForPTPInterview(interview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
                     });
                 }
 
+                // virtual Interview
+                var vInterviews = await _unitOfWork.VInterviews
+                         .GetAllByExpressionAsync(
+                             v => v.UserId == userId && v.InterviewDate <= DateTime.UtcNow, 
+                             query => query.Include(v => v.VQuestionInterviews)
+                                           .ThenInclude(v => v.User));
+                foreach (var vInterview in vInterviews)
+                {
+                    interviews.Add(new PastInterviews
+                    {
+                        Id = vInterview.Id,
+                        InterviewDate = vInterview.InterviewDate,
+                        InterviewType = "Virtual",
+                        Category = vInterview.Category.ToString(),
+                        FeedbackStatus = vInterview.VirtualFeedBack != null ? FeedbackStatus.ShowFeedback : FeedbackStatus.AddFeedback,
+                        Partner = null!, 
+                        Questions = await GetUserQuestionsForVInterview(vInterview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
+                    });
+                }
+
+                interviews = interviews.OrderByDescending(i => i.InterviewDate).ToList();
+
                 return Response<IEnumerable<PastInterviews>>.Success(
-                    interviews.OrderByDescending(i => i.InterviewDate),
+                    interviews,
                     "Interviews retrieved successfully.",
                     200
                 );
@@ -709,7 +729,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
             await _unitOfWork.SaveAsync();
         }
 
-        private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForInterview(int interviewId, string userId)
+        private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForPTPInterview(int interviewId, string userId)
         {
             var ptpUser = await _unitOfWork.PTPUsers
                 .GetByExpressionAsync(u => u.UserID == userId && u.PTPIId == interviewId);
@@ -729,6 +749,27 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 Title = qi.PTPQuestion.Title ?? string.Empty
             }).ToList();
         }
+        private async Task<List<PTPUpcomingQuestionDTO>> GetUserQuestionsForVInterview(int interviewId, string userId)
+        {
+            var vUser = await _unitOfWork.VInterviews
+                .GetByExpressionAsync(v => v.UserId == userId && v.Id == interviewId);
+
+            if (vUser == null)
+            {
+                return new List<PTPUpcomingQuestionDTO>();
+            }
+
+            var userQuestions = await _unitOfWork.VQuestionInterview
+                .GetAllByExpressionAsync(qi => qi.VInterviewId == interviewId,
+                                         include: q => q.Include(qi => qi.PTPQuestion));
+
+            return userQuestions.Select(qi => new PTPUpcomingQuestionDTO
+            {
+                Id = qi.PTPQuestion.Id,
+                Title = qi.PTPQuestion.Title ?? string.Empty
+            }).ToList();
+        }
+
 
         private async Task<Response<List<PTPQuestionDTO>>> GetRandomQuestionsAsync(InterviewQuestionType questionType, InterviewCategory category, int questionCount, IEnumerable<int>? excludeQuestionIds = null)
         {

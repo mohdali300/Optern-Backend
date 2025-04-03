@@ -14,7 +14,7 @@ namespace Optern.Application.DTOs.PTPInterview
         public DateTime? InterviewDate { get; set; }
         public string? InterviewType { get; set; } 
         public string? Category { get; set; }
-        public PartnerDTO Partner { get; set; } = new PartnerDTO(); 
+        public PartnerDTO? Partner { get; set; } = new PartnerDTO(); 
 
         public FeedbackStatus FeedbackStatus {get;set;}
 

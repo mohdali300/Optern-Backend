@@ -44,7 +44,8 @@ namespace Optern.Infrastructure.UnitOfWork
         IGenericRepository<PTPUsers> PTPUsers { get; }
         IGenericRepository<PTPFeedBack> PTPFeedBack { get; }
         IGenericRepository<PTPInterview> PTPInterviews { get; }  
-        IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; } 
+        IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; }
+        IGenericRepository<VQuestionInterview> VQuestionInterview { get; }
         IGenericRepository<PTPQuestions> PTPQuestions { get; }
 
         IGenericRepository<Education> Education { get; }
