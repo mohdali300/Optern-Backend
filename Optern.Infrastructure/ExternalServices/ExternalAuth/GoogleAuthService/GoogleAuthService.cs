@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Optern.Domain.Entities;
 using Optern.Infrastructure.ExternalDTOs.GoogleAuth;
 using Optern.Infrastructure.ExternalInterfaces.IExternalAuth.IGoogleAuthService;
 
@@ -15,12 +16,15 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
     {    
           private readonly IConfiguration _configuration;
           private readonly IServiceScopeFactory _serviceScopeFactory;
+          private readonly IAuthService _authService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-
-        public GoogleAuthService(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory )
+        public GoogleAuthService(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory , IAuthService authService, IHttpContextAccessor httpContextAccessor)
         {
             _configuration= configuration;
             _serviceScopeFactory= serviceScopeFactory;
+            _authService = authService;
+            _httpContextAccessor=httpContextAccessor;
         }
 
         public async Task<Response<LogInResponseDTO>> GoogleLogin(string googleToken)
@@ -44,7 +48,8 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
                     Email = payload.Email,
                     FirstName = payload.GivenName,
                     LastName = payload.FamilyName,
-                    ProfilePicture = payload.Picture
+                    ProfilePicture = payload.Picture,
+                    EmailConfirmed=true
                 };
 
                 await userManager.CreateAsync(user);
@@ -63,6 +68,17 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
                 IsAuthenticated = true,
                 Token = generatedToken,
             };
+
+            var refreshToken = await _authService.GetOrCreateRefreshToken(user);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+            };
+
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
             return  Response<LogInResponseDTO>.Success(userData,"Login Successfully",200);
         }
 

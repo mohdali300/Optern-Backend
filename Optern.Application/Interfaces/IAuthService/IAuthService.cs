@@ -13,6 +13,7 @@ namespace Optern.Application.Interfaces.IAuthService
         public Task<Response<LogInResponseDTO>> LogInAsync(LogInDTO model);
 
         public Task<Response<bool>> LogOut();
+        public Task<RefreshToken> GetOrCreateRefreshToken(ApplicationUser user);
 
     }
 }

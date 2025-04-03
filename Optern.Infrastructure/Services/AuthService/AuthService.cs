@@ -332,7 +332,7 @@ namespace Optern.Infrastructure.Services.AuthService
         #endregion
 
         #region Private Helpers Functions
-        private async Task<ApplicationUser> CreateUserAsync(RegisterDTO model)
+        public async Task<ApplicationUser> CreateUserAsync(RegisterDTO model)
         {
             var user = new ApplicationUser
             {
@@ -354,7 +354,7 @@ namespace Optern.Infrastructure.Services.AuthService
             return !string.IsNullOrEmpty(model.Email) && !string.IsNullOrEmpty(model.Password);
         }
 
-        private async Task<RefreshToken> GetOrCreateRefreshToken(ApplicationUser user)
+        public async Task<RefreshToken> GetOrCreateRefreshToken(ApplicationUser user)
         {
             var activeToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
             if (activeToken != null)
