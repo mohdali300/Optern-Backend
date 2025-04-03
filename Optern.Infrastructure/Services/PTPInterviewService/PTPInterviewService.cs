@@ -63,17 +63,17 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
 
                     if (!DateTime.TryParse(interviewEntity.ScheduledDate, out DateTime scheduledDate))
                     {
-                       interviewDTO.TimeRemaining = "Invalid date format";
-                       continue;
+                        interviewDTO.TimeRemaining = "Invalid date format";
+                        continue;
                     }
 
                     DateTime scheduledDateUtc = scheduledDate.ToUniversalTime();
                     DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
                     scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
                     // local Time
-                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
                     // server Time
-                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
+                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
                     interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
                     interviewDTO.Questions = await GetUserQuestionsForPTPInterview(interviewEntity.Id, userId);
@@ -528,7 +528,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         interviewDateTime = GetScheduledDateTime(interview.ScheduledDate, interview.ScheduledTime);
                     }
 
-                    var ptpUser = _context.PTPUsers.FirstOrDefault(pu=>pu.UserID == userId && pu.PTPIId == interview.Id);
+                    var ptpUser = _context.PTPUsers.FirstOrDefault(pu => pu.UserID == userId && pu.PTPIId == interview.Id);
 
                     interviews.Add(new PastInterviews
                     {
@@ -536,10 +536,10 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         InterviewDate = interviewDateTime ?? DateTime.MinValue,
                         InterviewType = "Peer-to-Peer",
                         Category = interview.Category.ToString(),
-                        FeedbackStatus = _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)
-                        && _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.ReceivedByUserId == ptpUser.Id)
-                         ? FeedbackStatus.ShowFeedback:
-                        _context.PTPFeedBacks.Any(pf=>pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)? FeedbackStatus.Pending : FeedbackStatus.AddFeedback,
+                        FeedbackStatus = _context.PTPFeedBacks.Any(pf => pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id)
+                        && _context.PTPFeedBacks.Any(pf => pf.PTPInterviewId == interview.Id && pf.ReceivedByUserId == ptpUser.Id)
+                         ? FeedbackStatus.ShowFeedback :
+                        _context.PTPFeedBacks.Any(pf => pf.PTPInterviewId == interview.Id && pf.GivenByUserId == ptpUser.Id) ? FeedbackStatus.Pending : FeedbackStatus.AddFeedback,
                         Partner = new PartnerDTO
                         {
                             Id = partner?.UserID ?? string.Empty,
@@ -553,7 +553,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 // virtual Interview
                 var vInterviews = await _unitOfWork.VInterviews
                          .GetAllByExpressionAsync(
-                             v => v.UserId == userId && v.InterviewDate <= DateTime.UtcNow, 
+                             v => v.UserId == userId && v.InterviewDate <= DateTime.UtcNow,
                              query => query.Include(v => v.VQuestionInterviews)
                                            .ThenInclude(v => v.User));
                 foreach (var vInterview in vInterviews)
@@ -565,7 +565,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                         InterviewType = "Virtual",
                         Category = vInterview.Category.ToString(),
                         FeedbackStatus = vInterview.VirtualFeedBack != null ? FeedbackStatus.ShowFeedback : FeedbackStatus.AddFeedback,
-                        Partner = null!, 
+                        Partner = null!,
                         Questions = await GetUserQuestionsForVInterview(vInterview.Id, userId) ?? new List<PTPUpcomingQuestionDTO>()
                     });
                 }
@@ -666,8 +666,8 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     Timer = timer ?? string.Empty
                 };
 
-                return Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200) ;
-                                          
+                return Response<InterviewCachedData>.Success(cachedData, "Cached Data Retrieved Successfully", 200);
+
             }
             catch (Exception ex)
             {
@@ -690,7 +690,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                 InterviewTimeSlot.TenAM => new TimeSpan(19, 0, 0),
                 InterviewTimeSlot.TwelvePM => new TimeSpan(20, 0, 0),
                 InterviewTimeSlot.TwoPM => new TimeSpan(21, 0, 0),
-                InterviewTimeSlot.SixPM => new TimeSpan(22,0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(22, 0, 0),
                 InterviewTimeSlot.TenPM => new TimeSpan(23, 0, 0),
                 _ => TimeSpan.Zero
             };
@@ -711,7 +711,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             var scheduledTime = GetTimeSpanFromEnum(timeSlot);
             DateTime scheduledDate = DateTime.Parse(date);
-            var interviewStartTime = scheduledDate.Date + scheduledTime;         
+            var interviewStartTime = scheduledDate.Date + scheduledTime;
             interviewStartTime = interviewStartTime.ToLocalTime();
             var curDate = DateTime.Now;
             curDate = curDate.AddHours(2);
