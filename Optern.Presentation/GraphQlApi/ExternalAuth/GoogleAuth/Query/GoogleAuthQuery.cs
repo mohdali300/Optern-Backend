@@ -40,6 +40,7 @@ namespace Optern.Presentation.GraphQlApi.ExternalAuth.GoogleAuth.Query
                     return Response<LogInResponseDTO>.Failure(new LogInResponseDTO(),"invalid Token", 400);
                 }
 
+
                 return Response<LogInResponseDTO>.Success(jwt.Data, "Valid User Token", 200);
             }
             catch (Exception ex)
