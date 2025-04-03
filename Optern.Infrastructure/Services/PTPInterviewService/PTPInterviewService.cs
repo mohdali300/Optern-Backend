@@ -515,10 +515,6 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                                       .ThenInclude(u => u.User)
                     );
 
-                if (!ptpInterviews.Any())
-                {
-                    return Response<IEnumerable<PastInterviews>>.Failure(new List<PastInterviews>(), "No Past Interviews found.", 404);
-                }
 
                 var interviews = new List<PastInterviews>();
 
