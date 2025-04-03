@@ -48,6 +48,7 @@ namespace Optern.Infrastructure.UnitOfWork
         public IGenericRepository<PTPFeedBack> PTPFeedBack { get; private set; }
         public IGenericRepository<PTPInterview> PTPInterviews { get; private set; }
         public IGenericRepository<PTPQuestionInterview> PTPQuestionInterviews { get; private set; }
+        public IGenericRepository<VQuestionInterview> VQuestionInterview { get; private set; }
         public IGenericRepository<PTPQuestions> PTPQuestions { get; private set; }
 
         public IGenericRepository<Education> Education { get; private set; }
@@ -100,6 +101,7 @@ namespace Optern.Infrastructure.UnitOfWork
             Experience = new GenericRepository<Experience>(context);
             VInterviews= new GenericRepository<VInterview>(context);
             VFeedBack = new GenericRepository<VFeedBack>(context);
+            VQuestionInterview = new GenericRepository<VQuestionInterview>(context);
         }
 
         public async Task<int> SaveAsync()
