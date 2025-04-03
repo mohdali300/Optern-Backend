@@ -92,7 +92,6 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
             var content = new FormUrlEncodedContent(values);
             var response = await client.PostAsync("https://oauth2.googleapis.com/token", content);
             var responseString = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Google OAuth Response: " + responseString);
 
             var tokenResponse = JsonSerializer.Deserialize<GoogleTokenResponse>(responseString);
 
