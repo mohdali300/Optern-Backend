@@ -32,10 +32,10 @@ namespace Optern.Infrastructure.Services.VInterviewService
                 {
                     Category = dto.Category,
                     QusestionType = dto.QuestionType,
-                    UserId = userId, 
+                    UserId = userId,
                     VQuestionInterviews = new List<VQuestionInterview>(),
-                    InterviewDate= DateTime.UtcNow,
-                    SpeechAnalysisResult = "" 
+                    InterviewDate = DateTime.UtcNow,
+                    SpeechAnalysisResult = ""
                 };
 
                 _context.VInterview.Add(interview);
@@ -53,7 +53,7 @@ namespace Optern.Infrastructure.Services.VInterviewService
                 {
                     VInterviewId = interview.Id,
                     PTPQuestionId = qDto.Id,
-                    UserId= userId,
+                    UserId = userId,
                 }).ToList();
 
                 _context.VQuestionInterviews.AddRange(questionInterviews);
@@ -61,9 +61,9 @@ namespace Optern.Infrastructure.Services.VInterviewService
 
                 await transaction.CommitAsync();
 
-                
+
                 var interviewDto = _mapper.Map<VInterviewDTO>(interview);
-  
+
                 return Response<VInterviewDTO>.Success(interviewDto, $"Interview created with {questionCount} random question(s).", 200);
             }
             catch (Exception ex)
@@ -76,33 +76,35 @@ namespace Optern.Infrastructure.Services.VInterviewService
         #endregion
 
 
-          #region Get virtual Interview
-        public async Task<Response<VInterviewDTO>> GetInterviewQuestion(int interviewId,string userId)
+        #region Get virtual Interview
+        public async Task<Response<VInterviewDTO>> GetInterviewQuestion(int interviewId, string userId)
         {
-             try
+            try
             {
-                 var interview = await _context.VInterview
-                    .Include(i => i.VQuestionInterviews)
-                        .ThenInclude(qi => qi.PTPQuestion)
-                    .FirstOrDefaultAsync(i => i.Id == interviewId);
+                var interview = await _context.VInterview
+                   .Include(i => i.VQuestionInterviews)
+                       .ThenInclude(qi => qi.PTPQuestion)
+                   .FirstOrDefaultAsync(i => i.Id == interviewId);
 
 
                 if (interview == null)
                 {
-                    return Response<VInterviewDTO>.Failure(new VInterviewDTO{}, "Interview not found.", 404);
+                    return Response<VInterviewDTO>.Failure(new VInterviewDTO { }, "Interview not found.", 404);
                 }
 
-                 var interviewDto = _mapper.Map<VInterviewDTO>(interview);
+                var interviewDto = _mapper.Map<VInterviewDTO>(interview);
                 return Response<VInterviewDTO>.Success(interviewDto, "User interview questions retrieved successfully.", 200);
             }
             catch (Exception ex)
             {
-                return Response<VInterviewDTO>.Failure(new VInterviewDTO{}, $"An error occurred while retrieving user questions: {ex.Message}", 500);
+                return Response<VInterviewDTO>.Failure(new VInterviewDTO { }, $"An error occurred while retrieving user questions: {ex.Message}", 500);
             }
-               
+
         }
 
         #endregion
+
+
 
 
         #region Helpers

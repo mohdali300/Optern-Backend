@@ -101,9 +101,9 @@ builder.Logging.ClearProviders()
 
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowSpecificOrigin", policy =>
-	{
-		policy.WithOrigins("https://optern.vercel.app","http://localhost:3000", "http://127.0.0.1:5500")//"http://127.0.0.1:5500"   "http://localhost:3000" 
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy.WithOrigins("https://optern.vercel.app", "http://localhost:3000", "http://127.0.0.1:5500", "http://localhost:5217/ui/graphql")//"http://127.0.0.1:5500"   "http://localhost:3000" 
 
               .AllowAnyHeader()
               .AllowAnyMethod()
