@@ -16,8 +16,9 @@ namespace Optern.Infrastructure.Services.AuthService
         private readonly IMailService _mailService;
         private readonly IJWTService _jWTService;
         private readonly OTP _OTP;
+           private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IUserNotificationService _userNotificationService;
-        public AuthService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager,
+        public AuthService(UserManager<ApplicationUser> _userManager,  IServiceScopeFactory serviceScopeFactory ,RoleManager<IdentityRole> _roleManager,
             IHttpContextAccessor _httpContextAccessor, IMailService _mailService, OTP _OTP, IJWTService _jWTService, IUserNotificationService userNotificationService)
         {
             this._userManager = _userManager;
@@ -25,6 +26,8 @@ namespace Optern.Infrastructure.Services.AuthService
             this._httpContextAccessor = _httpContextAccessor;
             this._mailService = _mailService;
             this._OTP = _OTP;
+                        _serviceScopeFactory= serviceScopeFactory;
+
             this._jWTService = _jWTService;
             this._userNotificationService = userNotificationService;
         }
@@ -322,7 +325,7 @@ namespace Optern.Infrastructure.Services.AuthService
             try
             {
                 _httpContextAccessor.HttpContext.Response.Cookies.Delete("secure_rtk");
-                return Response<bool>.Success(true,"User logout successfully", 200);
+                return Response<bool>.Success(true, "User logout successfully", 200);
             }
             catch (Exception ex)
             {
@@ -354,19 +357,29 @@ namespace Optern.Infrastructure.Services.AuthService
             return !string.IsNullOrEmpty(model.Email) && !string.IsNullOrEmpty(model.Password);
         }
 
-        public async Task<RefreshToken> GetOrCreateRefreshToken(ApplicationUser user)
-        {
-            var activeToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
-            if (activeToken != null)
-            {
-                return activeToken;
-            }
+       public async Task<RefreshToken> GetOrCreateRefreshToken(ApplicationUser user)
+{
+            using var scope = _serviceScopeFactory.CreateScope(); 
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var jwtService = scope.ServiceProvider.GetRequiredService<IJWTService>(); 
+            
+            var userFromDb = await userManager.FindByIdAsync(user.Id);
 
-            var newRefreshToken = _jWTService.CreateRefreshToken();
-            user.RefreshTokens.Add(newRefreshToken);
-            await _userManager.UpdateAsync(user);
+            if (userFromDb == null)
+                throw new Exception("User not found in database");
+
+            var activeToken = userFromDb.RefreshTokens.FirstOrDefault(t => t.IsActive);
+            if (activeToken != null)
+                return activeToken;
+
+            var newRefreshToken = jwtService.CreateRefreshToken();
+
+            userFromDb.RefreshTokens.Add(newRefreshToken);
+            await userManager.UpdateAsync(userFromDb);
+
             return newRefreshToken;
         }
+
         #endregion
 
     }

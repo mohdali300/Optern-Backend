@@ -79,6 +79,7 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
             };
 
             _httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
+
             return  Response<LogInResponseDTO>.Success(userData,"Login Successfully",200);
         }
 
@@ -108,7 +109,6 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
             var content = new FormUrlEncodedContent(values);
             var response = await client.PostAsync("https://oauth2.googleapis.com/token", content);
             var responseString = await response.Content.ReadAsStringAsync();
-
             var tokenResponse = JsonSerializer.Deserialize<GoogleTokenResponse>(responseString);
 
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.IdToken))
