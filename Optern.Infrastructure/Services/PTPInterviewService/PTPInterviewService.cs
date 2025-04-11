@@ -71,9 +71,9 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     DateTime scheduledDateTimeUtc = scheduledDateUtc.Add(GetTimeSpanFromEnum(interviewEntity.ScheduledTime));
                     scheduledDateTimeUtc = DateTime.SpecifyKind(scheduledDateTimeUtc, DateTimeKind.Utc);
                     // local Time
-                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
+                   // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow;
                     // server Time
-                    // TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
+                    TimeSpan timeRemaining = scheduledDateTimeUtc - DateTime.UtcNow.AddHours(1);
                     interviewDTO.TimeRemaining = FormatTimeRemaining(timeRemaining);
 
                     interviewDTO.Questions = await GetUserQuestionsForPTPInterview(interviewEntity.Id, userId);
@@ -686,12 +686,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             return timeSlot switch
             {
-                InterviewTimeSlot.EightAM => new TimeSpan(18, 0, 0),
-                InterviewTimeSlot.TenAM => new TimeSpan(19, 0, 0),
-                InterviewTimeSlot.TwelvePM => new TimeSpan(20, 0, 0),
-                InterviewTimeSlot.TwoPM => new TimeSpan(21, 0, 0),
-                InterviewTimeSlot.SixPM => new TimeSpan(22, 0, 0),
-                InterviewTimeSlot.TenPM => new TimeSpan(23, 0, 0),
+                InterviewTimeSlot.EightAM => new TimeSpan(10, 0, 0),
+                InterviewTimeSlot.TenAM => new TimeSpan(11, 0, 0),
+                InterviewTimeSlot.TwelvePM => new TimeSpan(12, 0, 0),
+                InterviewTimeSlot.TwoPM => new TimeSpan(13, 0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(14, 0, 0),
+                InterviewTimeSlot.TenPM => new TimeSpan(15, 0, 0),
                 _ => TimeSpan.Zero
             };
         }
