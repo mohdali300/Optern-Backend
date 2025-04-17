@@ -81,7 +81,7 @@ namespace Optern.Infrastructure.Services.RoomService
                       }
                     )
                     .OrderByDescending(r => r.NumberOfUsers)
-                    .Take(4)
+                    .Take(10)
                      .Select(r => new ResponseRoomDTO
                      {
                          Id = r.Room.Id,
