@@ -409,6 +409,30 @@ namespace Optern.Infrastructure.Services.RoomService
         }
         #endregion
 
+        public async Task<Response<IEnumerable<ResponseRoomDTO>>> SearchForRoom(string roomName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(roomName))
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Room name is required", 400);
+
+                var rooms = await _unitOfWork.Rooms.GetAllByExpressionAsync(
+                    r => EF.Functions.ILike(r.Name, $"%{roomName}%"));
+
+                var roomsMap = _mapper.Map<IEnumerable<ResponseRoomDTO>>(rooms);
+
+                if (!roomsMap.Any())
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(roomsMap, "No matching rooms found", 200);
+
+                return Response<IEnumerable<ResponseRoomDTO>>.Success(roomsMap, "Rooms retrieved successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                return Response<IEnumerable<ResponseRoomDTO>>.Failure($"Server error: {ex.Message}", 500);
+            }
+        }
+
+
         #region Get Room By Track
 
         public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetRoomsByTrack(int trackId, int lastIdx = 0, int limit = 10)

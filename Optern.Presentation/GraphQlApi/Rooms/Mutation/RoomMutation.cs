@@ -32,6 +32,9 @@
         public async Task<Response<bool>> LeaveRoomAsync([Service] IRoomSettingService _roomSetting,string roomId, string userId)=>
           await _roomSetting.LeaveRoomAsync(roomId,userId);
 
+       public async Task<Response<IEnumerable<ResponseRoomDTO>>> SearchForRoom([Service] IRoomService _roomService, string roomName)=>
+        await _roomService.SearchForRoom(roomName);
+      
 
 }
 

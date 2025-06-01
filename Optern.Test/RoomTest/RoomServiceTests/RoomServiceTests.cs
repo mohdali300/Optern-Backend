@@ -119,7 +119,7 @@ namespace Optern.Test.RoomTest.RoomServiceTests
                .Returns((IEnumerable<ResponseRoomDTO>)null);
 
             _mockUnitOfWork.Setup(uow => uow.Rooms.GetAllAsync())
-        .ReturnsAsync(new List<Room>());
+                 .ReturnsAsync(new List<Room>());
 
 
             var result = await _roomService.GetAllAsync();
@@ -133,6 +133,8 @@ namespace Optern.Test.RoomTest.RoomServiceTests
         [Category("GetAllRoomsTests")]
         public async Task GetALlRooms_ShouldReturn200Success_WhenRoomsExist()
         {
+
+            // Arrange:
             _mockCacheService.Setup(c => c.GetData<IEnumerable<ResponseRoomDTO>>("Rooms"))
                .Returns((IEnumerable<ResponseRoomDTO>)null);
 
@@ -147,9 +149,10 @@ namespace Optern.Test.RoomTest.RoomServiceTests
                         Name = r.Name,
                     });
                 });
-
+            // Act:
             var result = await _roomService.GetAllAsync();
 
+            // Assert
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
             Assert.That(result.Data, Has.Exactly(6).Items);

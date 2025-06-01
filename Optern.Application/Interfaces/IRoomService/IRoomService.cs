@@ -12,7 +12,7 @@ namespace Optern.Application.Interfaces.IRoomService
         public Task<Response<IEnumerable<ResponseRoomDTO>>> GetRoomsByTrack(int trackId, int lastIdx = 0, int limit = 10);
 
         public Task<Response<string>> JoinToRoom(JoinRoomDTO model);
-        
+        public Task<Response<IEnumerable<ResponseRoomDTO>>> SearchForRoom(string roomName);
 
         public Task<Response<ResponseRoomDTO>> CreateRoom(CreateRoomDTO model );
         public Task<Response<ResponseRoomDTO>> GetRoomById(string id,string? userId);

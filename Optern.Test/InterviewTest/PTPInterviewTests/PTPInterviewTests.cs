@@ -131,7 +131,7 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
 
         [Test]
         [Category("CreatePTPInterviewTests")]
-        public async Task CreatePTPInterviewAsync_WhenTimeSlotFullyBooked_ReturnsFailure()
+        public async Task CreatePTPInterviewAsync_ShouldReturnsFailure_WhenTimeSlotFullyBooked()
         {
             // Arrange:
             var dto = new CreatePTPInterviewDTO
@@ -170,7 +170,7 @@ namespace Optern.Test.InterviewTest.PTPInterviewTests
 
         [Test]
         [Category("CreatePTPInterviewTests")]
-        public async Task CreatePTPInterviewAsync_WhenNoExistingInterview_CreatesNewInterviewSuccessfully() //verify that a new interview is created
+        public async Task CreatePTPInterviewAsync_ShouldCreatesNewInterviewSuccessfully_WhenNoExistingInterview_() //verify that a new interview is created
         {
             // Arrange:
             var dto = new CreatePTPInterviewDTO
