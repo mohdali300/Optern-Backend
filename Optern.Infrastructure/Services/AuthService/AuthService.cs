@@ -283,17 +283,17 @@ namespace Optern.Infrastructure.Services.AuthService
                 var refreshToken = await GetOrCreateRefreshToken(user);
 
                 var userRoles = await _userManager.GetRolesAsync(user);
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTime.UtcNow.AddMonths(1),
-                    IsEssential= true,   
+                //var cookieOptions = new CookieOptions
+                //{
+                //    HttpOnly = true,
+                //    Secure = true,
+                //    SameSite = SameSiteMode.Lax,
+                //    Expires = DateTime.UtcNow.AddMonths(1),
+                //    IsEssential= true,   
                     
-                };
+                //};
 
-                _httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
+                //_httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
                 return Response<LogInResponseDTO>.Success(
                     new LogInResponseDTO
                     {
@@ -301,6 +301,7 @@ namespace Optern.Infrastructure.Services.AuthService
                         Name = $"{user.FirstName ?? string.Empty} {user.LastName ?? string.Empty}",
                         IsAuthenticated = true,
                         Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        RefreshToken=refreshToken.Token,
                         Roles = userRoles?.ToList() ?? new List<string>(),
                         ProfilePicture = user.ProfilePicture,
                         Position = user.Position != null

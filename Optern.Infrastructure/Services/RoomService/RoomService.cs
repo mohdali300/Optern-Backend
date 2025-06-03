@@ -417,7 +417,7 @@ namespace Optern.Infrastructure.Services.RoomService
 
                 if (string.IsNullOrWhiteSpace(roomName) && trackId == 0)
                 {
-                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "At least one search criteria (room name or track ID) is required.", 400);
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "At least one search criteria (room name or track ID) is required", 400);
                 }
 
                 IQueryable<Room> query = _context.Rooms
