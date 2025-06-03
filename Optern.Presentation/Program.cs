@@ -103,11 +103,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
-        policy.WithOrigins("https://optern.vercel.app", "http://localhost:3000", "http://127.0.0.1:5500", "http://localhost:5217/ui/graphql")//"http://127.0.0.1:5500"   "http://localhost:3000" 
+        policy.WithOrigins("https://optern.vercel.app", "http://localhost:3000", "http://127.0.0.1:5500", "http://localhost:5217/ui/graphql", "https://optern-frontend.vercel.app")//"http://127.0.0.1:5500"   "http://localhost:3000" 
 
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+              .WithExposedHeaders("Set-Cookie");
     });
 });
 

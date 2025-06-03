@@ -6,7 +6,8 @@
 		public string Name { get; set; }
 		public bool IsAuthenticated { get; set; }
 		public string Token { get; set; }
-		public List<string> Roles { get; set; }
+        public string RefreshToken { get; set; }
+        public List<string> Roles { get; set; }
 		
 		public string? ProfilePicture { get; set; }
 		public PositionDTO? Position { get; set; }
