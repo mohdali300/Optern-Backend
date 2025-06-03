@@ -286,8 +286,11 @@ namespace Optern.Infrastructure.Services.AuthService
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
+                    Secure = true,
                     SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddMonths(1),
+                    IsEssential= true,   
+                    
                 };
 
                 _httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);

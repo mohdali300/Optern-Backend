@@ -58,7 +58,7 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
             var userRoles = await userManager.GetRolesAsync(user);
             var jwtToken = await jwtService.GenerateJwtToken(user);
             var generatedToken= new JwtSecurityTokenHandler().WriteToken(jwtToken);
-
+            var refreshToken = await _authService.GetOrCreateRefreshToken(user);
             var userData = new LogInResponseDTO()
             {
                 UserId = user.Id,
@@ -67,18 +67,19 @@ namespace Optern.Infrastructure.ExternalServices.ExternalAuth.GoogleAuthService
                 Roles = userRoles.ToList(),
                 IsAuthenticated = true,
                 Token = generatedToken,
+                RefreshToken= refreshToken.Token
             };
 
-            var refreshToken = await _authService.GetOrCreateRefreshToken(user);
+            
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
-            };
+            //var cookieOptions = new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Secure = false,
+            //    SameSite = SameSiteMode.Lax,
+            //};
 
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
+            //_httpContextAccessor.HttpContext.Response.Cookies.Append("secure_rtk", refreshToken.Token, cookieOptions);
 
             return  Response<LogInResponseDTO>.Success(userData,"Login Successfully",200);
         }

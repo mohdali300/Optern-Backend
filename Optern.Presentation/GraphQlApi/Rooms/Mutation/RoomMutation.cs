@@ -32,8 +32,8 @@
         public async Task<Response<bool>> LeaveRoomAsync([Service] IRoomSettingService _roomSetting,string roomId, string userId)=>
           await _roomSetting.LeaveRoomAsync(roomId,userId);
 
-       public async Task<Response<IEnumerable<ResponseRoomDTO>>> SearchForRoom([Service] IRoomService _roomService, string roomName)=>
-        await _roomService.SearchForRoom(roomName);
+       public async Task<Response<IEnumerable<ResponseRoomDTO>>> SearchForRoom([Service] IRoomService _roomService, string? roomName = null, int? trackId = null, int lastIdx = 0, int limit = 10) =>
+        await _roomService.SearchRooms(roomName, trackId, lastIdx, limit);
       
 
 }

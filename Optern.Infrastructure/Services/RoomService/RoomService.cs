@@ -409,50 +409,41 @@ namespace Optern.Infrastructure.Services.RoomService
         }
         #endregion
 
-        public async Task<Response<IEnumerable<ResponseRoomDTO>>> SearchForRoom(string roomName)
+        #region SearchForRoom
+        public async Task<Response<IEnumerable<ResponseRoomDTO>>> SearchRooms(string? roomName = null, int? trackId = null, int lastIdx = 0, int limit = 10)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(roomName))
-                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Room name is required", 400);
 
-                var rooms = await _unitOfWork.Rooms.GetAllByExpressionAsync(
-                    r => EF.Functions.ILike(r.Name, $"%{roomName}%"));
-
-                var roomsMap = _mapper.Map<IEnumerable<ResponseRoomDTO>>(rooms);
-
-                if (!roomsMap.Any())
-                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(roomsMap, "No matching rooms found", 200);
-
-                return Response<IEnumerable<ResponseRoomDTO>>.Success(roomsMap, "Rooms retrieved successfully", 200);
-            }
-            catch (Exception ex)
-            {
-                return Response<IEnumerable<ResponseRoomDTO>>.Failure($"Server error: {ex.Message}", 500);
-            }
-        }
-
-
-        #region Get Room By Track
-
-        public async Task<Response<IEnumerable<ResponseRoomDTO>>> GetRoomsByTrack(int trackId, int lastIdx = 0, int limit = 10)
-        {
-            if (trackId == 0)
-            {
-                return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Invalid Room Id", 400);
-            }
-            try
-            {
-                var isTrackExist = await _unitOfWork.Tracks.GetByIdAsync(trackId);
-                if (isTrackExist == null)
+                if (string.IsNullOrWhiteSpace(roomName) && trackId == 0)
                 {
-                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Track Not Found", 404);
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "At least one search criteria (room name or track ID) is required.", 400);
                 }
-                var rooms = await _context.Rooms
-                    .Where(r => r.RoomTracks.Any(rt => rt.TrackId == trackId))
+
+                IQueryable<Room> query = _context.Rooms
                     .Include(r => r.UserRooms)
                     .Include(r => r.RoomTracks)
-                        .ThenInclude(rt => rt.Track)
+                        .ThenInclude(rt => rt.Track);
+
+                if (!string.IsNullOrWhiteSpace(roomName))
+                {
+                    query = query.Where(r => EF.Functions.ILike(r.Name, $"%{roomName}%"));
+                }
+
+                if (trackId.HasValue)
+                {
+                    var isTrackExist = await _unitOfWork.Tracks.GetByIdAsync(trackId.Value);
+                    if (isTrackExist == null)
+                    {
+                        return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "Track not found", 404);
+                    }
+
+                    query = query.Where(r => r.RoomTracks.Any(rt => rt.TrackId == trackId.Value));
+                }
+
+                var totalCount = await query.CountAsync();
+
+                var rooms = await query
                     .OrderByDescending(r => r.CreatedAt)
                     .Skip(lastIdx)
                     .Take(limit)
@@ -475,17 +466,16 @@ namespace Optern.Infrastructure.Services.RoomService
 
                 if (!rooms.Any())
                 {
-                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "No rooms found for the given track.", 404);
+                    return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), "No matching rooms found", 200);
                 }
 
-                return Response<IEnumerable<ResponseRoomDTO>>.Success(rooms, "Rooms retrieved successfully.", 200, _context.Rooms.Count(r => r.RoomTracks.Any(t => t.TrackId == trackId)));
+                return Response<IEnumerable<ResponseRoomDTO>>.Success(rooms, "Rooms retrieved successfully.", 200, totalCount);
             }
             catch (Exception ex)
             {
                 return Response<IEnumerable<ResponseRoomDTO>>.Failure(new List<ResponseRoomDTO>(), $"Server error: {ex.Message}", 500);
             }
-        }
-
+        } 
         #endregion
 
         // Helper Function
