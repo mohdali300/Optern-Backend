@@ -137,7 +137,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     interview = new PTPInterview
                     {
                         ScheduledDate = dto.ScheduledDate,
-                        ScheduledTime = dto.ScheduledTime,
+                        ScheduledTime = (InterviewTimeSlot)DateTime.UtcNow.Hour,
                         SlotState = TimeSlotState.TakenByOne,
                         Status = InterviewStatus.Scheduled,
                         Category = dto.Category,
