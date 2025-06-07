@@ -137,7 +137,7 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
                     interview = new PTPInterview
                     {
                         ScheduledDate = dto.ScheduledDate,
-                        ScheduledTime = (InterviewTimeSlot)DateTime.UtcNow.Hour,
+                        ScheduledTime = dto.ScheduledTime,
                         SlotState = TimeSlotState.TakenByOne,
                         Status = InterviewStatus.Scheduled,
                         Category = dto.Category,
@@ -686,12 +686,12 @@ namespace Optern.Infrastructure.Services.PTPInterviewService
         {
             return timeSlot switch
             {
-                InterviewTimeSlot.EightAM => new TimeSpan(10, 0, 0),
-                InterviewTimeSlot.TenAM => new TimeSpan(11, 0, 0),
-                InterviewTimeSlot.TwelvePM => new TimeSpan(12, 0, 0),
-                InterviewTimeSlot.TwoPM => new TimeSpan(13, 0, 0),
-                InterviewTimeSlot.SixPM => new TimeSpan(14, 0, 0),
-                InterviewTimeSlot.TenPM => new TimeSpan(15, 0, 0),
+                InterviewTimeSlot.EightAM => new TimeSpan(15, 0, 0),
+                InterviewTimeSlot.TenAM => new TimeSpan(16, 0, 0),
+                InterviewTimeSlot.TwelvePM => new TimeSpan(17, 0, 0),
+                InterviewTimeSlot.TwoPM => new TimeSpan(18, 0, 0),
+                InterviewTimeSlot.SixPM => new TimeSpan(19, 0, 0),
+                InterviewTimeSlot.TenPM => new TimeSpan(20, 0, 0),
                 _ => TimeSpan.Zero
             };
         }
